@@ -1,0 +1,261 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    --primary: 45 78% 51%;
+    --primary-foreground: 40 30% 96%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 45 78% 51%;
+    --radius: 0.5rem;
+    
+    /* Golden theme colors */
+    --golden-main: #D4AF37;
+    --golden-light: #F5E6A8;
+    --golden-dark: #B8941F;
+    --golden-darker: #8B6F1A;
+    --golden-olive: #6E715F;
+    --golden-ivory: #FAF6F0;
+    --golden-cream: #EDE8DA;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 40 30% 96%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 40 30% 96%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 40 30% 96%;
+    --primary: 45 78% 51%;
+    --primary-foreground: 40 30% 96%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 40 30% 96%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 40 30% 96%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 40 30% 96%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 45 78% 51%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  /* Golden gradient text classes */
+  .gradient-heading {
+    @apply bg-gradient-to-r from-[#D4AF37] via-[#CBA135] to-[#F5E6A8] bg-clip-text text-transparent;
+  }
+  
+  .gradient-heading-1 {
+    @apply bg-gradient-to-r from-[#D4AF37] via-[#CBA135] to-[#F5E6A8] bg-clip-text text-transparent;
+  }
+  
+  .gradient-heading-3 {
+    @apply bg-gradient-to-r from-[#B8941F] via-[#D4AF37] to-[#CBA135] bg-clip-text text-transparent;
+  }
+  
+  .gradient-category {
+    @apply bg-gradient-to-r from-[#D4AF37] to-[#CBA135] bg-clip-text text-transparent;
+  }
+  
+  /* Golden gradient background classes */
+  .gradient-gold {
+    @apply bg-gradient-to-r from-[#D4AF37] to-[#CBA135];
+  }
+  
+  .gradient-gold-vertical {
+    @apply bg-gradient-to-b from-[#D4AF37] to-[#CBA135];
+  }
+  
+  .gradient-gold-radial {
+    @apply bg-gradient-radial from-[#D4AF37] to-[#B8941F];
+  }
+  
+  /* Random golden text gradients */
+  .gradient-gold-text-1 {
+    @apply bg-gradient-to-r from-[#D4AF37] to-[#CBA135] bg-clip-text text-transparent;
+  }
+  
+  .gradient-gold-text-2 {
+    @apply bg-gradient-to-r from-[#F5E6A8] via-[#D4AF37] to-[#B8941F] bg-clip-text text-transparent;
+  }
+  
+  .gradient-gold-text-3 {
+    @apply bg-gradient-to-r from-[#B8941F] via-[#D4AF37] to-[#CBA135] bg-clip-text text-transparent;
+  }
+  
+  .gradient-gold-text-4 {
+    @apply bg-gradient-to-r from-[#CBA135] via-[#F5E6A8] to-[#D4AF37] bg-clip-text text-transparent;
+  }
+  
+  .gradient-gold-text-5 {
+    @apply bg-gradient-to-r from-[#D4AF37] via-[#B8941F] to-[#8B6F1A] bg-clip-text text-transparent;
+  }
+  
+  .gradient-gold-text-6 {
+    @apply bg-gradient-to-br from-[#D4AF37] to-[#CBA135] bg-clip-text text-transparent;
+  }
+  
+  .gradient-gold-text-7 {
+    @apply bg-gradient-to-bl from-[#F5E6A8] via-[#D4AF37] to-[#B8941F] bg-clip-text text-transparent;
+  }
+  
+  .gradient-gold-text-8 {
+    @apply bg-gradient-to-tr from-[#B8941F] via-[#D4AF37] to-[#F5E6A8] bg-clip-text text-transparent;
+  }
+  
+  /* Golden color utility classes */
+  .text-gold {
+    @apply text-[#D4AF37];
+  }
+  
+  .text-ivory {
+    @apply text-[#FAF6F0];
+  }
+  
+  .text-cream {
+    @apply text-[#EDE8DA];
+  }
+  
+  .bg-gold-light {
+    @apply bg-[#F5E6A8];
+  }
+  
+  .bg-gold-main {
+    @apply bg-[#D4AF37];
+  }
+  
+  .bg-gold-dark {
+    @apply bg-[#B8941F];
+  }
+  
+  .bg-golden-olive {
+    @apply bg-[#6E715F];
+  }
+  
+  .bg-golden-ivory {
+    @apply bg-[#FAF6F0];
+  }
+  
+  .bg-golden-cream {
+    @apply bg-[#EDE8DA];
+  }
+  
+  /* Animated shimmer/shine effect on hover */
+  .shimmer-effect {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .shimmer-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.3),
+      transparent
+    );
+    transition: left 0.5s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  .shimmer-effect:hover::before {
+    left: 100%;
+  }
+  
+  /* Golden shimmer effect */
+  .golden-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .golden-shimmer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(212, 175, 55, 0.8),
+      rgba(245, 230, 168, 1),
+      rgba(212, 175, 55, 0.8),
+      transparent
+    );
+    transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+  }
+  
+  .golden-shimmer:hover::before {
+    left: 100%;
+  }
+  
+  /* Full-width golden shimmer for buttons and cards */
+  .golden-shimmer-full {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .golden-shimmer-full::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 30%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 255, 255, 0.4),
+      rgba(255, 255, 255, 0.2),
+      transparent
+    );
+    transform: skewX(-20deg);
+    transition: left 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  .golden-shimmer-full:hover::after {
+    left: 150%;
+  }
+}
+
