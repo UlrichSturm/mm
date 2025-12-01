@@ -1,0 +1,91 @@
+{
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "view": "Просмотр",
+    "create": "Создать",
+    "search": "Поиск",
+    "filter": "Фильтр",
+    "actions": "Действия",
+    "status": "Статус",
+    "logout": "Выход",
+    "pending": "Ожидает",
+    "approved": "Одобрен",
+    "rejected": "Отклонён"
+  },
+  "nav": {
+    "dashboard": "Дашборд",
+    "lawyers": "Адвокаты/Нотариусы",
+    "vendors": "Vendors",
+    "statistics": "Статистика",
+    "appointments": "Заявки",
+    "executions": "Исполнение"
+  },
+  "dashboard": {
+    "title": "Дашборд",
+    "totalLawyers": "Всего адвокатов",
+    "approved": "Одобрено",
+    "pending": "Ожидает",
+    "rejected": "Отклонено",
+    "willAppointments": "Заявок на завещания",
+    "willExecutions": "Исполняемых завещаний",
+    "createProfile": "Создать профиль",
+    "latestProfiles": "Последние профили",
+    "noProfiles": "Профили не найдены",
+    "loadError": "Ошибка загрузки данных"
+  },
+  "lawyers": {
+    "title": "Адвокаты и Нотариусы",
+    "create": "Создать адвоката/нотариуса",
+    "search": "Поиск по имени, email или номеру лицензии...",
+    "allStatuses": "Все статусы",
+    "allTypes": "Все типы",
+    "noLawyers": "Адвокаты не найдены",
+    "businessName": "Название организации",
+    "email": "Email",
+    "licenseNumber": "Номер лицензии",
+    "licenseType": "Тип лицензии",
+    "registrationDate": "Дата регистрации"
+  },
+  "vendors": {
+    "title": "Vendors",
+    "create": "Создать Vendor",
+    "search": "Поиск по названию бизнеса или email...",
+    "allStatuses": "Все статусы",
+    "noVendors": "Vendors не найдены",
+    "businessName": "Название бизнеса",
+    "email": "Email",
+    "registrationDate": "Дата регистрации"
+  },
+  "auth": {
+    "login": "Вход",
+    "email": "Email",
+    "password": "Пароль",
+    "enterCredentials": "Введите ваши учётные данные для доступа к панели управления",
+    "loginButton": "Войти",
+    "loggingIn": "Вход...",
+    "invalidCredentials": "Неверный email или пароль",
+    "connectionError": "Ошибка подключения к серверу. Убедитесь, что бэкенд запущен на http://localhost:3001",
+    "sessionExpired": "Сессия истекла. Пожалуйста, войдите снова.",
+    "useAdminCredentials": "Используйте учётные данные администратора"
+  },
+  "status": {
+    "pending": "Ожидает",
+    "approved": "Одобрен",
+    "rejected": "Отклонён"
+  },
+  "errors": {
+    "unauthorized": "Необходима авторизация. Пожалуйста, войдите в систему.",
+    "forbidden": "У вас нет прав для выполнения этого действия.",
+    "notFound": "Запрашиваемый ресурс не найден.",
+    "serverError": "Ошибка сервера. Пожалуйста, попробуйте позже.",
+    "serviceUnavailable": "Сервис временно недоступен. Пожалуйста, попробуйте позже.",
+    "connectionError": "Ошибка подключения к серверу. Убедитесь, что бэкенд запущен на http://localhost:3001"
+  }
+}
+

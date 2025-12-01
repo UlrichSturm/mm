@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CLIENT
+  VENDOR
+  LAWYER_NOTARY
+  ADMIN
+}
+
+enum LawyerNotaryStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum LicenseType {
+  LAWYER
+  NOTARY
+  BOTH
+}
+
+enum VendorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(CLIENT)
+  firstName String?
+  lastName  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  lawyerNotaryProfile LawyerNotaryProfile?
+  vendorProfile       VendorProfile?
+
+  @@map("users")
+}
+
+model LawyerNotaryProfile {
+  id                  String              @id @default(uuid())
+  userId              String              @unique
+  licenseNumber       String
+  licenseType         LicenseType
+  organizationName    String?
+  status              LawyerNotaryStatus   @default(PENDING)
+  specialization      String?
+  yearsOfExperience   Int?
+  postalCode          String?
+  address             String?
+  homeVisitAvailable  Boolean              @default(false)
+  maxTravelRadius     Int?
+  rating              Float?
+  name                String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("lawyer_notary_profiles")
+}
+
+model VendorProfile {
+  id              String        @id @default(uuid())
+  userId          String        @unique
+  businessName    String
+  contactEmail    String
+  contactPhone    String?
+  address         String?
+  postalCode      String?
+  description     String?
+  status          VendorStatus  @default(PENDING)
+  registrationDate DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("vendor_profiles")
+}
+
+

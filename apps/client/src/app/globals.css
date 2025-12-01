@@ -25,11 +25,12 @@
     --ring: 45 78% 51%;
     --radius: 0.5rem;
     
-    /* Golden theme colors */
-    --golden-main: #D4AF37;
+    /* Golden theme colors - soft, gentle gold, not orange */
+    --golden-main: #E8C85A;
     --golden-light: #F5E6A8;
-    --golden-dark: #B8941F;
-    --golden-darker: #8B6F1A;
+    --golden-lighter: #FFE8A8;
+    --golden-dark: #D4AF37;
+    --golden-darker: #CBA135;
     --golden-olive: #6E715F;
     --golden-ivory: #FAF6F0;
     --golden-cream: #EDE8DA;
@@ -68,72 +69,72 @@
 }
 
 @layer utilities {
-  /* Golden gradient text classes */
+  /* Golden gradient text classes - soft, gentle gold */
   .gradient-heading {
-    @apply bg-gradient-to-r from-[#D4AF37] via-[#CBA135] to-[#F5E6A8] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#F5E6A8] via-[#E8C85A] to-[#D4AF37] bg-clip-text text-transparent;
   }
   
   .gradient-heading-1 {
-    @apply bg-gradient-to-r from-[#D4AF37] via-[#CBA135] to-[#F5E6A8] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#F5E6A8] via-[#E8C85A] to-[#D4AF37] bg-clip-text text-transparent;
   }
   
   .gradient-heading-3 {
-    @apply bg-gradient-to-r from-[#B8941F] via-[#D4AF37] to-[#CBA135] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#E8C85A] via-[#F5E6A8] to-[#E8C85A] bg-clip-text text-transparent;
   }
   
   .gradient-category {
-    @apply bg-gradient-to-r from-[#D4AF37] to-[#CBA135] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#E8C85A] to-[#D4AF37] bg-clip-text text-transparent;
   }
   
-  /* Golden gradient background classes */
+  /* Golden gradient background classes - soft, gentle gold */
   .gradient-gold {
-    @apply bg-gradient-to-r from-[#D4AF37] to-[#CBA135];
+    @apply bg-gradient-to-r from-[#F5E6A8] to-[#D4AF37];
   }
   
   .gradient-gold-vertical {
-    @apply bg-gradient-to-b from-[#D4AF37] to-[#CBA135];
+    @apply bg-gradient-to-b from-[#F5E6A8] to-[#D4AF37];
   }
   
   .gradient-gold-radial {
-    @apply bg-gradient-radial from-[#D4AF37] to-[#B8941F];
+    background: radial-gradient(circle, #F5E6A8, #D4AF37);
   }
   
-  /* Random golden text gradients */
+  /* Random golden text gradients - soft, gentle gold */
   .gradient-gold-text-1 {
-    @apply bg-gradient-to-r from-[#D4AF37] to-[#CBA135] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#E8C85A] to-[#D4AF37] bg-clip-text text-transparent;
   }
   
   .gradient-gold-text-2 {
-    @apply bg-gradient-to-r from-[#F5E6A8] via-[#D4AF37] to-[#B8941F] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#FFE8A8] via-[#F5E6A8] to-[#E8C85A] bg-clip-text text-transparent;
   }
   
   .gradient-gold-text-3 {
-    @apply bg-gradient-to-r from-[#B8941F] via-[#D4AF37] to-[#CBA135] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#E8C85A] via-[#F5E6A8] to-[#E8C85A] bg-clip-text text-transparent;
   }
   
   .gradient-gold-text-4 {
-    @apply bg-gradient-to-r from-[#CBA135] via-[#F5E6A8] to-[#D4AF37] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#D4AF37] via-[#FFE8A8] to-[#F5E6A8] bg-clip-text text-transparent;
   }
   
   .gradient-gold-text-5 {
-    @apply bg-gradient-to-r from-[#D4AF37] via-[#B8941F] to-[#8B6F1A] bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-[#F5E6A8] via-[#E8C85A] to-[#D4AF37] bg-clip-text text-transparent;
   }
   
   .gradient-gold-text-6 {
-    @apply bg-gradient-to-br from-[#D4AF37] to-[#CBA135] bg-clip-text text-transparent;
+    @apply bg-gradient-to-br from-[#E8C85A] to-[#D4AF37] bg-clip-text text-transparent;
   }
   
   .gradient-gold-text-7 {
-    @apply bg-gradient-to-bl from-[#F5E6A8] via-[#D4AF37] to-[#B8941F] bg-clip-text text-transparent;
+    @apply bg-gradient-to-bl from-[#FFE8A8] via-[#F5E6A8] to-[#E8C85A] bg-clip-text text-transparent;
   }
   
   .gradient-gold-text-8 {
-    @apply bg-gradient-to-tr from-[#B8941F] via-[#D4AF37] to-[#F5E6A8] bg-clip-text text-transparent;
+    @apply bg-gradient-to-tr from-[#D4AF37] via-[#E8C85A] to-[#FFE8A8] bg-clip-text text-transparent;
   }
   
-  /* Golden color utility classes */
+  /* Golden color utility classes - soft, gentle gold */
   .text-gold {
-    @apply text-[#D4AF37];
+    @apply text-[#E8C85A];
   }
   
   .text-ivory {
@@ -149,11 +150,11 @@
   }
   
   .bg-gold-main {
-    @apply bg-[#D4AF37];
+    @apply bg-[#E8C85A];
   }
   
   .bg-gold-dark {
-    @apply bg-[#B8941F];
+    @apply bg-[#D4AF37];
   }
   
   .bg-golden-olive {

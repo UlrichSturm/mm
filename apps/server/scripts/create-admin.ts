@@ -1,0 +1,126 @@
+/**
+ * Скрипт для создания администратора
+ * 
+ * Использование:
+ *   npm run create-admin
+ *   или
+ *   ts-node scripts/create-admin.ts
+ */
+
+import * as crypto from 'crypto';
+
+// Генерация безопасного пароля
+function generateSecurePassword(length: number = 12): string {
+  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
+  const numbers = '0123456789';
+  const symbols = '!@#$%^&*';
+  const allChars = uppercase + lowercase + numbers + symbols;
+
+  // Гарантируем наличие всех типов символов
+  let password = '';
+  password += uppercase[Math.floor(Math.random() * uppercase.length)];
+  password += lowercase[Math.floor(Math.random() * lowercase.length)];
+  password += numbers[Math.floor(Math.random() * numbers.length)];
+  password += symbols[Math.floor(Math.random() * symbols.length)];
+
+  // Заполняем остаток случайными символами
+  for (let i = password.length; i < length; i++) {
+    password += allChars[Math.floor(Math.random() * allChars.length)];
+  }
+
+  // Перемешиваем символы
+  return password.split('').sort(() => Math.random() - 0.5).join('');
+}
+
+// Хеширование пароля (bcrypt альтернатива для простоты)
+function hashPassword(password: string): string {
+  // В реальном приложении используйте bcrypt
+  // const salt = crypto.randomBytes(16).toString('hex');
+  // return crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+  
+  // Для демонстрации - в продакшене используйте bcrypt
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+  return `${salt}:${hash}`;
+}
+
+// Генерация учётных данных
+function generateAdminCredentials() {
+  const email = 'admin@memento-mori.com';
+  const password = generateSecurePassword(16);
+  
+  console.log('\n========================================');
+  console.log('🔐 УЧЁТНЫЕ ДАННЫЕ АДМИНИСТРАТОРА');
+  console.log('========================================\n');
+  console.log(`📧 Email: ${email}`);
+  console.log(`🔑 Пароль: ${password}`);
+  console.log('\n⚠️  ВАЖНО: Сохраните эти данные в безопасном месте!');
+  console.log('========================================\n');
+
+  return {
+    email,
+    password,
+    passwordHash: hashPassword(password),
+    role: 'ADMIN',
+    createdAt: new Date().toISOString(),
+  };
+}
+
+// Основная функция
+async function main() {
+  try {
+    const credentials = generateAdminCredentials();
+
+    // Здесь должен быть код для создания пользователя в базе данных
+    // Пример с Prisma (раскомментируйте когда настроите Prisma):
+    /*
+    import { PrismaClient } from '@prisma/client';
+    const prisma = new PrismaClient();
+
+    const admin = await prisma.user.create({
+      data: {
+        email: credentials.email,
+        password: credentials.passwordHash,
+        role: 'ADMIN',
+        emailVerified: true,
+        createdAt: new Date(),
+      },
+    });
+
+    console.log('✅ Администратор успешно создан!');
+    console.log(`ID: ${admin.id}`);
+    await prisma.$disconnect();
+    */
+
+    // Сохраняем данные в файл (только для разработки!)
+    const fs = require('fs');
+    const path = require('path');
+    const credentialsPath = path.join(__dirname, '../../ADMIN_CREDENTIALS.json');
+    
+    // НЕ сохраняем хеш пароля в файл с учётными данными
+    const credentialsToSave = {
+      email: credentials.email,
+      password: credentials.password, // ⚠️ Только для разработки!
+      role: credentials.role,
+      createdAt: credentials.createdAt,
+      note: '⚠️ Этот файл содержит пароль в открытом виде. Используйте только для разработки!',
+    };
+
+    fs.writeFileSync(credentialsPath, JSON.stringify(credentialsToSave, null, 2));
+    console.log(`💾 Данные сохранены в: ${credentialsPath}`);
+    console.log('⚠️  Удалите этот файл после использования в продакшене!\n');
+
+  } catch (error) {
+    console.error('❌ Ошибка при создании администратора:', error);
+    process.exit(1);
+  }
+}
+
+// Запуск скрипта
+if (require.main === module) {
+  main();
+}
+
+export { generateAdminCredentials, hashPassword, generateSecurePassword };
+

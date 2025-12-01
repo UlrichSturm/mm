@@ -8,10 +8,11 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Search, CheckCircle2, ShieldCheck, Star, ArrowRight } from 'lucide-react';
+import { Search, CheckCircle2, ShieldCheck, Star, ArrowRight, FileText } from 'lucide-react';
 import { useLanguage } from '@/lib/i18n/LanguageContext';
 import { getCategoryIcon } from '@/lib/categoryIcons';
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay';
+import { useRandomGoldTextGradient } from '@/lib/gradientUtils';
 
 export default function HomePage() {
     const router = useRouter();
@@ -60,16 +61,21 @@ export default function HomePage() {
                     {t('home.heroSubtitle')}
                 </p>
 
-                <div className="mb-8">
+                <div className="mb-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <Button asChild size="lg" className="text-lg px-8 py-6 h-auto bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all golden-shimmer-full">
-                        <Link href="/wizard">
+                        <Link href="/wizard" prefetch={false}>
                             {t('home.wizardButton')} <ArrowRight className="ml-2 w-5 h-5" />
                         </Link>
                     </Button>
-                    <p className="text-sm text-muted-foreground mt-3">
-                        {t('home.wizardSubtitle')}
-                    </p>
+                    <Button asChild size="lg" className="text-lg px-8 py-6 h-auto bg-[#E8C85A] text-white hover:bg-[#D4AF37] shadow-lg hover:shadow-xl transition-all">
+                        <Link href="/wills/create">
+                            <FileText className="mr-2 w-5 h-5" /> {t('home.createWillButton')}
+                        </Link>
+                    </Button>
                 </div>
+                <p className="text-sm text-muted-foreground">
+                    {t('home.wizardSubtitle')}
+                </p>
                 
                 {/* Search Form */}
                 <Card className="max-w-4xl mx-auto border-none shadow-lg">
@@ -135,7 +141,7 @@ export default function HomePage() {
                             const categoryIcon = getCategoryIcon(category.slug);
                             
                             return (
-                                <Link key={category.id} href={`/categories/${category.slug}`} className="block h-full">
+                                <Link key={category.id} href={`/categories/${category.slug}`} prefetch={false} className="block h-full">
                                     <Card className="h-full hover:border-primary/50 hover:shadow-md transition-all cursor-pointer text-center golden-shimmer">
                                         <CardContent className="pt-8">
                                             <div className="text-4xl mb-4">{categoryIcon}</div>
@@ -162,7 +168,7 @@ export default function HomePage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
                         {[1, 2, 3, 4].map((step) => (
                             <div key={step} className="text-center relative">
-                                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#D4AF37] text-ivory rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 font-bold text-xl sm:text-2xl shadow-lg">
+                                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#E8C85A] text-ivory rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 font-bold text-xl sm:text-2xl shadow-lg">
                                     {step}
                                 </div>
                                 <h3 className="font-semibold text-lg sm:text-xl mb-2 sm:mb-3 text-ivory">{t(`home.steps.${step}.title`)}</h3>

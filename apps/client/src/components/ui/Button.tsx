@@ -4,30 +4,14 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
-const goldGradientPairs = [
-  { base: "bg-gradient-to-r from-[#D4AF37] to-[#CBA135]", hover: "hover:from-[#CBA135] hover:to-[#F5E6A8]" },
-  { base: "bg-gradient-to-r from-[#F5E6A8] via-[#D4AF37] to-[#B8941F]", hover: "hover:from-[#D4AF37] hover:via-[#F5E6A8] hover:to-[#CBA135]" },
-  { base: "bg-gradient-to-r from-[#B8941F] via-[#D4AF37] to-[#CBA135]", hover: "hover:from-[#D4AF37] hover:via-[#F5E6A8] hover:to-[#B8941F]" },
-  { base: "bg-gradient-to-r from-[#CBA135] via-[#F5E6A8] to-[#D4AF37]", hover: "hover:from-[#F5E6A8] hover:via-[#D4AF37] hover:to-[#CBA135]" },
-  { base: "bg-gradient-to-r from-[#D4AF37] via-[#B8941F] to-[#8B6F1A]", hover: "hover:from-[#CBA135] hover:via-[#D4AF37] hover:to-[#F5E6A8]" },
-  { base: "bg-gradient-to-br from-[#D4AF37] to-[#CBA135]", hover: "hover:from-[#F5E6A8] hover:to-[#D4AF37]" },
-  { base: "bg-gradient-to-bl from-[#F5E6A8] via-[#D4AF37] to-[#B8941F]", hover: "hover:from-[#D4AF37] hover:via-[#F5E6A8] hover:to-[#CBA135]" },
-  { base: "bg-gradient-to-tr from-[#B8941F] via-[#D4AF37] to-[#F5E6A8]", hover: "hover:from-[#CBA135] hover:via-[#F5E6A8] hover:to-[#D4AF37]" },
-];
-
-function getRandomGradientClass() {
-  const index = Math.floor(Math.random() * goldGradientPairs.length);
-  const pair = goldGradientPairs[index];
-  // Ensure gradient classes are properly applied
-  return `${pair.base} ${pair.hover} text-ivory shadow-md hover:shadow-lg transition-all`;
-}
-
-// Fallback gradient class - using inline style as backup
-const defaultGoldGradient = "bg-gradient-to-r from-[#D4AF37] to-[#CBA135] hover:from-[#CBA135] hover:to-[#F5E6A8] text-ivory";
+// Use a consistent gradient to avoid hydration mismatch
+// This ensures server and client render the same className
+// Gold gradient colors - medium brightness with darker gradient
+const defaultGoldGradient = "text-ivory shadow-md hover:shadow-lg transition-all";
 
 // Inline style fallback for gradient
 const goldGradientStyle: React.CSSProperties = {
-  background: 'linear-gradient(to right, #D4AF37, #CBA135)',
+  background: 'linear-gradient(to right, #FFF8E1, #FFE8A8)',
 };
 
 const buttonVariants = cva(
@@ -68,12 +52,6 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'default', size, asChild = false, style, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
-    const [gradientClass] = React.useState(() => {
-      if (variant === 'default' || variant === undefined) {
-        return getRandomGradientClass();
-      }
-      return '';
-    });
     
     // Ensure gradient is applied for default variant
     const baseClasses = buttonVariants({ variant, size });
@@ -81,18 +59,19 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     let finalStyle: React.CSSProperties | undefined;
     
     if (variant === 'default' || variant === undefined) {
-      // For default variant, always apply gold gradient
-      const gradient = gradientClass || defaultGoldGradient;
+      // For default variant, always apply consistent gold gradient
+      // Use the same gradient on both server and client to avoid hydration mismatch
       finalClassName = cn(
         baseClasses,
-        gradient,
+        defaultGoldGradient,
         className
       );
       
       // Always apply inline style to ensure gradient is visible
       // This overrides any background-color from Tailwind
+      // Soft gold gradient - gentle, not orange
       finalStyle = {
-        backgroundImage: 'linear-gradient(to right, #D4AF37, #CBA135)',
+        backgroundImage: 'linear-gradient(to right, #F5E6A8, #E8C85A, #D4AF37)',
         backgroundColor: 'transparent',
         ...style, // User styles can override if needed
       };
@@ -100,17 +79,18 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       // Use ref to access DOM element directly
       const buttonRef = useRef<HTMLButtonElement | null>(null);
       
-      // Apply gradient style after component mounts
+      // Apply gradient style after component mounts (client-side only)
       useEffect(() => {
         // Use setTimeout to ensure DOM is fully rendered
         const timer = setTimeout(() => {
           if (buttonRef.current && (variant === 'default' || variant === undefined)) {
             // Force apply gradient style directly to DOM with !important
+            // Soft gold gradient - gentle, not orange
             const element = buttonRef.current;
-            element.style.setProperty('background-image', 'linear-gradient(to right, #D4AF37, #CBA135)', 'important');
+            element.style.setProperty('background-image', 'linear-gradient(to right, #F5E6A8, #E8C85A, #D4AF37)', 'important');
             element.style.setProperty('background-color', 'transparent', 'important');
             // Also set as regular style property as fallback
-            element.style.backgroundImage = 'linear-gradient(to right, #D4AF37, #CBA135)';
+            element.style.backgroundImage = 'linear-gradient(to right, #F5E6A8, #E8C85A, #D4AF37)';
             element.style.backgroundColor = 'transparent';
           }
         }, 0);
@@ -135,14 +115,16 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           onMouseEnter={(e) => {
             const target = e.currentTarget as HTMLElement;
             if (target) {
-              target.style.setProperty('background-image', 'linear-gradient(to right, #CBA135, #F5E6A8)', 'important');
+              // Lighter hover gradient - soft gold
+              target.style.setProperty('background-image', 'linear-gradient(to right, #FFE8A8, #F5E6A8, #E8C85A)', 'important');
             }
             props.onMouseEnter?.(e);
           }}
           onMouseLeave={(e) => {
             const target = e.currentTarget as HTMLElement;
             if (target) {
-              target.style.setProperty('background-image', 'linear-gradient(to right, #D4AF37, #CBA135)', 'important');
+              // Soft gold default gradient
+              target.style.setProperty('background-image', 'linear-gradient(to right, #F5E6A8, #E8C85A, #D4AF37)', 'important');
             }
             props.onMouseLeave?.(e);
           }}

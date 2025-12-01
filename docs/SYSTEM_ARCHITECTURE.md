@@ -43,6 +43,7 @@ AppModule (Root)
 │   ├── JwtAuthGuard
 │   └── RolesGuard
 ├── VendorsModule (Vendor Management)
+├── LawyerNotaryModule (Lawyer/Notary Management)
 ├── CategoriesModule (Category Hierarchy)
 ├── ServicesModule (Service Management)
 │   ├── Uses: VendorsModule, EmailModule
@@ -125,7 +126,48 @@ AppModule (Root)
 
 ---
 
-### 3. Services Service (`ServicesModule`)
+### 3. Lawyer/Notary Service (`LawyerNotaryModule`)
+
+**Purpose**: Lawyer/Notary profile management and approval workflow for will certification and execution
+
+**Functions**:
+- `create()` - Create lawyer/notary profile (Admin only)
+- `findAll()` - Get all lawyer/notary profiles (Admin only, filterable by status)
+- `findByUserId()` - Get lawyer/notary profile by user ID
+- `findOne()` - Get lawyer/notary profile by ID
+- `updateProfile()` - Update lawyer/notary profile (Lawyer/Notary or Admin)
+- `updateStatus()` - Update lawyer/notary status (Admin only: PENDING → APPROVED/REJECTED)
+- `delete()` - Delete lawyer/notary profile (Admin only, with validation)
+
+**Dependencies**:
+- `DatabaseModule`
+- `EmailModule` (sends approval/rejection emails)
+
+**Interactions**:
+- **AuthModule**: Uses user data for lawyer/notary creation
+- **WillsModule**: Lawyer/Notary must be APPROVED to certify and execute wills
+
+**API Endpoints**:
+- `POST /lawyer-notary` - Create lawyer/notary profile (Admin)
+- `GET /lawyer-notary` - List lawyer/notary profiles (Admin)
+- `GET /lawyer-notary/me` - Get own profile (Lawyer/Notary/Admin)
+- `GET /lawyer-notary/:id` - Get lawyer/notary profile by ID
+- `PATCH /lawyer-notary/me` - Update own profile (Lawyer/Notary)
+- `PATCH /lawyer-notary/:id` - Update lawyer/notary profile (Admin)
+- `PATCH /lawyer-notary/:id/status` - Update status (Admin)
+- `DELETE /lawyer-notary/:id` - Delete lawyer/notary profile (Admin)
+
+**Profile Fields**:
+- `licenseNumber` - Professional license number
+- `licenseType` - Type: 'LAWYER', 'NOTARY', or 'BOTH'
+- `organizationName` - Optional organization name
+- `specialization` - Area of specialization
+- `yearsOfExperience` - Years of professional experience
+- `status` - PENDING, APPROVED, or REJECTED
+
+---
+
+### 4. Services Service (`ServicesModule`)
 
 **Purpose**: Service/Product catalog management
 
@@ -414,11 +456,23 @@ AppModule (Root)
    ├── Creates VendorProfile (status: PENDING)
    └── EmailModule → Sends registration confirmation
 
+2a. LAWYER/NOTARY REGISTRATION
+   Lawyer/Notary → AuthModule.registerLawyerNotary()
+   ├── Creates User (role: LAWYER_NOTARY)
+   ├── Creates LawyerNotaryProfile (status: PENDING)
+   └── EmailModule → Sends registration confirmation
+
 3. VENDOR APPROVAL
    Admin → VendorsModule.updateStatus()
    ├── Updates VendorProfile.status → APPROVED
    ├── EmailModule → Sends approval email
    └── Vendor can now create services
+
+3a. LAWYER/NOTARY APPROVAL
+   Admin → LawyerNotaryModule.updateStatus()
+   ├── Updates LawyerNotaryProfile.status → APPROVED
+   ├── EmailModule → Sends approval email
+   └── Lawyer/Notary can now certify and execute wills
 
 4. SERVICE CREATION
    Vendor → ServicesModule.create()
@@ -555,6 +609,7 @@ Review appears publicly (if APPROVED)
 ### Authentication
 - `POST /auth/register` - Client registration
 - `POST /auth/register/vendor` - Vendor registration
+- `POST /auth/register/lawyer-notary` - Lawyer/Notary registration
 - `POST /auth/login` - Login
 - `POST /auth/refresh` - Refresh token
 
@@ -566,6 +621,16 @@ Review appears publicly (if APPROVED)
 - `PATCH /vendors/me` - Update own profile (Vendor)
 - `PATCH /vendors/:id/status` - Update status (Admin)
 - `DELETE /vendors/:id` - Delete vendor (Admin)
+
+### Lawyer/Notary
+- `POST /lawyer-notary` - Create lawyer/notary profile (Admin)
+- `GET /lawyer-notary` - List lawyer/notary profiles (Admin)
+- `GET /lawyer-notary/me` - Get own profile (Lawyer/Notary/Admin)
+- `GET /lawyer-notary/:id` - Get lawyer/notary profile by ID
+- `PATCH /lawyer-notary/me` - Update own profile (Lawyer/Notary)
+- `PATCH /lawyer-notary/:id` - Update lawyer/notary profile (Admin)
+- `PATCH /lawyer-notary/:id/status` - Update status (Admin)
+- `DELETE /lawyer-notary/:id` - Delete lawyer/notary profile (Admin)
 
 ### Services
 - `POST /services` - Create service (Vendor)
@@ -627,6 +692,7 @@ Review appears publicly (if APPROVED)
 **Roles**:
 - `CLIENT` - Can create orders, reviews, memorials
 - `VENDOR` - Can manage services, orders, profile
+- `LAWYER_NOTARY` - Can certify and execute wills (заверение и исполнение завещаний)
 - `ADMIN` - Full access to all operations
 
 **Guards**:
@@ -635,26 +701,31 @@ Review appears publicly (if APPROVED)
 
 **Access Matrix**:
 
-| Endpoint | CLIENT | VENDOR | ADMIN |
-|----------|--------|--------|-------|
-| `/auth/register` | ✅ | ✅ | ✅ |
-| `/auth/register/vendor` | ✅ | ✅ | ✅ |
-| `/services` (GET) | ✅ | ✅ | ✅ |
-| `/services` (POST) | ❌ | ✅ | ✅ |
-| `/services/:id/status` | ❌ | ❌ | ✅ |
-| `/orders` (POST) | ✅ | ❌ | ✅ |
-| `/orders` (GET) | ✅ (own) | ✅ (own) | ✅ (all) |
-| `/reviews` (POST) | ✅ | ❌ | ❌ |
-| `/reviews/:id/status` | ❌ | ❌ | ✅ |
-| `/vendors/:id/status` | ❌ | ❌ | ✅ |
+| Endpoint | CLIENT | VENDOR | LAWYER_NOTARY | ADMIN |
+|----------|--------|--------|---------------|-------|
+| `/auth/register` | ✅ | ✅ | ✅ | ✅ |
+| `/auth/register/vendor` | ✅ | ✅ | ❌ | ✅ |
+| `/auth/register/lawyer-notary` | ✅ | ✅ | ✅ | ✅ |
+| `/services` (GET) | ✅ | ✅ | ✅ | ✅ |
+| `/services` (POST) | ❌ | ✅ | ❌ | ✅ |
+| `/services/:id/status` | ❌ | ❌ | ❌ | ✅ |
+| `/orders` (POST) | ✅ | ❌ | ❌ | ✅ |
+| `/orders` (GET) | ✅ (own) | ✅ (own) | ✅ (own) | ✅ (all) |
+| `/reviews` (POST) | ✅ | ❌ | ❌ | ❌ |
+| `/reviews/:id/status` | ❌ | ❌ | ❌ | ✅ |
+| `/vendors/:id/status` | ❌ | ❌ | ❌ | ✅ |
+| `/lawyer-notary` (GET) | ❌ | ❌ | ✅ (own) | ✅ (all) |
+| `/lawyer-notary` (POST) | ❌ | ❌ | ❌ | ✅ |
+| `/lawyer-notary/:id/status` | ❌ | ❌ | ❌ | ✅ |
 
 ---
 
 ## Database Schema Overview
 
 **Core Models**:
-- `User` - All users (CLIENT, VENDOR, ADMIN)
+- `User` - All users (CLIENT, VENDOR, LAWYER_NOTARY, ADMIN)
 - `VendorProfile` - Vendor business information
+- `LawyerNotaryProfile` - Lawyer/Notary professional information
 - `Category` - Hierarchical service categories
 - `Service` - Services/products offered by vendors
 - `Order` - Client orders
@@ -666,6 +737,7 @@ Review appears publicly (if APPROVED)
 
 **Relationships**:
 - User 1:1 VendorProfile
+- User 1:1 LawyerNotaryProfile
 - VendorProfile 1:N Service
 - Category 1:N Service
 - Service 1:N OrderItem

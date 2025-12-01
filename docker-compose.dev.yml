@@ -1,0 +1,57 @@
+services:
+  server:
+    build:
+      context: ./apps/server
+      dockerfile: Dockerfile.dev
+    container_name: memento-mori-server-dev
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - FRONTEND_URL=http://localhost:3000
+    volumes:
+      - ./apps/server/src:/app/src
+      - ./apps/server/package.json:/app/package.json
+      - ./apps/server/tsconfig.json:/app/tsconfig.json
+      - ./apps/server/nest-cli.json:/app/nest-cli.json
+      - /app/node_modules
+    restart: unless-stopped
+    networks:
+      - memento-mori-network
+    command: npm run start:dev
+
+  client:
+    build:
+      context: ./apps/client
+      dockerfile: Dockerfile.dev
+    container_name: memento-mori-client-dev
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./apps/client/src:/app/src
+      - ./apps/client/public:/app/public
+      - ./apps/client/package.json:/app/package.json
+      - ./apps/client/package-lock.json:/app/package-lock.json
+      - ./apps/client/tsconfig.json:/app/tsconfig.json
+      - ./apps/client/next.config.js:/app/next.config.js
+      - ./apps/client/tailwind.config.js:/app/tailwind.config.js
+      - ./apps/client/postcss.config.js:/app/postcss.config.js
+      - ./apps/client/.eslintrc.json:/app/.eslintrc.json
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - server
+    restart: unless-stopped
+    networks:
+      - memento-mori-network
+    command: npm run dev
+
+networks:
+  memento-mori-network:
+    driver: bridge
+

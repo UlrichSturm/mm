@@ -1,0 +1,91 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "actions": "Actions",
+    "status": "Status",
+    "logout": "Logout",
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "lawyers": "Lawyers/Notaries",
+    "vendors": "Vendors",
+    "statistics": "Statistics",
+    "appointments": "Appointments",
+    "executions": "Executions"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalLawyers": "Total Lawyers",
+    "approved": "Approved",
+    "pending": "Pending",
+    "rejected": "Rejected",
+    "willAppointments": "Will Appointments",
+    "willExecutions": "Will Executions",
+    "createProfile": "Create Profile",
+    "latestProfiles": "Latest Profiles",
+    "noProfiles": "No profiles found",
+    "loadError": "Failed to load data"
+  },
+  "lawyers": {
+    "title": "Lawyers & Notaries",
+    "create": "Create Lawyer/Notary",
+    "search": "Search by name, email, or license number...",
+    "allStatuses": "All Statuses",
+    "allTypes": "All Types",
+    "noLawyers": "No lawyers found",
+    "businessName": "Organization",
+    "email": "Email",
+    "licenseNumber": "License Number",
+    "licenseType": "License Type",
+    "registrationDate": "Registration Date"
+  },
+  "vendors": {
+    "title": "Vendors",
+    "create": "Create Vendor",
+    "search": "Search by business name or email...",
+    "allStatuses": "All Statuses",
+    "noVendors": "No vendors found",
+    "businessName": "Business Name",
+    "email": "Email",
+    "registrationDate": "Registration Date"
+  },
+  "auth": {
+    "login": "Login",
+    "email": "Email",
+    "password": "Password",
+    "enterCredentials": "Enter your credentials to access the dashboard",
+    "loginButton": "Login",
+    "loggingIn": "Logging in...",
+    "invalidCredentials": "Invalid email or password",
+    "connectionError": "Connection error. Please ensure the backend server is running on http://localhost:3001",
+    "sessionExpired": "Session expired. Please log in again.",
+    "useAdminCredentials": "Use administrator credentials"
+  },
+  "status": {
+    "pending": "Pending",
+    "approved": "Approved",
+    "rejected": "Rejected"
+  },
+  "errors": {
+    "unauthorized": "Authorization required. Please log in.",
+    "forbidden": "You don't have permission to perform this action.",
+    "notFound": "Requested resource not found.",
+    "serverError": "Server error. Please try again later.",
+    "serviceUnavailable": "Service temporarily unavailable. Please try again later.",
+    "connectionError": "Connection error. Please ensure the backend server is running on http://localhost:3001"
+  }
+}
+
