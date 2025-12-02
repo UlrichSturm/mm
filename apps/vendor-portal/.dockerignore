@@ -5,12 +5,13 @@ node_modules
 
 # Testing
 coverage
-*.spec.ts
-*.test.ts
-test/
+
+# Next.js
+.next
+out
 
 # Build
-dist
+build
 
 # Logs
 *.log
@@ -46,4 +47,4 @@ docker-compose*
 
 # Documentation
 *.md
-docs/
+
