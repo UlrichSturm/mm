@@ -1,5 +1,5 @@
 import { Module, Global } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import { StripeService } from './stripe.service';
 
@@ -7,6 +7,7 @@ export const STRIPE_CLIENT = 'STRIPE_CLIENT';
 
 @Global()
 @Module({
+  imports: [ConfigModule],
   providers: [
     {
       provide: STRIPE_CLIENT,
