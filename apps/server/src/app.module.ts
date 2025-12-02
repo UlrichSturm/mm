@@ -10,6 +10,9 @@ import { AuthModule } from './auth/auth.module';
 import { VendorsModule } from './vendors/vendors.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { HealthModule } from './health/health.module';
+import { StripeModule } from './stripe/stripe.module';
+import { EmailModule } from './email/email.module';
+import { StorageModule } from './storage/storage.module';
 import { WillsController } from './wills/wills.controller';
 
 @Module({
@@ -36,6 +39,11 @@ import { WillsController } from './wills/wills.controller';
 
     // Database
     PrismaModule,
+
+    // External services
+    StripeModule,
+    EmailModule,
+    StorageModule,
 
     // Feature modules
     HealthModule,

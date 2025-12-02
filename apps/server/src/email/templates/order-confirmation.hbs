@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order Confirmation</title>
+  <style>
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+    .header { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: #ffffff; padding: 40px 30px; text-align: center; }
+    .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+    .content { padding: 40px 30px; }
+    .content h2 { color: #1e1b4b; margin: 0 0 20px; font-size: 24px; }
+    .content p { color: #4b5563; line-height: 1.6; margin: 0 0 16px; }
+    .order-info { background: #f9fafb; border-radius: 8px; padding: 20px; margin: 24px 0; }
+    .order-info p { margin: 8px 0; }
+    .order-info strong { color: #1e1b4b; }
+    .items-table { width: 100%; border-collapse: collapse; margin: 24px 0; }
+    .items-table th { background: #f3f4f6; padding: 12px; text-align: left; color: #374151; font-weight: 600; }
+    .items-table td { padding: 12px; border-bottom: 1px solid #e5e7eb; color: #4b5563; }
+    .items-table .total-row td { font-weight: 600; color: #1e1b4b; border-top: 2px solid #1e1b4b; }
+    .button { display: inline-block; padding: 14px 28px; background: #4f46e5; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600; }
+    .footer { background: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb; }
+    .footer p { color: #9ca3af; font-size: 12px; margin: 0 0 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Order Confirmed</h1>
+    </div>
+    <div class="content">
+      <h2>Thank you for your order, {{firstName}}!</h2>
+      <p>We've received your order and it's being processed. You'll receive updates as your order progresses.</p>
+
+      <div class="order-info">
+        <p><strong>Order Number:</strong> {{orderNumber}}</p>
+        <p><strong>Order Date:</strong> {{orderDate}}</p>
+      </div>
+
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th>Service</th>
+            <th>Qty</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each items}}
+          <tr>
+            <td>{{name}}</td>
+            <td>{{quantity}}</td>
+            <td>{{price}}</td>
+          </tr>
+          {{/each}}
+          <tr class="total-row">
+            <td colspan="2">Total</td>
+            <td>{{totalPrice}}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        <a href="{{appUrl}}/orders/{{orderNumber}}" class="button">View Order Details</a>
+      </p>
+    </div>
+    <div class="footer">
+      <p>&copy; {{year}} Memento Mori. All rights reserved.</p>
+      <p>If you have questions about your order, please contact our support team.</p>
+    </div>
+  </div>
+</body>
+</html>
+
