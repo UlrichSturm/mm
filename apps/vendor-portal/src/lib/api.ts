@@ -1,11 +1,23 @@
+/**
+ * API client for Vendor Portal with Keycloak authentication
+ */
+
+import { getToken } from './keycloak';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-// Helper function to get auth token from localStorage or cookie
+// Helper function to get auth token from Keycloak
 function getAuthToken(): string | null {
   if (typeof window === 'undefined') {
     return null;
   }
-  return localStorage.getItem('auth_token') || null;
+  // Try Keycloak token first
+  const keycloakToken = getToken();
+  if (keycloakToken) {
+    return keycloakToken;
+  }
+  // Fallback to localStorage
+  return localStorage.getItem('authToken') || localStorage.getItem('auth_token') || null;
 }
 
 // Helper function to make authenticated requests
@@ -37,11 +49,11 @@ async function fetchWithAuth(url: string, options: RequestInit = {}) {
 export const vendorApi = {
   // Lawyer/Notary Profile
   async getMyProfile() {
-    return fetchWithAuth(`${API_BASE_URL}/lawyer-notary/me`);
+    return fetchWithAuth(`${API_BASE_URL}/api/lawyer-notary/me`);
   },
 
   async updateMyProfile(data: any) {
-    return fetchWithAuth(`${API_BASE_URL}/lawyer-notary/me`, {
+    return fetchWithAuth(`${API_BASE_URL}/api/lawyer-notary/me`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
@@ -49,7 +61,7 @@ export const vendorApi = {
 
   // Settings
   async getMySettings() {
-    return fetchWithAuth(`${API_BASE_URL}/lawyer-notary/me/settings`);
+    return fetchWithAuth(`${API_BASE_URL}/api/lawyer-notary/me/settings`);
   },
 
   async updateSettings(data: {
@@ -60,7 +72,7 @@ export const vendorApi = {
     homeVisitPostalCode?: string;
     homeVisitRadius?: number;
   }) {
-    return fetchWithAuth(`${API_BASE_URL}/lawyer-notary/me/settings`, {
+    return fetchWithAuth(`${API_BASE_URL}/api/lawyer-notary/me/settings`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     });
@@ -68,7 +80,7 @@ export const vendorApi = {
 
   // Schedule
   async getMySchedule() {
-    return fetchWithAuth(`${API_BASE_URL}/lawyer-notary/me/schedule`);
+    return fetchWithAuth(`${API_BASE_URL}/api/lawyer-notary/me/schedule`);
   },
 
   async getBlockedDates() {
@@ -85,21 +97,21 @@ export const vendorApi = {
     saturday?: { enabled: boolean; timeSlots: Array<{ start: string; end: string }> };
     sunday?: { enabled: boolean; timeSlots: Array<{ start: string; end: string }> };
   }) {
-    return fetchWithAuth(`${API_BASE_URL}/lawyer-notary/me/schedule`, {
+    return fetchWithAuth(`${API_BASE_URL}/api/lawyer-notary/me/schedule`, {
       method: 'PATCH',
       body: JSON.stringify(schedule),
     });
   },
 
   async blockDate(date: string) {
-    return fetchWithAuth(`${API_BASE_URL}/lawyer-notary/me/schedule/block`, {
+    return fetchWithAuth(`${API_BASE_URL}/api/lawyer-notary/me/schedule/block`, {
       method: 'POST',
       body: JSON.stringify({ date }),
     });
   },
 
   async unblockDate(date: string) {
-    return fetchWithAuth(`${API_BASE_URL}/lawyer-notary/me/schedule/block`, {
+    return fetchWithAuth(`${API_BASE_URL}/api/lawyer-notary/me/schedule/block`, {
       method: 'DELETE',
       body: JSON.stringify({ date }),
     });
@@ -126,31 +138,31 @@ export const vendorApi = {
       query.append('limit', filters.limit.toString());
     }
 
-    return fetchWithAuth(`${API_BASE_URL}/wills/appointments?${query}`);
+    return fetchWithAuth(`${API_BASE_URL}/api/wills/appointments?${query}`);
   },
 
   async getAppointment(id: string) {
-    return fetchWithAuth(`${API_BASE_URL}/wills/appointments/${id}`);
+    return fetchWithAuth(`${API_BASE_URL}/api/wills/appointments/${id}`);
   },
 
   async confirmAppointment(
     id: string,
     data?: { appointmentDate?: string; appointmentTime?: string },
   ) {
-    return fetchWithAuth(`${API_BASE_URL}/wills/appointments/${id}/confirm`, {
+    return fetchWithAuth(`${API_BASE_URL}/api/wills/appointments/${id}/confirm`, {
       method: 'PATCH',
       body: JSON.stringify(data || {}),
     });
   },
 
   async cancelAppointment(id: string) {
-    return fetchWithAuth(`${API_BASE_URL}/wills/appointments/${id}/cancel`, {
+    return fetchWithAuth(`${API_BASE_URL}/api/wills/appointments/${id}/cancel`, {
       method: 'PATCH',
     });
   },
 
   async completeAppointment(id: string, willData: any) {
-    return fetchWithAuth(`${API_BASE_URL}/wills/appointments/${id}/complete`, {
+    return fetchWithAuth(`${API_BASE_URL}/api/wills/appointments/${id}/complete`, {
       method: 'PATCH',
       body: JSON.stringify(willData),
     });
@@ -182,7 +194,7 @@ export const vendorApi = {
     willNumber?: string;
     registrationDate?: string;
   }) {
-    return fetchWithAuth(`${API_BASE_URL}/wills/data`, {
+    return fetchWithAuth(`${API_BASE_URL}/api/wills/data`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -192,7 +204,7 @@ export const vendorApi = {
     const formData = new FormData();
     formData.append('document', file);
 
-    return fetchWithAuth(`${API_BASE_URL}/wills/data/${willDataId}/documents`, {
+    return fetchWithAuth(`${API_BASE_URL}/api/wills/data/${willDataId}/documents`, {
       method: 'POST',
       body: formData,
     });
@@ -223,7 +235,7 @@ export const vendorApi = {
     }
     formData.append('notifierContact', data.notifierContact);
 
-    return fetchWithAuth(`${API_BASE_URL}/wills/executions`, {
+    return fetchWithAuth(`${API_BASE_URL}/api/wills/executions`, {
       method: 'POST',
       body: formData,
     });
@@ -239,6 +251,6 @@ export const vendorApi = {
       query.append('search', filters.search);
     }
 
-    return fetchWithAuth(`${API_BASE_URL}/wills/appointments?${query}`);
+    return fetchWithAuth(`${API_BASE_URL}/api/wills/appointments?${query}`);
   },
 };

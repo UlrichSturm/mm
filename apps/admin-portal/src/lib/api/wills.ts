@@ -1,5 +1,4 @@
-import { API_BASE_URL } from '../config';
-import { logout } from '../auth';
+import { apiRequest } from './utils';
 
 export type AppointmentStatus = 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
 export type WillExecutionStatus = 'PENDING' | 'EXECUTING' | 'EXECUTED' | 'CANCELLED';
@@ -95,42 +94,7 @@ interface ErrorResponse {
 
 class WillsApiClient {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
-    const url = `${API_BASE_URL}${endpoint}`;
-    const token = localStorage.getItem('auth_token');
-
-    const response = await fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-        ...options?.headers,
-      },
-    });
-
-    if (!response.ok) {
-      // If 401 - unauthorized, logout and redirect
-      // But only if we're not on the login page
-      if (response.status === 401) {
-        if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/login')) {
-          logout();
-        }
-        throw new Error('Session expired. Please log in again.');
-      }
-
-      let errorData: ErrorResponse;
-      try {
-        errorData = await response.json();
-      } catch {
-        errorData = { message: 'Request failed' };
-      }
-
-      const error = new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      (error as Error & { status?: number; code?: string }).status = response.status;
-      (error as Error & { status?: number; code?: string }).code = errorData.code;
-      throw error;
-    }
-
-    return response.json();
+    return apiRequest<T>(endpoint, options);
   }
 
   // Appointments

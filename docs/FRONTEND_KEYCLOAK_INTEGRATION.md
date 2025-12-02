@@ -282,13 +282,13 @@ import { getAuthToken } from '@/lib/auth';
 
 async function fetchUserData() {
   const token = getAuthToken();
-  
+
   const response = await fetch('http://localhost:3001/api/auth/profile', {
     headers: {
       'Authorization': `Bearer ${token}`,
     },
   });
-  
+
   return response.json();
 }
 ```
