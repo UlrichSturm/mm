@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable */
 
 /**
  * Keycloak Auto-Setup Script
@@ -148,6 +149,7 @@ async function createRealm(token) {
     accessTokenLifespan: 300, // 5 minutes
     ssoSessionIdleTimeout: 1800, // 30 minutes
     ssoSessionMaxLifespan: 36000, // 10 hours
+    sslRequired: 'none',
   };
 
   await keycloakRequest('POST', '/admin/realms', token, realm);
@@ -403,6 +405,7 @@ async function setup() {
   // Create test users
   const users = [
     {
+      id: 'e0db99c9-7e8d-4bd9-b163-854b2ce12d76',
       username: 'admin',
       email: 'admin@mementomori.de',
       firstName: 'Admin',
@@ -411,6 +414,7 @@ async function setup() {
       role: 'admin',
     },
     {
+      id: 'c637ea3b-a621-49a1-b44f-5bb26c580078',
       username: 'client1',
       email: 'client1@test.com',
       firstName: 'Hans',
@@ -419,6 +423,7 @@ async function setup() {
       role: 'client',
     },
     {
+      id: '13d441ed-bd32-40d7-8603-8ab7b02dcde2',
       username: 'vendor1',
       email: 'vendor1@test.com',
       firstName: 'Vendor',
@@ -427,6 +432,7 @@ async function setup() {
       role: 'vendor',
     },
     {
+      id: '9ec4de0b-5d47-4c3c-b272-b850886914ee',
       username: 'lawyer1',
       email: 'lawyer1@test.com',
       firstName: 'Lawyer',

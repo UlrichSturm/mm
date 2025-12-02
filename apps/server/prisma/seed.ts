@@ -1,12 +1,12 @@
 import {
-  PrismaClient,
-  Role,
-  VendorStatus,
   LawyerNotaryStatus,
   LicenseType,
-  ServiceStatus,
   OrderStatus,
   PaymentStatus,
+  PrismaClient,
+  Role,
+  ServiceStatus,
+  VendorStatus,
 } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
@@ -133,11 +133,18 @@ async function seedUsers(): Promise<SeedUsers> {
   // Password is empty - users must be created in Keycloak
   const emptyPassword = '';
 
+  // Fixed IDs to match Keycloak
+  const adminId = 'e0db99c9-7e8d-4bd9-b163-854b2ce12d76';
+  const client1Id = 'c637ea3b-a621-49a1-b44f-5bb26c580078';
+  const vendor1Id = '13d441ed-bd32-40d7-8603-8ab7b02dcde2';
+  const lawyer1Id = '9ec4de0b-5d47-4c3c-b272-b850886914ee';
+
   // Admin user
   const admin = await prisma.user.upsert({
     where: { email: 'admin@mementomori.de' },
     update: {},
     create: {
+      id: adminId,
       email: 'admin@mementomori.de',
       password: emptyPassword,
       firstName: 'Admin',
@@ -150,10 +157,34 @@ async function seedUsers(): Promise<SeedUsers> {
 
   // Client users
   const clientsData = [
-    { email: 'client1@test.com', firstName: 'Hans', lastName: 'Mueller', phone: '+49 30 1111111' },
-    { email: 'client2@test.com', firstName: 'Anna', lastName: 'Schmidt', phone: '+49 30 2222222' },
-    { email: 'client3@test.com', firstName: 'Klaus', lastName: 'Weber', phone: '+49 30 3333333' },
-    { email: 'client4@test.com', firstName: 'Maria', lastName: 'Fischer', phone: '+49 30 4444444' },
+    {
+      id: client1Id,
+      email: 'client1@test.com',
+      firstName: 'Hans',
+      lastName: 'Mueller',
+      phone: '+49 30 1111111',
+    },
+    {
+      id: undefined,
+      email: 'client2@test.com',
+      firstName: 'Anna',
+      lastName: 'Schmidt',
+      phone: '+49 30 2222222',
+    },
+    {
+      id: undefined,
+      email: 'client3@test.com',
+      firstName: 'Klaus',
+      lastName: 'Weber',
+      phone: '+49 30 3333333',
+    },
+    {
+      id: undefined,
+      email: 'client4@test.com',
+      firstName: 'Maria',
+      lastName: 'Fischer',
+      phone: '+49 30 4444444',
+    },
   ];
 
   const clients: { id: string; email: string }[] = [];
@@ -162,7 +193,11 @@ async function seedUsers(): Promise<SeedUsers> {
       where: { email: data.email },
       update: {},
       create: {
-        ...data,
+        id: data.id, // Will be auto-generated if undefined
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
         password: emptyPassword,
         role: Role.CLIENT,
       },
@@ -173,15 +208,34 @@ async function seedUsers(): Promise<SeedUsers> {
 
   // Vendor users
   const vendorsData = [
-    { email: 'vendor1@test.com', firstName: 'Peter', lastName: 'Becker', phone: '+49 30 5551111' },
     {
+      id: vendor1Id,
+      email: 'vendor1@test.com',
+      firstName: 'Peter',
+      lastName: 'Becker',
+      phone: '+49 30 5551111',
+    },
+    {
+      id: undefined,
       email: 'vendor2@test.com',
       firstName: 'Elena',
       lastName: 'Hoffmann',
       phone: '+49 30 5552222',
     },
-    { email: 'vendor3@test.com', firstName: 'Stefan', lastName: 'Wolf', phone: '+49 30 5553333' },
-    { email: 'vendor4@test.com', firstName: 'Lisa', lastName: 'Koch', phone: '+49 30 5554444' },
+    {
+      id: undefined,
+      email: 'vendor3@test.com',
+      firstName: 'Stefan',
+      lastName: 'Wolf',
+      phone: '+49 30 5553333',
+    },
+    {
+      id: undefined,
+      email: 'vendor4@test.com',
+      firstName: 'Lisa',
+      lastName: 'Koch',
+      phone: '+49 30 5554444',
+    },
   ];
 
   const vendors: { id: string; email: string; firstName: string; lastName: string }[] = [];
@@ -190,7 +244,11 @@ async function seedUsers(): Promise<SeedUsers> {
       where: { email: data.email },
       update: {},
       create: {
-        ...data,
+        id: data.id,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
         password: emptyPassword,
         role: Role.VENDOR,
       },
@@ -207,12 +265,19 @@ async function seedUsers(): Promise<SeedUsers> {
   // Lawyer/Notary users
   const lawyersData = [
     {
+      id: lawyer1Id,
       email: 'lawyer1@test.com',
       firstName: 'Friedrich',
       lastName: 'Richter',
       phone: '+49 30 6661111',
     },
-    { email: 'notary1@test.com', firstName: 'Sabine', lastName: 'Braun', phone: '+49 30 6662222' },
+    {
+      id: undefined,
+      email: 'notary1@test.com',
+      firstName: 'Sabine',
+      lastName: 'Braun',
+      phone: '+49 30 6662222',
+    },
   ];
 
   const lawyersNotaries: { id: string; email: string; firstName: string; lastName: string }[] = [];
@@ -221,7 +286,11 @@ async function seedUsers(): Promise<SeedUsers> {
       where: { email: data.email },
       update: {},
       create: {
-        ...data,
+        id: data.id,
+        email: data.email,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
         password: emptyPassword,
         role: Role.LAWYER_NOTARY,
       },

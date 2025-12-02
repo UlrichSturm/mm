@@ -1,21 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
+import { ErrorDisplay } from '@/components/ui/ErrorDisplay';
 import { lawyerNotaryApi } from '@/lib/api/lawyer-notary';
 import { willsApi } from '@/lib/api/wills';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { ErrorDisplay } from '@/components/ui/ErrorDisplay';
 import { useTranslations } from '@/lib/i18n';
+import { Calendar, CheckCircle, Clock, FileText, Users, XCircle } from 'lucide-react';
 import Link from 'next/link';
-import { Users, CheckCircle, XCircle, Clock, Calendar, FileText } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
   const router = useRouter();
   const t = useTranslations('dashboard');
   const tCommon = useTranslations('common');
-  const [lawyers, setLawyers] = useState<LawyerNotaryProfile[]>([]);
+  const [lawyers, setLawyers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({

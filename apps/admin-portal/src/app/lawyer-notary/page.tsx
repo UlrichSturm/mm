@@ -1,31 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import {
-  lawyerNotaryApi,
-  LawyerNotaryProfile,
-  LawyerNotaryFilters,
-  LawyerNotaryStatus,
-  LicenseType,
-} from '@/lib/api/lawyer-notary';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { StatusBadge } from '@/components/shared/StatusBadge';
-import { LicenseTypeBadge } from '@/components/shared/LicenseTypeBadge';
-import { useTranslations } from '@/lib/i18n';
-import Link from 'next/link';
-import { Search, Plus, Eye } from 'lucide-react';
-import { exportLawyersToCSV } from '@/lib/utils/export';
 import { ExportButton } from '@/components/shared/ExportButton';
+import { LicenseTypeBadge } from '@/components/shared/LicenseTypeBadge';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay';
+import { Input } from '@/components/ui/Input';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
+import type { LawyerNotaryFilters, LawyerNotaryStatus, LicenseType } from '@/lib/api/lawyer-notary';
+import { lawyerNotaryApi } from '@/lib/api/lawyer-notary';
+import { useTranslations } from '@/lib/i18n';
+import { exportLawyersToCSV } from '@/lib/utils/export';
+import { Eye, Plus, Search } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function LawyerNotaryListPage() {
   const t = useTranslations('lawyers');
   const tCommon = useTranslations('common');
   const { error, handleError, clearError } = useErrorHandler();
-  const [lawyers, setLawyers] = useState<LawyerNotaryProfile[]>([]);
+  const [lawyers, setLawyers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<LawyerNotaryFilters>({});
   const [searchQuery, setSearchQuery] = useState('');

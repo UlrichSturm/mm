@@ -3,7 +3,7 @@
  * Now uses Keycloak for authentication
  */
 
-import { keycloak, getUserInfo, isAuthenticated as keycloakIsAuthenticated } from './keycloak';
+import { getUserInfo, keycloak, isAuthenticated as keycloakIsAuthenticated } from './keycloak';
 
 export interface User {
   id: string;
@@ -47,7 +47,7 @@ export function getUser(): User | null {
   }
 
   return {
-    id: userInfo.id,
+    id: userInfo.id || '',
     email: userInfo.email || '',
     role,
     firstName: userInfo.firstName,

@@ -22,11 +22,16 @@ export async function initKeycloak(
   onErrorCallback?: (error: Error) => void,
 ): Promise<boolean> {
   try {
+    const token = localStorage.getItem('authToken');
+    const refreshToken = localStorage.getItem('refreshToken');
+
     const authenticated = await keycloak.init({
       onLoad: 'check-sso', // Check SSO silently
       silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
       pkceMethod: 'S256', // Use PKCE for security
       checkLoginIframe: false, // Disable iframe check for better performance
+      token: token || undefined,
+      refreshToken: refreshToken || undefined,
     });
 
     if (authenticated) {

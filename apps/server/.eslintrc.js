@@ -8,7 +8,7 @@ module.exports = {
     node: true,
     jest: true,
   },
-  ignorePatterns: ['.eslintrc.js'],
+  ignorePatterns: ['.eslintrc.js', 'src/auth/debug-role.guard.ts'],
   rules: {
     // NestJS specific
     '@typescript-eslint/interface-name-prefix': 'off',

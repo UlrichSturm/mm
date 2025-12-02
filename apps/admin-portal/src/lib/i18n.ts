@@ -38,12 +38,12 @@ export function useTranslations(namespace?: string) {
     let value: NestedValue = localeMessages;
 
     for (const k of keysArray) {
-      value = (value as Record<string, NestedValue>)?.[k];
+      value = (value as any)?.[k];
       if (value === undefined) {
         // Fallback to English
         let fallback: NestedValue = messages.en;
         for (const k2 of keysArray) {
-          fallback = (fallback as Record<string, NestedValue>)?.[k2];
+          fallback = (fallback as any)?.[k2];
         }
         value = fallback;
         break;

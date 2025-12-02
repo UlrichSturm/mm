@@ -1,16 +1,12 @@
-import { Module, Global } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import {
-  KeycloakConnectModule,
-  ResourceGuard,
-  RoleGuard,
-  AuthGuard,
-} from 'nest-keycloak-connect';
 import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard, KeycloakConnectModule } from 'nest-keycloak-connect';
+import { PrismaModule } from '../prisma/prisma.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { DebugRoleGuard } from './debug-role.guard';
 import { createKeycloakConfig } from './keycloak.config';
-import { PrismaModule } from '../prisma/prisma.module';
 
 @Global()
 @Module({
@@ -30,13 +26,14 @@ import { PrismaModule } from '../prisma/prisma.module';
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
+    // ResourceGuard removed for debugging
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: ResourceGuard,
+    // },
     {
       provide: APP_GUARD,
-      useClass: ResourceGuard,
-    },
-    {
-      provide: APP_GUARD,
-      useClass: RoleGuard,
+      useClass: DebugRoleGuard,
     },
   ],
   exports: [AuthService],

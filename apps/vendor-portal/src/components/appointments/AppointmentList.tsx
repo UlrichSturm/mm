@@ -1,14 +1,15 @@
 'use client';
 
-import { Card, CardContent } from '@/components/ui/Card';
 import { AppointmentCard } from '@/components/appointments/AppointmentCard';
+import { Card, CardContent } from '@/components/ui/Card';
 
 interface AppointmentListProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   appointments: any[];
   onRefresh: () => void;
 }
 
-export function AppointmentList({ appointments, onRefresh: _onRefresh }: AppointmentListProps) {
+export function AppointmentList({ appointments, onRefresh }: AppointmentListProps) {
   if (appointments.length === 0) {
     return (
       <Card>
