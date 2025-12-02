@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { CategoriesController } from './categories/categories.controller';
-import { CategoriesService } from './categories/categories.service';
 import { LawyerNotaryModule } from './lawyer-notary/lawyer-notary.module';
 import { AuthModule } from './auth/auth.module';
 import { VendorsModule } from './vendors/vendors.module';
@@ -14,6 +12,7 @@ import { StorageModule } from './storage/storage.module';
 import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { ServicesModule } from './services/services.module';
+import { CategoriesModule } from './categories/categories.module';
 import { WillsController } from './wills/wills.controller';
 
 @Module({
@@ -51,11 +50,12 @@ import { WillsController } from './wills/wills.controller';
     AuthModule,
     VendorsModule,
     LawyerNotaryModule,
+    CategoriesModule,
     ServicesModule,
     OrdersModule,
     PaymentsModule,
   ],
-  controllers: [CategoriesController, WillsController],
-  providers: [CategoriesService],
+  controllers: [WillsController],
+  providers: [],
 })
 export class AppModule {}
