@@ -9,7 +9,7 @@ export class WillsController {
   @Get('appointments')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  async getAllAppointments(@Query() filters: any) {
+  async getAllAppointments(@Query() _filters: Record<string, unknown>) {
     // Return empty array - no mock data
     // Appointments should be retrieved from database via Prisma
     return [];
@@ -18,7 +18,7 @@ export class WillsController {
   @Get('appointments/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  async getAppointment(@Param('id') id: string) {
+  async getAppointment(@Param('id') _id: string) {
     // Return empty object - no mock data
     return null;
   }
@@ -26,7 +26,7 @@ export class WillsController {
   @Get('executions')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  async getAllExecutions(@Query() filters: any) {
+  async getAllExecutions(@Query() _filters: Record<string, unknown>) {
     // Return empty array - no mock data
     // Executions should be retrieved from database via Prisma
     return [];
@@ -35,7 +35,7 @@ export class WillsController {
   @Get('executions/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  async getExecution(@Param('id') id: string) {
+  async getExecution(@Param('id') _id: string) {
     // Return empty object - no mock data
     return null;
   }
@@ -43,9 +43,8 @@ export class WillsController {
   @Get('data/:id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  async getWillData(@Param('id') id: string) {
+  async getWillData(@Param('id') _id: string) {
     // Return empty object - no mock data
     return null;
   }
 }
-

@@ -31,10 +31,10 @@
     </div>
     <div class="content">
       <h2>Your order status has changed</h2>
-      
+
       <p>Hi {{firstName}},</p>
       <p>Your order <strong>{{orderNumber}}</strong> has been updated:</p>
-      
+
       <div class="order-box">
         <p style="margin-bottom: 12px; color: #6b7280;">Current Status:</p>
         <span class="status-badge status-{{status}}">{{status}}</span>
@@ -44,7 +44,7 @@
       <p><strong>Message from vendor:</strong></p>
       <p style="background: #f3f4f6; padding: 16px; border-radius: 8px; font-style: italic;">{{message}}</p>
       {{/if}}
-      
+
       <p>
         <a href="{{appUrl}}/orders/{{orderNumber}}" class="button">View Order Details</a>
       </p>

@@ -29,7 +29,7 @@ export class AuthService {
     const { email, password } = loginDto;
 
     // Find user in database
-    const user = await this.prisma.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
 
@@ -51,17 +51,14 @@ export class AuthService {
       lastName: user.lastName,
     });
 
-    // Return data without password
-    const { password: _, ...userWithoutPassword } = user;
-
     return {
       token,
       user: {
-        id: userWithoutPassword.id,
-        email: userWithoutPassword.email,
-        role: userWithoutPassword.role as Role,
-        firstName: userWithoutPassword.firstName,
-        lastName: userWithoutPassword.lastName,
+        id: user.id,
+        email: user.email,
+        role: user.role as Role,
+        firstName: user.firstName,
+        lastName: user.lastName,
       },
     };
   }
@@ -74,7 +71,7 @@ export class AuthService {
       role: user.role,
       exp: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
     };
-    
+
     // Base64 encoding (in production use JWT)
     return Buffer.from(JSON.stringify(payload)).toString('base64');
   }
@@ -83,17 +80,17 @@ export class AuthService {
     try {
       // Decode token
       const payload = JSON.parse(Buffer.from(token, 'base64').toString());
-      
+
       // Check expiration
       if (payload.exp && payload.exp < Date.now()) {
         return null;
       }
-      
+
       // Find user in database
-      const user = await this.prisma.prisma.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { id: payload.id },
       });
-      
+
       if (!user) {
         return null;
       }
@@ -110,18 +107,24 @@ export class AuthService {
     }
   }
 
-  async register(email: string, password: string, role: Role = Role.CLIENT, firstName?: string, lastName?: string): Promise<User> {
+  async register(
+    email: string,
+    password: string,
+    role: Role = Role.CLIENT,
+    firstName?: string,
+    lastName?: string,
+  ): Promise<User> {
     // Check if user already exists
-    const existingUser = await this.prisma.prisma.user.findUnique({
+    const existingUser = await this.prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
-    
+
     if (existingUser) {
       throw new UnauthorizedException('User with this email already exists');
     }
 
     // Create new user
-    const newUser = await this.prisma.prisma.user.create({
+    const newUser = await this.prisma.user.create({
       data: {
         email: email.toLowerCase(),
         password, // In production hash password with bcrypt
@@ -141,7 +144,7 @@ export class AuthService {
   }
 
   async getProfile(userId: string): Promise<User> {
-    const user = await this.prisma.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
 
@@ -158,20 +161,23 @@ export class AuthService {
     };
   }
 
-  async updateProfile(userId: string, data: { firstName?: string; lastName?: string; email?: string }): Promise<User> {
+  async updateProfile(
+    userId: string,
+    data: { firstName?: string; lastName?: string; email?: string },
+  ): Promise<User> {
     // Check if email is being changed and if it's already taken
     if (data.email) {
-      const existingUser = await this.prisma.prisma.user.findUnique({
+      const existingUser = await this.prisma.user.findUnique({
         where: { email: data.email.toLowerCase() },
       });
-      
+
       if (existingUser && existingUser.id !== userId) {
         throw new UnauthorizedException('Email already in use');
       }
     }
 
     // Update user
-    const updatedUser = await this.prisma.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id: userId },
       data: {
         ...(data.firstName !== undefined && { firstName: data.firstName || null }),

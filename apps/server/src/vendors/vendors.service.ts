@@ -27,7 +27,7 @@ export class VendorsService {
 
   async findAll(status?: VendorStatus): Promise<VendorProfile[]> {
     const where = status ? { status: status as any } : {};
-    const vendors = await this.prisma.prisma.vendorProfile.findMany({
+    const vendors = await this.prisma.vendorProfile.findMany({
       where,
       include: { user: true },
       orderBy: { createdAt: 'desc' },
@@ -36,7 +36,7 @@ export class VendorsService {
   }
 
   async findOne(id: string): Promise<VendorProfile | null> {
-    const vendor = await this.prisma.prisma.vendorProfile.findUnique({
+    const vendor = await this.prisma.vendorProfile.findUnique({
       where: { id },
       include: { user: true },
     });
@@ -44,7 +44,7 @@ export class VendorsService {
   }
 
   async findByUserId(userId: string): Promise<VendorProfile | null> {
-    const vendor = await this.prisma.prisma.vendorProfile.findUnique({
+    const vendor = await this.prisma.vendorProfile.findUnique({
       where: { userId },
       include: { user: true },
     });
@@ -52,7 +52,7 @@ export class VendorsService {
   }
 
   async create(userId: string, data: Partial<VendorProfile>): Promise<VendorProfile> {
-    const vendor = await this.prisma.prisma.vendorProfile.create({
+    const vendor = await this.prisma.vendorProfile.create({
       data: {
         userId,
         businessName: data.businessName || '',
@@ -61,14 +61,18 @@ export class VendorsService {
         address: data.address,
         postalCode: data.postalCode,
         status: 'PENDING',
-        registrationDate: new Date(),
       },
       include: { user: true },
     });
     return this.mapToInterface(vendor);
   }
 
-  async updateProfile(id: string, userId: string, userRole: string, data: Partial<VendorProfile>): Promise<VendorProfile> {
+  async updateProfile(
+    id: string,
+    userId: string,
+    userRole: string,
+    data: Partial<VendorProfile>,
+  ): Promise<VendorProfile> {
     const vendor = await this.findOne(id);
     if (!vendor) {
       throw new NotFoundException('Vendor not found');
@@ -79,7 +83,7 @@ export class VendorsService {
       throw new ForbiddenException('You can only update your own profile');
     }
 
-    const updated = await this.prisma.prisma.vendorProfile.update({
+    const updated = await this.prisma.vendorProfile.update({
       where: { id },
       data: {
         businessName: data.businessName,
@@ -94,7 +98,7 @@ export class VendorsService {
   }
 
   async updateStatus(id: string, status: VendorStatus): Promise<VendorProfile> {
-    const updated = await this.prisma.prisma.vendorProfile.update({
+    const updated = await this.prisma.vendorProfile.update({
       where: { id },
       data: { status: status as any },
       include: { user: true },
@@ -103,7 +107,7 @@ export class VendorsService {
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.prisma.vendorProfile.delete({
+    await this.prisma.vendorProfile.delete({
       where: { id },
     });
   }
@@ -124,4 +128,3 @@ export class VendorsService {
     };
   }
 }
-
