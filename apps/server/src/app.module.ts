@@ -13,6 +13,7 @@ import { OrdersModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { ServicesModule } from './services/services.module';
 import { CategoriesModule } from './categories/categories.module';
+import { AdminModule } from './admin/admin.module';
 import { WillsController } from './wills/wills.controller';
 
 @Module({
@@ -54,6 +55,7 @@ import { WillsController } from './wills/wills.controller';
     ServicesModule,
     OrdersModule,
     PaymentsModule,
+    AdminModule,
   ],
   controllers: [WillsController],
   providers: [],
