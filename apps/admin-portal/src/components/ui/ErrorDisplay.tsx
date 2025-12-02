@@ -17,7 +17,10 @@ interface ErrorDisplayProps {
   showRetry?: boolean;
 }
 
-const variantStyles: Record<ErrorDisplayVariant, { bg: string; border: string; text: string; icon: string }> = {
+const variantStyles: Record<
+  ErrorDisplayVariant,
+  { bg: string; border: string; text: string; icon: string }
+> = {
   error: {
     bg: 'bg-red-50',
     border: 'border-red-200',
@@ -63,7 +66,9 @@ export function ErrorDisplay({
     }
   }, [error, autoDismiss, isVisible, onDismiss]);
 
-  if (!error || !isVisible) return null;
+  if (!error || !isVisible) {
+    return null;
+  }
 
   const errorMessage = error instanceof Error ? error.message : error;
   const styles = variantStyles[variant];
@@ -74,7 +79,7 @@ export function ErrorDisplay({
         'relative rounded-md border p-4 animate-in slide-in-from-top-2',
         styles.bg,
         styles.border,
-        className
+        className,
       )}
     >
       <div className="flex items-start">
@@ -83,16 +88,9 @@ export function ErrorDisplay({
           <h3 className={cn('text-sm font-medium', styles.text)}>
             {variant === 'error' ? 'Error' : variant === 'warning' ? 'Warning' : 'Information'}
           </h3>
-          <p className={cn('mt-1 text-sm', styles.text.replace('800', '700'))}>
-            {errorMessage}
-          </p>
+          <p className={cn('mt-1 text-sm', styles.text.replace('800', '700'))}>{errorMessage}</p>
           {showRetry && onRetry && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onRetry}
-              className="mt-3"
-            >
+            <Button variant="outline" size="sm" onClick={onRetry} className="mt-3">
               <RefreshCw className="w-3 h-3 mr-2" />
               Retry
             </Button>
@@ -125,4 +123,3 @@ export function ErrorDisplay({
     </div>
   );
 }
-

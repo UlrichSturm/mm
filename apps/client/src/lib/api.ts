@@ -8,9 +8,9 @@ export const apiClient = {
     }
     return response.json();
   },
-  
+
   async getServices(params?: { search?: string; categoryId?: string }) {
-    const query = new URLSearchParams(params as any);
+    const query = new URLSearchParams(params as Record<string, string>);
     const response = await fetch(`${API_BASE_URL}/services?${query}`);
     if (!response.ok) {
       throw new Error('Failed to fetch services');
@@ -20,7 +20,9 @@ export const apiClient = {
 
   // Will/Appointment related methods
   async getAvailableLawyers(postalCode: string) {
-    const response = await fetch(`${API_BASE_URL}/lawyer-notary/available?postalCode=${postalCode}`);
+    const response = await fetch(
+      `${API_BASE_URL}/lawyer-notary/available?postalCode=${postalCode}`,
+    );
     if (!response.ok) {
       throw new Error('Failed to fetch available lawyers');
     }
@@ -90,10 +92,16 @@ export const apiClient = {
     notifierContact: string;
   }) {
     const formData = new FormData();
-    if (data.clientName) formData.append('clientName', data.clientName);
-    if (data.appointmentNumber) formData.append('appointmentNumber', data.appointmentNumber);
+    if (data.clientName) {
+      formData.append('clientName', data.clientName);
+    }
+    if (data.appointmentNumber) {
+      formData.append('appointmentNumber', data.appointmentNumber);
+    }
     formData.append('deathDate', data.deathDate);
-    if (data.deathCertificate) formData.append('deathCertificate', data.deathCertificate);
+    if (data.deathCertificate) {
+      formData.append('deathCertificate', data.deathCertificate);
+    }
     formData.append('notifierContact', data.notifierContact);
 
     const response = await fetch(`${API_BASE_URL}/wills/executions`, {
@@ -106,10 +114,7 @@ export const apiClient = {
     return response.json();
   },
 
-  async createInsurancePolicy(data: {
-    appointmentId: string;
-    coverageAmount?: number;
-  }) {
+  async createInsurancePolicy(data: { appointmentId: string; coverageAmount?: number }) {
     const response = await fetch(`${API_BASE_URL}/insurance/policies`, {
       method: 'POST',
       headers: {
@@ -140,18 +145,13 @@ export const apiClient = {
       }
       const data = await response.json();
       return data.city || data.name || null;
-    } catch (error) {
+    } catch {
       // If API call fails, try fallback to a simple mapping or external API
       return null;
     }
   },
 
-  async register(data: {
-    email: string;
-    password: string;
-    firstName?: string;
-    lastName?: string;
-  }) {
+  async register(data: { email: string; password: string; firstName?: string; lastName?: string }) {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
       method: 'POST',
       headers: {
@@ -166,10 +166,7 @@ export const apiClient = {
     return response.json();
   },
 
-  async login(data: {
-    email: string;
-    password: string;
-  }) {
+  async login(data: { email: string; password: string }) {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
@@ -184,23 +181,26 @@ export const apiClient = {
     return response.json();
   },
 
-  async updateProfile(data: {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-  }) {
+  async updateProfile(data: { firstName?: string; lastName?: string; email?: string }) {
     const getToken = () => {
-      if (typeof window === 'undefined') return null;
+      if (typeof window === 'undefined') {
+        return null;
+      }
       // Try localStorage first
       const localToken = localStorage.getItem('authToken');
-      if (localToken) return localToken;
+      if (localToken) {
+        return localToken;
+      }
       // Try cookies
-      const cookieToken = document.cookie.split(';').find(c => c.trim().startsWith('authToken='))?.split('=')[1];
+      const cookieToken = document.cookie
+        .split(';')
+        .find(c => c.trim().startsWith('authToken='))
+        ?.split('=')[1];
       return cookieToken || null;
     };
 
     const token = getToken();
-    
+
     if (!token) {
       throw new Error('Not authenticated');
     }
@@ -209,7 +209,7 @@ export const apiClient = {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(data),
     });
@@ -222,17 +222,24 @@ export const apiClient = {
 
   async getProfile() {
     const getToken = () => {
-      if (typeof window === 'undefined') return null;
+      if (typeof window === 'undefined') {
+        return null;
+      }
       // Try localStorage first
       const localToken = localStorage.getItem('authToken');
-      if (localToken) return localToken;
+      if (localToken) {
+        return localToken;
+      }
       // Try cookies
-      const cookieToken = document.cookie.split(';').find(c => c.trim().startsWith('authToken='))?.split('=')[1];
+      const cookieToken = document.cookie
+        .split(';')
+        .find(c => c.trim().startsWith('authToken='))
+        ?.split('=')[1];
       return cookieToken || null;
     };
 
     const token = getToken();
-    
+
     if (!token) {
       throw new Error('Not authenticated');
     }
@@ -240,7 +247,7 @@ export const apiClient = {
     const response = await fetch(`${API_BASE_URL}/auth/profile`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
     if (!response.ok) {
@@ -250,4 +257,3 @@ export const apiClient = {
     return response.json();
   },
 };
-

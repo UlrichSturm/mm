@@ -47,15 +47,16 @@ export interface LawyerNotaryFilters {
   postalCode?: string;
 }
 
+interface ErrorResponse {
+  message?: string;
+  code?: string;
+}
+
 class LawyerNotaryApiClient {
-  private async request<T>(
-    endpoint: string,
-    options?: RequestInit
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     const token = localStorage.getItem('auth_token');
-    
-    
+
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -64,28 +65,27 @@ class LawyerNotaryApiClient {
         ...options?.headers,
       },
     });
-    
 
     if (!response.ok) {
-      // Если 401 - неавторизован, делаем logout и редирект
-      // Но только если мы не на странице логина
+      // If 401 - unauthorized, logout and redirect
+      // But only if we're not on the login page
       if (response.status === 401) {
         if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/login')) {
           logout();
         }
         throw new Error('Session expired. Please log in again.');
       }
-      
-      let errorData: any;
+
+      let errorData: ErrorResponse;
       try {
         errorData = await response.json();
       } catch {
         errorData = { message: 'Request failed' };
       }
-      
+
       const error = new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      (error as any).status = response.status;
-      (error as any).code = errorData.code;
+      (error as Error & { status?: number; code?: string }).status = response.status;
+      (error as Error & { status?: number; code?: string }).code = errorData.code;
       throw error;
     }
 
@@ -94,15 +94,21 @@ class LawyerNotaryApiClient {
 
   async getAll(filters?: LawyerNotaryFilters): Promise<LawyerNotaryProfile[]> {
     const params = new URLSearchParams();
-    if (filters?.status) params.append('status', filters.status);
-    if (filters?.licenseType) params.append('licenseType', filters.licenseType);
-    if (filters?.search) params.append('search', filters.search);
-    if (filters?.postalCode) params.append('postalCode', filters.postalCode);
+    if (filters?.status) {
+      params.append('status', filters.status);
+    }
+    if (filters?.licenseType) {
+      params.append('licenseType', filters.licenseType);
+    }
+    if (filters?.search) {
+      params.append('search', filters.search);
+    }
+    if (filters?.postalCode) {
+      params.append('postalCode', filters.postalCode);
+    }
 
     const query = params.toString();
-    return this.request<LawyerNotaryProfile[]>(
-      `/lawyer-notary${query ? `?${query}` : ''}`
-    );
+    return this.request<LawyerNotaryProfile[]>(`/lawyer-notary${query ? `?${query}` : ''}`);
   }
 
   async getOne(id: string): Promise<LawyerNotaryProfile> {
@@ -126,7 +132,7 @@ class LawyerNotaryApiClient {
   async updateStatus(
     id: string,
     status: LawyerNotaryStatus,
-    comment?: string
+    comment?: string,
   ): Promise<LawyerNotaryProfile> {
     return this.request<LawyerNotaryProfile>(`/lawyer-notary/${id}/status`, {
       method: 'PATCH',
@@ -142,4 +148,3 @@ class LawyerNotaryApiClient {
 }
 
 export const lawyerNotaryApi = new LawyerNotaryApiClient();
-

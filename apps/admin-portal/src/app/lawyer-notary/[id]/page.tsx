@@ -40,8 +40,10 @@ export default function LawyerNotaryDetailPage() {
   };
 
   const handleStatusChange = async (newStatus: LawyerNotaryStatus) => {
-    if (!confirm(`Изменить статус на "${newStatus}"?`)) return;
-    
+    if (!confirm(`Change status to "${newStatus}"?`)) {
+      return;
+    }
+
     try {
       clearError();
       await lawyerNotaryApi.updateStatus(id, newStatus);
@@ -52,8 +54,10 @@ export default function LawyerNotaryDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Вы уверены, что хотите удалить этот профиль?')) return;
-    
+    if (!confirm('Are you sure you want to delete this profile?')) {
+      return;
+    }
+
     try {
       clearError();
       await lawyerNotaryApi.delete(id);
@@ -85,12 +89,7 @@ export default function LawyerNotaryDetailPage() {
   return (
     <div className="space-y-6">
       {error && (
-        <ErrorDisplay
-          error={error}
-          onDismiss={clearError}
-          onRetry={loadLawyer}
-          showRetry={true}
-        />
+        <ErrorDisplay error={error} onDismiss={clearError} onRetry={loadLawyer} showRetry={true} />
       )}
 
       {!lawyer && error && (
@@ -104,151 +103,150 @@ export default function LawyerNotaryDetailPage() {
       {lawyer && (
         <>
           <div className="flex items-center gap-4">
-        <Link href="/lawyer-notary">
-          <Button variant="ghost" size="icon">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-        </Link>
-        <h1 className="text-3xl font-bold text-gray-900">Профиль адвоката/нотариуса</h1>
-      </div>
+            <Link href="/lawyer-notary">
+              <Button variant="ghost" size="icon">
+                <ArrowLeft className="w-4 h-4" />
+              </Button>
+            </Link>
+            <h1 className="text-3xl font-bold text-gray-900">Профиль адвоката/нотариуса</h1>
+          </div>
 
-      <div className="flex gap-4">
-        <Link href={`/lawyer-notary/${id}/edit`}>
-          <Button variant="outline">
-            <Edit className="w-4 h-4 mr-2" />
-            Редактировать
-          </Button>
-        </Link>
-        <Button variant="destructive" onClick={handleDelete}>
-          <Trash2 className="w-4 h-4 mr-2" />
-          Удалить
-        </Button>
-      </div>
+          <div className="flex gap-4">
+            <Link href={`/lawyer-notary/${id}/edit`}>
+              <Button variant="outline">
+                <Edit className="w-4 h-4 mr-2" />
+                Редактировать
+              </Button>
+            </Link>
+            <Button variant="destructive" onClick={handleDelete}>
+              <Trash2 className="w-4 h-4 mr-2" />
+              Удалить
+            </Button>
+          </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Данные пользователя</h2>
-            <div className="space-y-3">
-              <div>
-                <span className="text-sm font-medium text-gray-500">Email:</span>
-                <p className="text-gray-900">{lawyer.user?.email || 'N/A'}</p>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-gray-500">Статус:</span>
-                <div className="mt-1">
-                  <StatusBadge status={lawyer.status} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold mb-4">Данные пользователя</h2>
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-sm font-medium text-gray-500">Email:</span>
+                    <p className="text-gray-900">{lawyer.user?.email || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-500">Статус:</span>
+                    <div className="mt-1">
+                      <StatusBadge status={lawyer.status} />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-500">Создан:</span>
+                    <p className="text-gray-900">
+                      {new Date(lawyer.createdAt).toLocaleString('ru-RU')}
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-gray-500">Создан:</span>
-                <p className="text-gray-900">
-                  {new Date(lawyer.createdAt).toLocaleString('ru-RU')}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Профессиональная информация</h2>
-            <div className="space-y-3">
-              <div>
-                <span className="text-sm font-medium text-gray-500">Тип лицензии:</span>
-                <div className="mt-1">
-                  <LicenseTypeBadge licenseType={lawyer.licenseType} />
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold mb-4">Профессиональная информация</h2>
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-sm font-medium text-gray-500">Тип лицензии:</span>
+                    <div className="mt-1">
+                      <LicenseTypeBadge licenseType={lawyer.licenseType} />
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-500">Номер лицензии:</span>
+                    <p className="text-gray-900">{lawyer.licenseNumber}</p>
+                  </div>
+                  {lawyer.organization && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Организация:</span>
+                      <p className="text-gray-900">{lawyer.organization}</p>
+                    </div>
+                  )}
+                  {lawyer.specialization && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Специализация:</span>
+                      <p className="text-gray-900">{lawyer.specialization}</p>
+                    </div>
+                  )}
+                  {lawyer.yearsOfExperience && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Годы опыта:</span>
+                      <p className="text-gray-900">{lawyer.yearsOfExperience}</p>
+                    </div>
+                  )}
                 </div>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-gray-500">Номер лицензии:</span>
-                <p className="text-gray-900">{lawyer.licenseNumber}</p>
-              </div>
-              {lawyer.organization && (
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Организация:</span>
-                  <p className="text-gray-900">{lawyer.organization}</p>
-                </div>
-              )}
-              {lawyer.specialization && (
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Специализация:</span>
-                  <p className="text-gray-900">{lawyer.specialization}</p>
-                </div>
-              )}
-              {lawyer.yearsOfExperience && (
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Годы опыта:</span>
-                  <p className="text-gray-900">{lawyer.yearsOfExperience}</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Контактная информация</h2>
-            <div className="space-y-3">
-              <div>
-                <span className="text-sm font-medium text-gray-500">Почтовый индекс:</span>
-                <p className="text-gray-900">{lawyer.officePostalCode}</p>
-              </div>
-              <div>
-                <span className="text-sm font-medium text-gray-500">Адрес офиса:</span>
-                <p className="text-gray-900">{lawyer.officeAddress}</p>
-              </div>
-              {lawyer.phone && (
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Телефон:</span>
-                  <p className="text-gray-900">{lawyer.phone}</p>
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold mb-4">Контактная информация</h2>
+                <div className="space-y-3">
+                  <div>
+                    <span className="text-sm font-medium text-gray-500">Почтовый индекс:</span>
+                    <p className="text-gray-900">{lawyer.officePostalCode}</p>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-500">Адрес офиса:</span>
+                    <p className="text-gray-900">{lawyer.officeAddress}</p>
+                  </div>
+                  {lawyer.phone && (
+                    <div>
+                      <span className="text-sm font-medium text-gray-500">Телефон:</span>
+                      <p className="text-gray-900">{lawyer.phone}</p>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <h2 className="text-lg font-semibold mb-4">Изменение статуса</h2>
-            <div className="space-y-2">
-              {lawyer.status !== 'APPROVED' && (
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => handleStatusChange('APPROVED')}
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Одобрить
-                </Button>
-              )}
-              {lawyer.status !== 'REJECTED' && (
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => handleStatusChange('REJECTED')}
-                >
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Отклонить
-                </Button>
-              )}
-              {lawyer.status !== 'PENDING' && (
-                <Button
-                  variant="outline"
-                  className="w-full justify-start"
-                  onClick={() => handleStatusChange('PENDING')}
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  Вернуть на рассмотрение
-                </Button>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            <Card>
+              <CardContent className="p-6">
+                <h2 className="text-lg font-semibold mb-4">Изменение статуса</h2>
+                <div className="space-y-2">
+                  {lawyer.status !== 'APPROVED' && (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => handleStatusChange('APPROVED')}
+                    >
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Одобрить
+                    </Button>
+                  )}
+                  {lawyer.status !== 'REJECTED' && (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => handleStatusChange('REJECTED')}
+                    >
+                      <XCircle className="w-4 h-4 mr-2" />
+                      Отклонить
+                    </Button>
+                  )}
+                  {lawyer.status !== 'PENDING' && (
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start"
+                      onClick={() => handleStatusChange('PENDING')}
+                    >
+                      <Clock className="w-4 h-4 mr-2" />
+                      Вернуть на рассмотрение
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </>
       )}
     </div>
   );
 }
-

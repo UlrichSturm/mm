@@ -88,14 +88,16 @@ export interface WillExecutionFilters {
   dateTo?: string;
 }
 
+interface ErrorResponse {
+  message?: string;
+  code?: string;
+}
+
 class WillsApiClient {
-  private async request<T>(
-    endpoint: string,
-    options?: RequestInit
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     const token = localStorage.getItem('auth_token');
-    
+
     const response = await fetch(url, {
       ...options,
       headers: {
@@ -106,25 +108,25 @@ class WillsApiClient {
     });
 
     if (!response.ok) {
-      // Если 401 - неавторизован, делаем logout и редирект
-      // Но только если мы не на странице логина
+      // If 401 - unauthorized, logout and redirect
+      // But only if we're not on the login page
       if (response.status === 401) {
         if (typeof window !== 'undefined' && !window.location.pathname.includes('/auth/login')) {
           logout();
         }
         throw new Error('Session expired. Please log in again.');
       }
-      
-      let errorData: any;
+
+      let errorData: ErrorResponse;
       try {
         errorData = await response.json();
       } catch {
         errorData = { message: 'Request failed' };
       }
-      
+
       const error = new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      (error as any).status = response.status;
-      (error as any).code = errorData.code;
+      (error as Error & { status?: number; code?: string }).status = response.status;
+      (error as Error & { status?: number; code?: string }).code = errorData.code;
       throw error;
     }
 
@@ -134,16 +136,24 @@ class WillsApiClient {
   // Appointments
   async getAllAppointments(filters?: WillAppointmentFilters): Promise<WillAppointment[]> {
     const params = new URLSearchParams();
-    if (filters?.status) params.append('status', filters.status);
-    if (filters?.lawyerNotaryId) params.append('lawyerNotaryId', filters.lawyerNotaryId);
-    if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
-    if (filters?.dateTo) params.append('dateTo', filters.dateTo);
-    if (filters?.search) params.append('search', filters.search);
+    if (filters?.status) {
+      params.append('status', filters.status);
+    }
+    if (filters?.lawyerNotaryId) {
+      params.append('lawyerNotaryId', filters.lawyerNotaryId);
+    }
+    if (filters?.dateFrom) {
+      params.append('dateFrom', filters.dateFrom);
+    }
+    if (filters?.dateTo) {
+      params.append('dateTo', filters.dateTo);
+    }
+    if (filters?.search) {
+      params.append('search', filters.search);
+    }
 
     const query = params.toString();
-    return this.request<WillAppointment[]>(
-      `/wills/appointments${query ? `?${query}` : ''}`
-    );
+    return this.request<WillAppointment[]>(`/wills/appointments${query ? `?${query}` : ''}`);
   }
 
   async getAppointment(id: string): Promise<WillAppointment> {
@@ -158,14 +168,18 @@ class WillsApiClient {
   // Executions
   async getAllExecutions(filters?: WillExecutionFilters): Promise<WillExecution[]> {
     const params = new URLSearchParams();
-    if (filters?.status) params.append('status', filters.status);
-    if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
-    if (filters?.dateTo) params.append('dateTo', filters.dateTo);
+    if (filters?.status) {
+      params.append('status', filters.status);
+    }
+    if (filters?.dateFrom) {
+      params.append('dateFrom', filters.dateFrom);
+    }
+    if (filters?.dateTo) {
+      params.append('dateTo', filters.dateTo);
+    }
 
     const query = params.toString();
-    return this.request<WillExecution[]>(
-      `/wills/executions${query ? `?${query}` : ''}`
-    );
+    return this.request<WillExecution[]>(`/wills/executions${query ? `?${query}` : ''}`);
   }
 
   async getExecution(id: string): Promise<WillExecution> {
@@ -174,4 +188,3 @@ class WillsApiClient {
 }
 
 export const willsApi = new WillsApiClient();
-
