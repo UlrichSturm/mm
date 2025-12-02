@@ -22,7 +22,7 @@ Keycloak is already configured in `docker-compose.dev.yml`:
 docker-compose -f docker-compose.dev.yml up -d keycloak
 ```
 
-**Keycloak Admin Console:** http://localhost:8080  
+**Keycloak Admin Console:** http://localhost:8080
 **Admin Credentials:** `admin` / `admin`
 
 ---

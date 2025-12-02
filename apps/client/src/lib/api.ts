@@ -1,4 +1,26 @@
+/**
+ * API client with Keycloak authentication
+ */
+
+import { getAuthToken } from './auth';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+/**
+ * Get headers with authentication token
+ */
+function getAuthHeaders(): HeadersInit {
+  const token = getAuthToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  return headers;
+}
 
 export const apiClient = {
   async getCategories() {
@@ -47,9 +69,7 @@ export const apiClient = {
   }) {
     const response = await fetch(`${API_BASE_URL}/wills/appointments`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!response.ok) {
@@ -59,7 +79,9 @@ export const apiClient = {
   },
 
   async getMyAppointments() {
-    const response = await fetch(`${API_BASE_URL}/wills/appointments`);
+    const response = await fetch(`${API_BASE_URL}/wills/appointments`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) {
       throw new Error('Failed to fetch appointments');
     }
@@ -67,7 +89,9 @@ export const apiClient = {
   },
 
   async getAppointment(id: string) {
-    const response = await fetch(`${API_BASE_URL}/wills/appointments/${id}`);
+    const response = await fetch(`${API_BASE_URL}/wills/appointments/${id}`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) {
       throw new Error('Failed to fetch appointment');
     }
@@ -77,6 +101,7 @@ export const apiClient = {
   async cancelAppointment(id: string) {
     const response = await fetch(`${API_BASE_URL}/wills/appointments/${id}/cancel`, {
       method: 'PATCH',
+      headers: getAuthHeaders(),
     });
     if (!response.ok) {
       throw new Error('Failed to cancel appointment');
@@ -104,8 +129,15 @@ export const apiClient = {
     }
     formData.append('notifierContact', data.notifierContact);
 
+    const token = getAuthToken();
+    const headers: HeadersInit = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
     const response = await fetch(`${API_BASE_URL}/wills/executions`, {
       method: 'POST',
+      headers,
       body: formData,
     });
     if (!response.ok) {
@@ -117,9 +149,7 @@ export const apiClient = {
   async createInsurancePolicy(data: { appointmentId: string; coverageAmount?: number }) {
     const response = await fetch(`${API_BASE_URL}/insurance/policies`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!response.ok) {
@@ -129,7 +159,9 @@ export const apiClient = {
   },
 
   async getInsurancePayments(policyId: string) {
-    const response = await fetch(`${API_BASE_URL}/insurance/policies/${policyId}/payments`);
+    const response = await fetch(`${API_BASE_URL}/insurance/policies/${policyId}/payments`, {
+      headers: getAuthHeaders(),
+    });
     if (!response.ok) {
       throw new Error('Failed to fetch insurance payments');
     }
@@ -151,66 +183,13 @@ export const apiClient = {
     }
   },
 
-  async register(data: { email: string; password: string; firstName?: string; lastName?: string }) {
-    const response = await fetch(`${API_BASE_URL}/auth/register`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Registration failed' }));
-      throw new Error(error.message || 'Registration failed');
-    }
-    return response.json();
-  },
-
-  async login(data: { email: string; password: string }) {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({ message: 'Login failed' }));
-      throw new Error(error.message || 'Invalid email or password');
-    }
-    return response.json();
-  },
+  // Note: register() and login() are now handled by Keycloak
+  // Use keycloak.register() and keycloak.login() from lib/keycloak.ts
 
   async updateProfile(data: { firstName?: string; lastName?: string; email?: string }) {
-    const getToken = () => {
-      if (typeof window === 'undefined') {
-        return null;
-      }
-      // Try localStorage first
-      const localToken = localStorage.getItem('authToken');
-      if (localToken) {
-        return localToken;
-      }
-      // Try cookies
-      const cookieToken = document.cookie
-        .split(';')
-        .find(c => c.trim().startsWith('authToken='))
-        ?.split('=')[1];
-      return cookieToken || null;
-    };
-
-    const token = getToken();
-
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
-
-    const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
+      headers: getAuthHeaders(),
       body: JSON.stringify(data),
     });
     if (!response.ok) {
@@ -221,34 +200,9 @@ export const apiClient = {
   },
 
   async getProfile() {
-    const getToken = () => {
-      if (typeof window === 'undefined') {
-        return null;
-      }
-      // Try localStorage first
-      const localToken = localStorage.getItem('authToken');
-      if (localToken) {
-        return localToken;
-      }
-      // Try cookies
-      const cookieToken = document.cookie
-        .split(';')
-        .find(c => c.trim().startsWith('authToken='))
-        ?.split('=')[1];
-      return cookieToken || null;
-    };
-
-    const token = getToken();
-
-    if (!token) {
-      throw new Error('Not authenticated');
-    }
-
-    const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/profile`, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+      headers: getAuthHeaders(),
     });
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: 'Failed to fetch profile' }));

@@ -1,7 +1,7 @@
 # MVP Progress Report
 
-**Last Updated:** 2025-12-02  
-**Branch:** `main`  
+**Last Updated:** 2025-12-02
+**Branch:** `main`
 **Latest Commit:** `77c8397`
 
 ---

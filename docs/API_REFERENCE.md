@@ -1,6 +1,6 @@
 # API Reference
 
-**Base URL (Development):** `http://localhost:3001/api`  
+**Base URL (Development):** `http://localhost:3001/api`
 **Base URL (Production):** `https://api.mementomori.de/api`
 
 **Swagger UI:** `http://localhost:3001/api/docs`
@@ -907,5 +907,5 @@ WebSocket endpoints will be added in Phase 2 for real-time notifications:
 
 ---
 
-For detailed API documentation with live testing, visit:  
+For detailed API documentation with live testing, visit:
 **📚 http://localhost:3001/api/docs**
