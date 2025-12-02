@@ -9,12 +9,11 @@ import {
   PaymentStatus,
 } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
-import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
-// Default password for all test users
-const DEFAULT_PASSWORD = 'password123';
+// Note: Passwords are managed by Keycloak, not stored in database
+// Users must be created in Keycloak separately
 
 async function main() {
   console.log('🌱 Starting seed...\n');
@@ -131,7 +130,8 @@ interface SeedUsers {
 async function seedUsers(): Promise<SeedUsers> {
   console.log('\n👥 Seeding users...');
 
-  const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 10);
+  // Password is empty - users must be created in Keycloak
+  const emptyPassword = '';
 
   // Admin user
   const admin = await prisma.user.upsert({
@@ -139,7 +139,7 @@ async function seedUsers(): Promise<SeedUsers> {
     update: {},
     create: {
       email: 'admin@mementomori.de',
-      password: hashedPassword,
+      password: emptyPassword,
       firstName: 'Admin',
       lastName: 'User',
       phone: '+49 30 1234567',
@@ -163,7 +163,7 @@ async function seedUsers(): Promise<SeedUsers> {
       update: {},
       create: {
         ...data,
-        password: hashedPassword,
+        password: emptyPassword,
         role: Role.CLIENT,
       },
     });
@@ -191,7 +191,7 @@ async function seedUsers(): Promise<SeedUsers> {
       update: {},
       create: {
         ...data,
-        password: hashedPassword,
+        password: emptyPassword,
         role: Role.VENDOR,
       },
     });
@@ -222,7 +222,7 @@ async function seedUsers(): Promise<SeedUsers> {
       update: {},
       create: {
         ...data,
-        password: hashedPassword,
+        password: emptyPassword,
         role: Role.LAWYER_NOTARY,
       },
     });

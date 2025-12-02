@@ -1,93 +1,54 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { ApiProperty } from '@nestjs/swagger';
-
-class HealthCheckResponse {
-  @ApiProperty({ example: 'ok' })
-  status: string;
-
-  @ApiProperty({ example: '2025-12-02T10:00:00.000Z' })
-  timestamp: string;
-
-  @ApiProperty({ example: '1.0.0' })
-  version: string;
-
-  @ApiProperty({ example: 'development' })
-  environment: string;
-}
-
-class DatabaseHealthResponse {
-  @ApiProperty({ example: 'ok' })
-  status: string;
-
-  @ApiProperty({ example: 'Connected' })
-  database: string;
-
-  @ApiProperty({ example: 15 })
-  responseTimeMs: number;
-}
+import { Controller, Get, HttpStatus, Logger } from '@nestjs/common';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
+import { Public, Unprotected } from 'nest-keycloak-connect';
+import { PrismaService } from '../prisma/prisma.service';
 
 @ApiTags('health')
 @Controller('health')
 export class HealthController {
+  private readonly logger = new Logger(HealthController.name);
+
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {}
+
   @Get()
-  @ApiOperation({
-    summary: 'Basic health check',
-    description: 'Returns the current status of the API',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Service is healthy',
-    type: HealthCheckResponse,
-  })
-  check(): HealthCheckResponse {
+  @Public()
+  @Unprotected()
+  @ApiOperation({ summary: 'Basic health check' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Service is up and running' })
+  getHealth(): { status: string; version: string; env: string } {
     return {
       status: 'ok',
-      timestamp: new Date().toISOString(),
-      version: process.env.npm_package_version || '1.0.0',
-      environment: process.env.NODE_ENV || 'development',
+      version: this.configService.get('APP_VERSION', '1.0.0'),
+      env: this.configService.get('NODE_ENV', 'development'),
     };
   }
 
   @Get('ready')
-  @ApiOperation({
-    summary: 'Readiness check',
-    description: 'Checks if the service is ready to handle requests (database connected)',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Service is ready',
-    type: DatabaseHealthResponse,
-  })
-  @ApiResponse({
-    status: 503,
-    description: 'Service is not ready',
-  })
-  async ready(): Promise<DatabaseHealthResponse> {
-    // In a real implementation, this would check database connectivity
-    return {
-      status: 'ok',
-      database: 'Connected',
-      responseTimeMs: 15,
-    };
+  @Public()
+  @Unprotected()
+  @ApiOperation({ summary: 'Readiness probe: checks database connection' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Service is ready' })
+  @ApiResponse({ status: HttpStatus.SERVICE_UNAVAILABLE, description: 'Service is not ready' })
+  async getReadiness(): Promise<{ database: string }> {
+    try {
+      await this.prisma.$queryRaw`SELECT 1`;
+      return { database: 'Connected' };
+    } catch (error) {
+      this.logger.error('Database connection failed', (error as Error).stack);
+      throw new Error('Database connection failed');
+    }
   }
 
   @Get('live')
-  @ApiOperation({
-    summary: 'Liveness check',
-    description: 'Simple check to verify the service is running',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Service is alive',
-    schema: {
-      type: 'object',
-      properties: {
-        status: { type: 'string', example: 'ok' },
-      },
-    },
-  })
-  live(): { status: string } {
+  @Public()
+  @Unprotected()
+  @ApiOperation({ summary: 'Liveness probe: checks if the application is alive' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Service is alive' })
+  getLiveness(): { status: string } {
     return { status: 'ok' };
   }
 }

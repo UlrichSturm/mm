@@ -17,6 +17,4 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./decorators"), exports);
 __exportStar(require("./dto"), exports);
 __exportStar(require("./enums/role.enum"), exports);
-__exportStar(require("./guards/jwt-auth.guard"), exports);
-__exportStar(require("./guards/roles.guard"), exports);
 //# sourceMappingURL=index.js.map

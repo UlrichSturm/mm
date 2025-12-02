@@ -8,144 +8,111 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var AuthService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
-const role_enum_1 = require("../common/enums/role.enum");
 const prisma_service_1 = require("../prisma/prisma.service");
-let AuthService = class AuthService {
+const role_enum_1 = require("../common/enums/role.enum");
+let AuthService = AuthService_1 = class AuthService {
     constructor(prisma) {
         this.prisma = prisma;
-    }
-    async login(loginDto) {
-        const { email, password } = loginDto;
-        const user = await this.prisma.user.findUnique({
-            where: { email: email.toLowerCase() },
-        });
-        if (!user) {
-            throw new common_1.UnauthorizedException('Invalid email or password');
-        }
-        if (user.password !== password) {
-            throw new common_1.UnauthorizedException('Invalid email or password');
-        }
-        const token = this.generateToken({
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            firstName: user.firstName,
-            lastName: user.lastName,
-        });
-        return {
-            token,
-            user: {
-                id: user.id,
-                email: user.email,
-                role: user.role,
-                firstName: user.firstName,
-                lastName: user.lastName,
-            },
-        };
-    }
-    generateToken(user) {
-        const payload = {
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            exp: Date.now() + 24 * 60 * 60 * 1000,
-        };
-        return Buffer.from(JSON.stringify(payload)).toString('base64');
-    }
-    async validateToken(token) {
-        try {
-            const payload = JSON.parse(Buffer.from(token, 'base64').toString());
-            if (payload.exp && payload.exp < Date.now()) {
-                return null;
-            }
-            const user = await this.prisma.user.findUnique({
-                where: { id: payload.id },
-            });
-            if (!user) {
-                return null;
-            }
-            return {
-                id: user.id,
-                email: user.email,
-                role: user.role,
-                firstName: user.firstName,
-                lastName: user.lastName,
-            };
-        }
-        catch {
-            return null;
-        }
-    }
-    async register(email, password, role = role_enum_1.Role.CLIENT, firstName, lastName) {
-        const existingUser = await this.prisma.user.findUnique({
-            where: { email: email.toLowerCase() },
-        });
-        if (existingUser) {
-            throw new common_1.UnauthorizedException('User with this email already exists');
-        }
-        const newUser = await this.prisma.user.create({
-            data: {
-                email: email.toLowerCase(),
-                password,
-                role: role,
-                firstName: firstName || null,
-                lastName: lastName || null,
-            },
-        });
-        return {
-            id: newUser.id,
-            email: newUser.email,
-            role: newUser.role,
-            firstName: newUser.firstName,
-            lastName: newUser.lastName,
-        };
+        this.logger = new common_1.Logger(AuthService_1.name);
     }
     async getProfile(userId) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
-        });
-        if (!user) {
-            throw new common_1.UnauthorizedException('User not found');
-        }
-        return {
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            firstName: user.firstName,
-            lastName: user.lastName,
-        };
-    }
-    async updateProfile(userId, data) {
-        if (data.email) {
-            const existingUser = await this.prisma.user.findUnique({
-                where: { email: data.email.toLowerCase() },
-            });
-            if (existingUser && existingUser.id !== userId) {
-                throw new common_1.UnauthorizedException('Email already in use');
-            }
-        }
-        const updatedUser = await this.prisma.user.update({
-            where: { id: userId },
-            data: {
-                ...(data.firstName !== undefined && { firstName: data.firstName || null }),
-                ...(data.lastName !== undefined && { lastName: data.lastName || null }),
-                ...(data.email && { email: data.email.toLowerCase() }),
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                phone: true,
+                avatar: true,
+                role: true,
+                createdAt: true,
+                updatedAt: true,
             },
         });
-        return {
-            id: updatedUser.id,
-            email: updatedUser.email,
-            role: updatedUser.role,
-            firstName: updatedUser.firstName,
-            lastName: updatedUser.lastName,
-        };
+        if (!user) {
+            this.logger.warn(`User ${userId} not found in database, needs sync`);
+            return null;
+        }
+        return user;
+    }
+    async updateProfile(userId, data) {
+        const user = await this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                firstName: data.firstName,
+                lastName: data.lastName,
+                phone: data.phone,
+                avatar: data.avatar,
+            },
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                phone: true,
+                avatar: true,
+                role: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+        this.logger.log(`User ${userId} profile updated`);
+        return user;
+    }
+    async syncUserFromKeycloak(keycloakUser) {
+        this.logger.log(`Syncing user from Keycloak: ${keycloakUser.email}`);
+        let role = role_enum_1.Role.CLIENT;
+        if (keycloakUser.roles?.includes('admin')) {
+            role = role_enum_1.Role.ADMIN;
+        }
+        else if (keycloakUser.roles?.includes('vendor')) {
+            role = role_enum_1.Role.VENDOR;
+        }
+        else if (keycloakUser.roles?.includes('lawyer_notary')) {
+            role = role_enum_1.Role.LAWYER_NOTARY;
+        }
+        const existingUser = await this.prisma.user.findUnique({
+            where: { email: keycloakUser.email },
+        });
+        if (existingUser) {
+            return this.prisma.user.update({
+                where: { id: existingUser.id },
+                data: {
+                    firstName: keycloakUser.given_name,
+                    lastName: keycloakUser.family_name,
+                    role,
+                },
+            });
+        }
+        return this.prisma.user.create({
+            data: {
+                id: keycloakUser.sub,
+                email: keycloakUser.email,
+                password: '',
+                firstName: keycloakUser.given_name,
+                lastName: keycloakUser.family_name,
+                role,
+            },
+        });
+    }
+    async findByEmail(email) {
+        return this.prisma.user.findUnique({
+            where: { email },
+        });
+    }
+    async findByKeycloakId(keycloakId) {
+        return this.prisma.user.findUnique({
+            where: { id: keycloakId },
+        });
     }
 };
 exports.AuthService = AuthService;
-exports.AuthService = AuthService = __decorate([
+exports.AuthService = AuthService = AuthService_1 = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], AuthService);

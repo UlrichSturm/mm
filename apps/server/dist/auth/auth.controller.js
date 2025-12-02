@@ -14,45 +14,52 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const common_1 = require("@nestjs/common");
+const swagger_1 = require("@nestjs/swagger");
 const auth_service_1 = require("./auth.service");
-const role_enum_1 = require("../common/enums/role.enum");
-const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
+const nest_keycloak_connect_1 = require("nest-keycloak-connect");
 let AuthController = class AuthController {
     constructor(authService) {
         this.authService = authService;
     }
-    async login(loginDto) {
-        return this.authService.login(loginDto);
-    }
-    async register(body) {
-        return this.authService.register(body.email, body.password, role_enum_1.Role.CLIENT, body.firstName, body.lastName);
-    }
     async getProfile(req) {
-        return this.authService.getProfile(req.user.id);
+        const keycloakUserId = req.user.sub;
+        let user = await this.authService.findByKeycloakId(keycloakUserId);
+        if (!user) {
+            user = await this.authService.syncUserFromKeycloak(req.user);
+        }
+        return user;
     }
     async updateProfile(req, body) {
-        return this.authService.updateProfile(req.user.id, body);
+        const keycloakUserId = req.user.sub;
+        return this.authService.updateProfile(keycloakUserId, body);
+    }
+    healthCheck() {
+        return { status: 'ok', service: 'auth', timestamp: new Date() };
     }
 };
 exports.AuthController = AuthController;
 __decorate([
-    (0, common_1.Post)('login'),
-    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], AuthController.prototype, "login", null);
-__decorate([
-    (0, common_1.Post)('register'),
-    __param(0, (0, common_1.Body)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", Promise)
-], AuthController.prototype, "register", null);
-__decorate([
     (0, common_1.Get)('profile'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)('JWT-auth'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Get current user profile',
+        description: 'Returns user profile from database. User must be authenticated via Keycloak.',
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'User profile',
+        schema: {
+            example: {
+                id: 'uuid',
+                email: 'user@example.com',
+                firstName: 'John',
+                lastName: 'Doe',
+                role: 'CLIENT',
+                createdAt: '2025-12-01T00:00:00.000Z',
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Not authenticated' }),
     __param(0, (0, common_1.Request)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -60,14 +67,48 @@ __decorate([
 ], AuthController.prototype, "getProfile", null);
 __decorate([
     (0, common_1.Patch)('profile'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, swagger_1.ApiBearerAuth)('JWT-auth'),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Update current user profile',
+        description: 'Update user profile information (firstName, lastName, phone, avatar)',
+    }),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            properties: {
+                firstName: { type: 'string', example: 'John' },
+                lastName: { type: 'string', example: 'Smith' },
+                phone: { type: 'string', example: '+49 123 456 7890' },
+                avatar: { type: 'string', example: 'https://example.com/avatar.jpg' },
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Profile updated successfully',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Not authenticated' }),
     __param(0, (0, common_1.Request)()),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "updateProfile", null);
+__decorate([
+    (0, common_1.Get)('health'),
+    (0, nest_keycloak_connect_1.Public)(),
+    (0, nest_keycloak_connect_1.Unprotected)(),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Health check for auth service',
+        description: 'Public endpoint to check if auth service is running',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 200, description: 'Auth service is healthy' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", void 0)
+], AuthController.prototype, "healthCheck", null);
 exports.AuthController = AuthController = __decorate([
+    (0, swagger_1.ApiTags)('auth'),
     (0, common_1.Controller)('auth'),
     __metadata("design:paramtypes", [auth_service_1.AuthService])
 ], AuthController);

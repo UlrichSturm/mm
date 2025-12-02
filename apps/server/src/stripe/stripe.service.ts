@@ -1,7 +1,6 @@
-import { Injectable, Inject, Logger, BadRequestException } from '@nestjs/common';
-import Stripe from 'stripe';
-import { STRIPE_CLIENT } from './stripe.module';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import Stripe from 'stripe';
 
 export interface CreatePaymentIntentParams {
   amount: number; // Amount in cents
@@ -21,11 +20,22 @@ export interface CreateConnectAccountParams {
 export class StripeService {
   private readonly logger = new Logger(StripeService.name);
   private readonly webhookSecret: string;
+  private readonly stripe: Stripe;
 
-  constructor(
-    @Inject(STRIPE_CLIENT) private readonly stripe: Stripe,
-    private readonly configService: ConfigService,
-  ) {
+  constructor(private readonly configService: ConfigService) {
+    const secretKey = this.configService.get<string>('STRIPE_SECRET_KEY');
+
+    if (!secretKey) {
+      this.logger.warn('STRIPE_SECRET_KEY not configured - Stripe features will be disabled');
+      // Create dummy stripe instance
+      this.stripe = {} as Stripe;
+    } else {
+      this.stripe = new Stripe(secretKey, {
+        apiVersion: '2025-11-17.clover',
+        typescript: true,
+      });
+    }
+
     this.webhookSecret = this.configService.get<string>('STRIPE_WEBHOOK_SECRET') || '';
   }
 
@@ -50,7 +60,7 @@ export class StripeService {
       this.logger.log(`PaymentIntent created: ${paymentIntent.id}`);
       return paymentIntent;
     } catch (error) {
-      this.logger.error(`Failed to create PaymentIntent: ${error.message}`);
+      this.logger.error(`Failed to create PaymentIntent: ${(error as Error).message}`);
       throw new BadRequestException('Failed to create payment');
     }
   }
@@ -71,7 +81,7 @@ export class StripeService {
       this.logger.log(`PaymentIntent cancelled: ${paymentIntentId}`);
       return paymentIntent;
     } catch (error) {
-      this.logger.error(`Failed to cancel PaymentIntent: ${error.message}`);
+      this.logger.error(`Failed to cancel PaymentIntent: ${(error as Error).message}`);
       throw new BadRequestException('Failed to cancel payment');
     }
   }
@@ -94,7 +104,7 @@ export class StripeService {
       this.logger.log(`Refund created: ${refund.id} for PaymentIntent: ${paymentIntentId}`);
       return refund;
     } catch (error) {
-      this.logger.error(`Failed to create refund: ${error.message}`);
+      this.logger.error(`Failed to create refund: ${(error as Error).message}`);
       throw new BadRequestException('Failed to create refund');
     }
   }
@@ -112,7 +122,7 @@ export class StripeService {
       this.logger.log(`Customer created: ${customer.id}`);
       return customer;
     } catch (error) {
-      this.logger.error(`Failed to create customer: ${error.message}`);
+      this.logger.error(`Failed to create customer: ${(error as Error).message}`);
       throw new BadRequestException('Failed to create customer');
     }
   }
@@ -140,7 +150,7 @@ export class StripeService {
       this.logger.log(`Connect account created: ${account.id}`);
       return account;
     } catch (error) {
-      this.logger.error(`Failed to create Connect account: ${error.message}`);
+      this.logger.error(`Failed to create Connect account: ${(error as Error).message}`);
       throw new BadRequestException('Failed to create vendor account');
     }
   }
@@ -163,7 +173,7 @@ export class StripeService {
 
       return accountLink;
     } catch (error) {
-      this.logger.error(`Failed to create account link: ${error.message}`);
+      this.logger.error(`Failed to create account link: ${(error as Error).message}`);
       throw new BadRequestException('Failed to create onboarding link');
     }
   }
@@ -194,7 +204,7 @@ export class StripeService {
       this.logger.log(`Transfer created: ${transfer.id} to ${destinationAccountId}`);
       return transfer;
     } catch (error) {
-      this.logger.error(`Failed to create transfer: ${error.message}`);
+      this.logger.error(`Failed to create transfer: ${(error as Error).message}`);
       throw new BadRequestException('Failed to create transfer');
     }
   }
@@ -210,7 +220,7 @@ export class StripeService {
     try {
       return this.stripe.webhooks.constructEvent(payload, signature, this.webhookSecret);
     } catch (error) {
-      this.logger.error(`Webhook signature verification failed: ${error.message}`);
+      this.logger.error(`Webhook signature verification failed: ${(error as Error).message}`);
       throw new BadRequestException('Invalid webhook signature');
     }
   }

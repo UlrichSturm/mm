@@ -5,7 +5,6 @@ import {
   Body,
   Param,
   Query,
-  UseGuards,
   Request,
   ParseUUIDPipe,
   HttpStatus,
@@ -24,7 +23,9 @@ import {
   ApiExcludeEndpoint,
 } from '@nestjs/swagger';
 import { PaymentStatus } from '@prisma/client';
+import { Roles, Resource, Public, Unprotected } from 'nest-keycloak-connect';
 import { PaymentsService } from './payments.service';
+import { Role } from '../common/enums/role.enum';
 import { StripeService } from '../stripe/stripe.service';
 import { CreatePaymentIntentDto } from './dto/create-payment.dto';
 import {
@@ -32,13 +33,10 @@ import {
   PaymentResponseDto,
   PaymentListResponseDto,
 } from './dto/payment-response.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-import { Role } from '../common/enums/role.enum';
 
 @ApiTags('payments')
 @Controller('payments')
+@Resource('payments')
 export class PaymentsController {
   constructor(
     private readonly paymentsService: PaymentsService,
@@ -50,7 +48,7 @@ export class PaymentsController {
   // ============================================
 
   @Post('intent')
-  @UseGuards(JwtAuthGuard)
+  @Roles({ roles: ['client'] })
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create payment intent for an order' })
   @ApiResponse({
@@ -65,11 +63,11 @@ export class PaymentsController {
     @Request() req: any,
     @Body() dto: CreatePaymentIntentDto,
   ): Promise<PaymentIntentResponseDto> {
-    return this.paymentsService.createPaymentIntent(req.user.id, dto);
+    return this.paymentsService.createPaymentIntent(req.user.sub, dto);
   }
 
   @Get('my')
-  @UseGuards(JwtAuthGuard)
+  @Roles({ roles: ['client'] })
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get current client payments' })
   @ApiQuery({ name: 'status', enum: PaymentStatus, required: false })
@@ -86,7 +84,7 @@ export class PaymentsController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ): Promise<PaymentListResponseDto> {
-    return this.paymentsService.getMyPayments(req.user.id, {
+    return this.paymentsService.getMyPayments(req.user.sub, {
       status,
       page: page ? Number(page) : 1,
       limit: limit ? Number(limit) : 10,
@@ -98,6 +96,8 @@ export class PaymentsController {
   // ============================================
 
   @Post('webhook')
+  @Public()
+  @Unprotected()
   @HttpCode(HttpStatus.OK)
   @ApiExcludeEndpoint() // Hide from Swagger - internal use only
   async handleWebhook(
@@ -123,8 +123,7 @@ export class PaymentsController {
   // ============================================
 
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get all payments (admin only)' })
   @ApiQuery({ name: 'status', enum: PaymentStatus, required: false })
@@ -151,8 +150,7 @@ export class PaymentsController {
   }
 
   @Post(':id/refund')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Initiate refund for a payment (admin only)' })
@@ -164,7 +162,8 @@ export class PaymentsController {
   @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Cannot refund this payment' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Payment not found' })
   async createRefund(@Request() req: any, @Param('id', ParseUUIDPipe) id: string) {
-    return this.paymentsService.createRefund(id, req.user.id, req.user.role);
+    const userRole = this.getRoleFromKeycloakRoles(req.user.roles);
+    return this.paymentsService.createRefund(id, req.user.sub, userRole);
   }
 
   // ============================================
@@ -172,7 +171,6 @@ export class PaymentsController {
   // ============================================
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get payment by ID' })
   @ApiParam({ name: 'id', description: 'Payment ID' })
@@ -187,6 +185,17 @@ export class PaymentsController {
     @Request() req: any,
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<PaymentResponseDto> {
-    return this.paymentsService.findOne(id, req.user.id, req.user.role);
+    const userRole = this.getRoleFromKeycloakRoles(req.user.roles);
+    return this.paymentsService.findOne(id, req.user.sub, userRole);
+  }
+
+  /**
+   * Helper to convert Keycloak roles to our Role enum
+   */
+  private getRoleFromKeycloakRoles(roles: string[]): Role {
+    if (roles?.includes('admin')) {return Role.ADMIN;}
+    if (roles?.includes('vendor')) {return Role.VENDOR;}
+    if (roles?.includes('lawyer_notary')) {return Role.LAWYER_NOTARY;}
+    return Role.CLIENT;
   }
 }

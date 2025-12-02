@@ -1,197 +1,152 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { Role } from '../common/enums/role.enum';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Role } from '../common/enums/role.enum';
 
-export interface User {
-  id: string;
-  email: string;
-  password?: string;
-  role: Role;
-  firstName?: string;
-  lastName?: string;
-}
-
-export interface LoginDto {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  token: string;
-  user: Omit<User, 'password'>;
-}
-
+/**
+ * AuthService for Keycloak integration
+ * 
+ * Note: Authentication is handled by Keycloak.
+ * This service only manages user profiles in our database.
+ */
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(AuthService.name);
 
-  async login(loginDto: LoginDto): Promise<LoginResponse> {
-    const { email, password } = loginDto;
+  constructor(private readonly prisma: PrismaService) {}
 
-    // Find user in database
+  /**
+   * Get user profile by ID
+   */
+  async getProfile(userId: string) {
     const user = await this.prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        avatar: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
-    }
-
-    // Check password (in production use bcrypt hashing)
-    if (user.password !== password) {
-      throw new UnauthorizedException('Invalid email or password');
-    }
-
-    // Generate simple token (in production use JWT)
-    const token = this.generateToken({
-      id: user.id,
-      email: user.email,
-      role: user.role as Role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    });
-
-    return {
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        role: user.role as Role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      },
-    };
-  }
-
-  private generateToken(user: User): string {
-    // Simple token for development (in production use JWT)
-    const payload = {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      exp: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-    };
-
-    // Base64 encoding (in production use JWT)
-    return Buffer.from(JSON.stringify(payload)).toString('base64');
-  }
-
-  async validateToken(token: string): Promise<User | null> {
-    try {
-      // Decode token
-      const payload = JSON.parse(Buffer.from(token, 'base64').toString());
-
-      // Check expiration
-      if (payload.exp && payload.exp < Date.now()) {
-        return null;
-      }
-
-      // Find user in database
-      const user = await this.prisma.user.findUnique({
-        where: { id: payload.id },
-      });
-
-      if (!user) {
-        return null;
-      }
-
-      return {
-        id: user.id,
-        email: user.email,
-        role: user.role as Role,
-        firstName: user.firstName,
-        lastName: user.lastName,
-      };
-    } catch {
+      // User authenticated in Keycloak but not in our DB - create profile
+      this.logger.warn(`User ${userId} not found in database, needs sync`);
       return null;
     }
+
+    return user;
   }
 
-  async register(
-    email: string,
-    password: string,
-    role: Role = Role.CLIENT,
-    firstName?: string,
-    lastName?: string,
-  ): Promise<User> {
-    // Check if user already exists
+  /**
+   * Update user profile
+   */
+  async updateProfile(
+    userId: string,
+    data: {
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      avatar?: string;
+    },
+  ) {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        avatar: data.avatar,
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        avatar: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    this.logger.log(`User ${userId} profile updated`);
+    return user;
+  }
+
+  /**
+   * Sync user from Keycloak to local database
+   * Called when user authenticates via Keycloak but doesn't exist in our DB
+   */
+  async syncUserFromKeycloak(keycloakUser: {
+    sub: string; // Keycloak user ID
+    email: string;
+    given_name?: string;
+    family_name?: string;
+    roles?: string[];
+  }) {
+    this.logger.log(`Syncing user from Keycloak: ${keycloakUser.email}`);
+
+    // Determine role from Keycloak roles
+    let role = Role.CLIENT;
+    if (keycloakUser.roles?.includes('admin')) {
+      role = Role.ADMIN;
+    } else if (keycloakUser.roles?.includes('vendor')) {
+      role = Role.VENDOR;
+    } else if (keycloakUser.roles?.includes('lawyer_notary')) {
+      role = Role.LAWYER_NOTARY;
+    }
+
+    // Check if user exists
     const existingUser = await this.prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+      where: { email: keycloakUser.email },
     });
 
     if (existingUser) {
-      throw new UnauthorizedException('User with this email already exists');
+      // Update existing user
+      return this.prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          firstName: keycloakUser.given_name,
+          lastName: keycloakUser.family_name,
+          role,
+        },
+      });
     }
 
     // Create new user
-    const newUser = await this.prisma.user.create({
+    return this.prisma.user.create({
       data: {
-        email: email.toLowerCase(),
-        password, // In production hash password with bcrypt
-        role: role as any,
-        firstName: firstName || null,
-        lastName: lastName || null,
+        id: keycloakUser.sub, // Use Keycloak user ID
+        email: keycloakUser.email,
+        password: '', // Empty - managed by Keycloak
+        firstName: keycloakUser.given_name,
+        lastName: keycloakUser.family_name,
+        role,
       },
     });
-
-    return {
-      id: newUser.id,
-      email: newUser.email,
-      role: newUser.role as Role,
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-    };
   }
 
-  async getProfile(userId: string): Promise<User> {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+  /**
+   * Get user by email (for Keycloak sync)
+   */
+  async findByEmail(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email },
     });
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
-    return {
-      id: user.id,
-      email: user.email,
-      role: user.role as Role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    };
   }
 
-  async updateProfile(
-    userId: string,
-    data: { firstName?: string; lastName?: string; email?: string },
-  ): Promise<User> {
-    // Check if email is being changed and if it's already taken
-    if (data.email) {
-      const existingUser = await this.prisma.user.findUnique({
-        where: { email: data.email.toLowerCase() },
-      });
-
-      if (existingUser && existingUser.id !== userId) {
-        throw new UnauthorizedException('Email already in use');
-      }
-    }
-
-    // Update user
-    const updatedUser = await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        ...(data.firstName !== undefined && { firstName: data.firstName || null }),
-        ...(data.lastName !== undefined && { lastName: data.lastName || null }),
-        ...(data.email && { email: data.email.toLowerCase() }),
-      },
+  /**
+   * Get user by Keycloak ID
+   */
+  async findByKeycloakId(keycloakId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: keycloakId },
     });
-
-    return {
-      id: updatedUser.id,
-      email: updatedUser.email,
-      role: updatedUser.role as Role,
-      firstName: updatedUser.firstName,
-      lastName: updatedUser.lastName,
-    };
   }
 }

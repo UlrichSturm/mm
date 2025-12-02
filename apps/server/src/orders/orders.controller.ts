@@ -6,7 +6,6 @@ import {
   Body,
   Param,
   Query,
-  UseGuards,
   Request,
   ParseUUIDPipe,
   HttpStatus,
@@ -21,19 +20,17 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { OrderStatus } from '@prisma/client';
+import { Roles, Resource, Public } from 'nest-keycloak-connect';
 import { OrdersService, OrderFilters } from './orders.service';
+import { Role } from '../common/enums/role.enum';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto, UpdateOrderStatusDto } from './dto/update-order.dto';
 import { OrderResponseDto, OrderListResponseDto } from './dto/order-response.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-import { Role } from '../common/enums/role.enum';
 
 @ApiTags('orders')
 @ApiBearerAuth('JWT-auth')
 @Controller('orders')
-@UseGuards(JwtAuthGuard)
+@Resource('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
@@ -42,6 +39,7 @@ export class OrdersController {
   // ============================================
 
   @Post()
+  @Roles({ roles: ['client'] })
   @ApiOperation({ summary: 'Create a new order' })
   @ApiResponse({
     status: HttpStatus.CREATED,
@@ -54,10 +52,11 @@ export class OrdersController {
     @Request() req: any,
     @Body() createOrderDto: CreateOrderDto,
   ): Promise<OrderResponseDto> {
-    return this.ordersService.create(req.user.id, createOrderDto);
+    return this.ordersService.create(req.user.sub, createOrderDto);
   }
 
   @Get('my')
+  @Roles({ roles: ['client'] })
   @ApiOperation({ summary: 'Get current client orders' })
   @ApiQuery({ name: 'status', enum: OrderStatus, required: false })
   @ApiQuery({ name: 'page', type: Number, required: false, example: 1 })
@@ -73,7 +72,7 @@ export class OrdersController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ): Promise<OrderListResponseDto> {
-    return this.ordersService.getMyOrders(req.user.id, {
+    return this.ordersService.getMyOrders(req.user.sub, {
       status,
       page: page ? Number(page) : 1,
       limit: limit ? Number(limit) : 10,
@@ -82,6 +81,7 @@ export class OrdersController {
 
   @Patch(':id/cancel')
   @HttpCode(HttpStatus.OK)
+  @Roles({ roles: ['client'] })
   @ApiOperation({ summary: 'Cancel an order (client only, PENDING status)' })
   @ApiParam({ name: 'id', description: 'Order ID' })
   @ApiResponse({
@@ -96,7 +96,7 @@ export class OrdersController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body('reason') reason?: string,
   ): Promise<OrderResponseDto> {
-    return this.ordersService.cancel(id, req.user.id, reason);
+    return this.ordersService.cancel(id, req.user.sub, reason);
   }
 
   // ============================================
@@ -104,8 +104,7 @@ export class OrdersController {
   // ============================================
 
   @Get('vendor')
-  @UseGuards(RolesGuard)
-  @Roles(Role.VENDOR, Role.ADMIN)
+  @Roles({ roles: ['vendor', 'admin'] })
   @ApiOperation({ summary: 'Get orders for vendor services' })
   @ApiQuery({ name: 'status', enum: OrderStatus, required: false })
   @ApiQuery({ name: 'page', type: Number, required: false, example: 1 })
@@ -121,7 +120,7 @@ export class OrdersController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ): Promise<OrderListResponseDto> {
-    return this.ordersService.getVendorOrders(req.user.id, {
+    return this.ordersService.getVendorOrders(req.user.sub, {
       status,
       page: page ? Number(page) : 1,
       limit: limit ? Number(limit) : 10,
@@ -130,8 +129,7 @@ export class OrdersController {
 
   @Patch(':id/status')
   @HttpCode(HttpStatus.OK)
-  @UseGuards(RolesGuard)
-  @Roles(Role.VENDOR, Role.ADMIN)
+  @Roles({ roles: ['vendor', 'admin'] })
   @ApiOperation({ summary: 'Update order status (vendor/admin)' })
   @ApiParam({ name: 'id', description: 'Order ID' })
   @ApiResponse({
@@ -147,7 +145,8 @@ export class OrdersController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateStatusDto: UpdateOrderStatusDto,
   ): Promise<OrderResponseDto> {
-    return this.ordersService.updateStatus(id, req.user.id, req.user.role, updateStatusDto);
+    const userRole = this.getRoleFromKeycloakRoles(req.user.roles);
+    return this.ordersService.updateStatus(id, req.user.sub, userRole, updateStatusDto);
   }
 
   // ============================================
@@ -155,8 +154,7 @@ export class OrdersController {
   // ============================================
 
   @Get()
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
   @ApiOperation({ summary: 'Get all orders (admin only)' })
   @ApiQuery({ name: 'status', enum: OrderStatus, required: false })
   @ApiQuery({ name: 'clientId', type: String, required: false })
@@ -203,10 +201,12 @@ export class OrdersController {
     @Request() req: any,
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<OrderResponseDto> {
-    return this.ordersService.findOne(id, req.user.id, req.user.role);
+    const userRole = this.getRoleFromKeycloakRoles(req.user.roles);
+    return this.ordersService.findOne(id, req.user.sub, userRole);
   }
 
   @Get('number/:orderNumber')
+  @Public()
   @ApiOperation({ summary: 'Get order by order number' })
   @ApiParam({ name: 'orderNumber', description: 'Order number (e.g., ORD-2025-001234)' })
   @ApiResponse({
@@ -236,6 +236,17 @@ export class OrdersController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateOrderDto: UpdateOrderDto,
   ): Promise<OrderResponseDto> {
-    return this.ordersService.update(id, req.user.id, req.user.role, updateOrderDto);
+    const userRole = this.getRoleFromKeycloakRoles(req.user.roles);
+    return this.ordersService.update(id, req.user.sub, userRole, updateOrderDto);
+  }
+
+  /**
+   * Helper to convert Keycloak roles to our Role enum
+   */
+  private getRoleFromKeycloakRoles(roles: string[]): Role {
+    if (roles?.includes('admin')) {return Role.ADMIN;}
+    if (roles?.includes('vendor')) {return Role.VENDOR;}
+    if (roles?.includes('lawyer_notary')) {return Role.LAWYER_NOTARY;}
+    return Role.CLIENT;
   }
 }

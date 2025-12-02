@@ -12,4 +12,5 @@ export declare class VendorsController {
     delete(id: string): Promise<{
         message: string;
     }>;
+    private getRoleFromKeycloakRoles;
 }

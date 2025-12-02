@@ -1,17 +1,14 @@
-import { Controller, Get, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Roles, Resource } from 'nest-keycloak-connect';
 import { AdminService } from './admin.service';
 import { AdminStatsResponseDto } from './dto/stats-response.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-import { Role } from '../common/enums/role.enum';
 
 @ApiTags('admin')
 @ApiBearerAuth('JWT-auth')
 @Controller('admin')
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.ADMIN)
+@Resource('admin')
+@Roles({ roles: ['admin'] })
 export class AdminController {
   constructor(private readonly adminService: AdminService) {}
 

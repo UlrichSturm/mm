@@ -6,36 +6,17 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.StripeModule = exports.STRIPE_CLIENT = void 0;
+exports.StripeModule = void 0;
 const common_1 = require("@nestjs/common");
-const config_1 = require("@nestjs/config");
-const stripe_1 = require("stripe");
 const stripe_service_1 = require("./stripe.service");
-exports.STRIPE_CLIENT = 'STRIPE_CLIENT';
 let StripeModule = class StripeModule {
 };
 exports.StripeModule = StripeModule;
 exports.StripeModule = StripeModule = __decorate([
     (0, common_1.Global)(),
     (0, common_1.Module)({
-        providers: [
-            {
-                provide: exports.STRIPE_CLIENT,
-                useFactory: (configService) => {
-                    const secretKey = configService.get('STRIPE_SECRET_KEY');
-                    if (!secretKey) {
-                        throw new Error('STRIPE_SECRET_KEY is not configured');
-                    }
-                    return new stripe_1.default(secretKey, {
-                        apiVersion: '2025-11-17.clover',
-                        typescript: true,
-                    });
-                },
-                inject: [config_1.ConfigService],
-            },
-            stripe_service_1.StripeService,
-        ],
-        exports: [exports.STRIPE_CLIENT, stripe_service_1.StripeService],
+        providers: [stripe_service_1.StripeService],
+        exports: [stripe_service_1.StripeService],
     })
 ], StripeModule);
 //# sourceMappingURL=stripe.module.js.map

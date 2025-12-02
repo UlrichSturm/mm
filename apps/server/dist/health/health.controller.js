@@ -8,120 +8,77 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var HealthController_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HealthController = void 0;
 const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
-const swagger_2 = require("@nestjs/swagger");
-class HealthCheckResponse {
-}
-__decorate([
-    (0, swagger_2.ApiProperty)({ example: 'ok' }),
-    __metadata("design:type", String)
-], HealthCheckResponse.prototype, "status", void 0);
-__decorate([
-    (0, swagger_2.ApiProperty)({ example: '2025-12-02T10:00:00.000Z' }),
-    __metadata("design:type", String)
-], HealthCheckResponse.prototype, "timestamp", void 0);
-__decorate([
-    (0, swagger_2.ApiProperty)({ example: '1.0.0' }),
-    __metadata("design:type", String)
-], HealthCheckResponse.prototype, "version", void 0);
-__decorate([
-    (0, swagger_2.ApiProperty)({ example: 'development' }),
-    __metadata("design:type", String)
-], HealthCheckResponse.prototype, "environment", void 0);
-class DatabaseHealthResponse {
-}
-__decorate([
-    (0, swagger_2.ApiProperty)({ example: 'ok' }),
-    __metadata("design:type", String)
-], DatabaseHealthResponse.prototype, "status", void 0);
-__decorate([
-    (0, swagger_2.ApiProperty)({ example: 'Connected' }),
-    __metadata("design:type", String)
-], DatabaseHealthResponse.prototype, "database", void 0);
-__decorate([
-    (0, swagger_2.ApiProperty)({ example: 15 }),
-    __metadata("design:type", Number)
-], DatabaseHealthResponse.prototype, "responseTimeMs", void 0);
-let HealthController = class HealthController {
-    check() {
+const config_1 = require("@nestjs/config");
+const nest_keycloak_connect_1 = require("nest-keycloak-connect");
+const prisma_service_1 = require("../prisma/prisma.service");
+let HealthController = HealthController_1 = class HealthController {
+    constructor(configService, prisma) {
+        this.configService = configService;
+        this.prisma = prisma;
+        this.logger = new common_1.Logger(HealthController_1.name);
+    }
+    getHealth() {
         return {
             status: 'ok',
-            timestamp: new Date().toISOString(),
-            version: process.env.npm_package_version || '1.0.0',
-            environment: process.env.NODE_ENV || 'development',
+            version: this.configService.get('APP_VERSION', '1.0.0'),
+            env: this.configService.get('NODE_ENV', 'development'),
         };
     }
-    async ready() {
-        return {
-            status: 'ok',
-            database: 'Connected',
-            responseTimeMs: 15,
-        };
+    async getReadiness() {
+        try {
+            await this.prisma.$queryRaw `SELECT 1`;
+            return { database: 'Connected' };
+        }
+        catch (error) {
+            this.logger.error('Database connection failed', error.stack);
+            throw new Error('Database connection failed');
+        }
     }
-    live() {
+    getLiveness() {
         return { status: 'ok' };
     }
 };
 exports.HealthController = HealthController;
 __decorate([
     (0, common_1.Get)(),
-    (0, swagger_1.ApiOperation)({
-        summary: 'Basic health check',
-        description: 'Returns the current status of the API',
-    }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: 'Service is healthy',
-        type: HealthCheckResponse,
-    }),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", HealthCheckResponse)
-], HealthController.prototype, "check", null);
-__decorate([
-    (0, common_1.Get)('ready'),
-    (0, swagger_1.ApiOperation)({
-        summary: 'Readiness check',
-        description: 'Checks if the service is ready to handle requests (database connected)',
-    }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: 'Service is ready',
-        type: DatabaseHealthResponse,
-    }),
-    (0, swagger_1.ApiResponse)({
-        status: 503,
-        description: 'Service is not ready',
-    }),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], HealthController.prototype, "ready", null);
-__decorate([
-    (0, common_1.Get)('live'),
-    (0, swagger_1.ApiOperation)({
-        summary: 'Liveness check',
-        description: 'Simple check to verify the service is running',
-    }),
-    (0, swagger_1.ApiResponse)({
-        status: 200,
-        description: 'Service is alive',
-        schema: {
-            type: 'object',
-            properties: {
-                status: { type: 'string', example: 'ok' },
-            },
-        },
-    }),
+    (0, nest_keycloak_connect_1.Public)(),
+    (0, nest_keycloak_connect_1.Unprotected)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Basic health check' }),
+    (0, swagger_1.ApiResponse)({ status: common_1.HttpStatus.OK, description: 'Service is up and running' }),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Object)
-], HealthController.prototype, "live", null);
-exports.HealthController = HealthController = __decorate([
+], HealthController.prototype, "getHealth", null);
+__decorate([
+    (0, common_1.Get)('ready'),
+    (0, nest_keycloak_connect_1.Public)(),
+    (0, nest_keycloak_connect_1.Unprotected)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Readiness probe: checks database connection' }),
+    (0, swagger_1.ApiResponse)({ status: common_1.HttpStatus.OK, description: 'Service is ready' }),
+    (0, swagger_1.ApiResponse)({ status: common_1.HttpStatus.SERVICE_UNAVAILABLE, description: 'Service is not ready' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], HealthController.prototype, "getReadiness", null);
+__decorate([
+    (0, common_1.Get)('live'),
+    (0, nest_keycloak_connect_1.Public)(),
+    (0, nest_keycloak_connect_1.Unprotected)(),
+    (0, swagger_1.ApiOperation)({ summary: 'Liveness probe: checks if the application is alive' }),
+    (0, swagger_1.ApiResponse)({ status: common_1.HttpStatus.OK, description: 'Service is alive' }),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Object)
+], HealthController.prototype, "getLiveness", null);
+exports.HealthController = HealthController = HealthController_1 = __decorate([
     (0, swagger_1.ApiTags)('health'),
-    (0, common_1.Controller)('health')
+    (0, common_1.Controller)('health'),
+    __metadata("design:paramtypes", [config_1.ConfigService,
+        prisma_service_1.PrismaService])
 ], HealthController);
 //# sourceMappingURL=health.controller.js.map

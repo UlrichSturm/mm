@@ -7,7 +7,6 @@ import {
   Body,
   Param,
   Query,
-  UseGuards,
   Request,
   ParseUUIDPipe,
   HttpStatus,
@@ -22,17 +21,16 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { ServiceStatus } from '@prisma/client';
+import { Roles, Resource, Public, Unprotected } from 'nest-keycloak-connect';
 import { ServicesService, ServiceFilters } from './services.service';
+import { Role } from '../common/enums/role.enum';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
 import { ServiceResponseDto, ServiceListResponseDto } from './dto/service-response.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-import { Role } from '../common/enums/role.enum';
 
 @ApiTags('services')
 @Controller('services')
+@Resource('services')
 export class ServicesController {
   constructor(private readonly servicesService: ServicesService) {}
 
@@ -41,6 +39,8 @@ export class ServicesController {
   // ============================================
 
   @Get()
+  @Public()
+  @Unprotected()
   @ApiOperation({ summary: 'Get all services (public)' })
   @ApiQuery({ name: 'search', required: false, description: 'Search by name or description' })
   @ApiQuery({ name: 'categoryId', required: false, description: 'Filter by category' })
@@ -76,6 +76,8 @@ export class ServicesController {
   }
 
   @Get(':id')
+  @Public()
+  @Unprotected()
   @ApiOperation({ summary: 'Get service by ID (public)' })
   @ApiParam({ name: 'id', description: 'Service ID' })
   @ApiResponse({
@@ -93,8 +95,7 @@ export class ServicesController {
   // ============================================
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.VENDOR)
+  @Roles({ roles: ['vendor'] })
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new service (vendor only)' })
   @ApiResponse({
@@ -108,12 +109,11 @@ export class ServicesController {
     @Request() req: any,
     @Body() createServiceDto: CreateServiceDto,
   ): Promise<ServiceResponseDto> {
-    return this.servicesService.create(req.user.id, createServiceDto);
+    return this.servicesService.create(req.user.sub, createServiceDto);
   }
 
   @Get('vendor/my')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.VENDOR)
+  @Roles({ roles: ['vendor'] })
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Get my services (vendor only)' })
   @ApiQuery({ name: 'search', required: false })
@@ -134,7 +134,7 @@ export class ServicesController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
   ): Promise<ServiceListResponseDto> {
-    return this.servicesService.getMyServices(req.user.id, {
+    return this.servicesService.getMyServices(req.user.sub, {
       search,
       categoryId,
       status,
@@ -144,7 +144,6 @@ export class ServicesController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update service (owner or admin)' })
@@ -161,11 +160,11 @@ export class ServicesController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateServiceDto: UpdateServiceDto,
   ): Promise<ServiceResponseDto> {
-    return this.servicesService.update(id, req.user.id, req.user.role, updateServiceDto);
+    const userRole = this.getRoleFromKeycloakRoles(req.user.roles);
+    return this.servicesService.update(id, req.user.sub, userRole, updateServiceDto);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete service (owner or admin)' })
@@ -177,7 +176,8 @@ export class ServicesController {
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Service not found' })
   @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Not authorized' })
   async delete(@Request() req: any, @Param('id', ParseUUIDPipe) id: string) {
-    return this.servicesService.delete(id, req.user.id, req.user.role);
+    const userRole = this.getRoleFromKeycloakRoles(req.user.roles);
+    return this.servicesService.delete(id, req.user.sub, userRole);
   }
 
   // ============================================
@@ -185,8 +185,7 @@ export class ServicesController {
   // ============================================
 
   @Patch(':id/status')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
   @ApiBearerAuth('JWT-auth')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update service status (admin only)' })
@@ -202,5 +201,15 @@ export class ServicesController {
     @Body('status') status: ServiceStatus,
   ): Promise<ServiceResponseDto> {
     return this.servicesService.updateStatus(id, status);
+  }
+
+  /**
+   * Helper to convert Keycloak roles to our Role enum
+   */
+  private getRoleFromKeycloakRoles(roles: string[]): Role {
+    if (roles?.includes('admin')) {return Role.ADMIN;}
+    if (roles?.includes('vendor')) {return Role.VENDOR;}
+    if (roles?.includes('lawyer_notary')) {return Role.LAWYER_NOTARY;}
+    return Role.CLIENT;
   }
 }

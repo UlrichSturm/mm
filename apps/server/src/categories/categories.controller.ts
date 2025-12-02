@@ -7,7 +7,6 @@ import {
   Body,
   Param,
   Query,
-  UseGuards,
   ParseUUIDPipe,
   HttpStatus,
   HttpCode,
@@ -20,17 +19,15 @@ import {
   ApiQuery,
   ApiParam,
 } from '@nestjs/swagger';
+import { Roles, Resource, Public, Unprotected } from 'nest-keycloak-connect';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CategoryResponseDto, CategoryListResponseDto } from './dto/category-response.dto';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-import { Role } from '../common/enums/role.enum';
 
 @ApiTags('categories')
 @Controller('categories')
+@Resource('categories')
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
@@ -39,6 +36,8 @@ export class CategoriesController {
   // ============================================
 
   @Get()
+  @Public()
+  @Unprotected()
   @ApiOperation({ summary: 'Get all categories (public - active only)' })
   @ApiQuery({
     name: 'includeInactive',
@@ -54,12 +53,12 @@ export class CategoriesController {
   async findAll(
     @Query('includeInactive') includeInactive?: string,
   ): Promise<CategoryListResponseDto> {
-    // Only admins should set includeInactive, but we handle it here
-    // In a real app, you'd check user role
     return this.categoriesService.findAll(includeInactive === 'true');
   }
 
   @Get('slug/:slug')
+  @Public()
+  @Unprotected()
   @ApiOperation({ summary: 'Get category by slug (public)' })
   @ApiParam({ name: 'slug', description: 'Category slug' })
   @ApiResponse({
@@ -73,6 +72,8 @@ export class CategoriesController {
   }
 
   @Get(':id')
+  @Public()
+  @Unprotected()
   @ApiOperation({ summary: 'Get category by ID (public)' })
   @ApiParam({ name: 'id', description: 'Category ID' })
   @ApiResponse({
@@ -90,8 +91,7 @@ export class CategoriesController {
   // ============================================
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Create a new category (admin only)' })
   @ApiResponse({
@@ -106,8 +106,7 @@ export class CategoriesController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
   @ApiBearerAuth('JWT-auth')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Update category (admin only)' })
@@ -127,8 +126,7 @@ export class CategoriesController {
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
   @ApiBearerAuth('JWT-auth')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Delete category (admin only)' })

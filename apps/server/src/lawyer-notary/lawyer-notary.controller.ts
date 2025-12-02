@@ -7,46 +7,59 @@ import {
   Body,
   Param,
   Query,
-  UseGuards,
   Request,
   NotFoundException,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
+import { Roles, Resource, Public, Unprotected } from 'nest-keycloak-connect';
 import { LawyerNotaryService, LawyerNotaryStatus } from './lawyer-notary.service';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
 import { Role } from '../common/enums/role.enum';
 
+@ApiTags('lawyers-notaries')
 @Controller('lawyer-notary')
+@Resource('lawyer-notary')
 export class LawyerNotaryController {
   constructor(private readonly lawyerNotaryService: LawyerNotaryService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Create lawyer/notary profile (admin only)' })
   async create(@Body() data: any) {
     // Admin creates lawyer/notary profile
     return this.lawyerNotaryService.create(data.userId, data);
   }
 
   @Get()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'List all lawyers/notaries (admin only)' })
+  @ApiQuery({ name: 'status', enum: LawyerNotaryStatus, required: false })
   async findAll(@Query('status') status?: LawyerNotaryStatus) {
     return this.lawyerNotaryService.findAll(status);
   }
 
   @Get('available')
+  @Public()
+  @Unprotected()
+  @ApiOperation({ summary: 'Get available lawyers by postal code (public)' })
+  @ApiQuery({ name: 'postalCode', required: true })
   async getAvailableLawyers(@Query('postalCode') postalCode: string) {
-    // Public endpoint - no auth required
     return this.lawyerNotaryService.getAvailableLawyers(postalCode || '');
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.LAWYER_NOTARY, Role.ADMIN)
+  @Roles({ roles: ['lawyer_notary', 'admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get my lawyer/notary profile' })
   async getMyProfile(@Request() req: any) {
-    const profile = await this.lawyerNotaryService.findByUserId(req.user.id);
+    const profile = await this.lawyerNotaryService.findByUserId(req.user.sub);
     if (!profile) {
       throw new NotFoundException('Profile not found');
     }
@@ -54,53 +67,61 @@ export class LawyerNotaryController {
   }
 
   @Get(':id')
+  @Public()
+  @Unprotected()
+  @ApiOperation({ summary: 'Get lawyer/notary by ID (public)' })
   async findOne(@Param('id') id: string) {
     return this.lawyerNotaryService.findOne(id);
   }
 
   @Patch('me')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.LAWYER_NOTARY, Role.ADMIN)
+  @Roles({ roles: ['lawyer_notary', 'admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Update my lawyer/notary profile' })
   async updateMyProfile(@Request() req: any, @Body() data: any) {
-    const profile = await this.lawyerNotaryService.findByUserId(req.user.id);
+    const profile = await this.lawyerNotaryService.findByUserId(req.user.sub);
     if (!profile) {
       throw new NotFoundException('Profile not found');
     }
-    return this.lawyerNotaryService.updateProfile(
-      profile.id,
-      req.user.id,
-      req.user.role,
-      data,
-    );
+    const userRole = this.getRoleFromKeycloakRoles(req.user.roles);
+    return this.lawyerNotaryService.updateProfile(profile.id, req.user.sub, userRole, data);
   }
 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Update lawyer/notary profile (admin only)' })
   async updateProfile(@Param('id') id: string, @Body() data: any) {
     // Admin can update any profile
     const profile = await this.lawyerNotaryService.findOne(id);
-    return this.lawyerNotaryService.updateProfile(
-      id,
-      profile.userId,
-      Role.ADMIN,
-      data,
-    );
+    return this.lawyerNotaryService.updateProfile(id, profile.userId, Role.ADMIN, data);
   }
 
   @Patch(':id/status')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Update lawyer/notary status (admin only)' })
+  @ApiParam({ name: 'id', description: 'Lawyer/Notary ID' })
   async updateStatus(@Param('id') id: string, @Body('status') status: LawyerNotaryStatus) {
     return this.lawyerNotaryService.updateStatus(id, status);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Delete lawyer/notary profile (admin only)' })
   async delete(@Param('id') id: string) {
     await this.lawyerNotaryService.delete(id);
     return { message: 'Profile deleted successfully' };
   }
-}
 
+  /**
+   * Helper to convert Keycloak roles to our Role enum
+   */
+  private getRoleFromKeycloakRoles(roles: string[]): Role {
+    if (roles?.includes('admin')) {return Role.ADMIN;}
+    if (roles?.includes('vendor')) {return Role.VENDOR;}
+    if (roles?.includes('lawyer_notary')) {return Role.LAWYER_NOTARY;}
+    return Role.CLIENT;
+  }
+}

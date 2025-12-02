@@ -1,5 +1,5 @@
-import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
+import Stripe from 'stripe';
 export interface CreatePaymentIntentParams {
     amount: number;
     currency?: string;
@@ -13,11 +13,11 @@ export interface CreateConnectAccountParams {
     country?: string;
 }
 export declare class StripeService {
-    private readonly stripe;
     private readonly configService;
     private readonly logger;
     private readonly webhookSecret;
-    constructor(stripe: Stripe, configService: ConfigService);
+    private readonly stripe;
+    constructor(configService: ConfigService);
     createPaymentIntent(params: CreatePaymentIntentParams): Promise<Stripe.PaymentIntent>;
     getPaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent>;
     cancelPaymentIntent(paymentIntentId: string): Promise<Stripe.PaymentIntent>;

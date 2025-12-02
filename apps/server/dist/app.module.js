@@ -10,10 +10,6 @@ exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const throttler_1 = require("@nestjs/throttler");
-const categories_controller_1 = require("./categories/categories.controller");
-const categories_service_1 = require("./categories/categories.service");
-const services_controller_1 = require("./services/services.controller");
-const services_service_1 = require("./services/services.service");
 const lawyer_notary_module_1 = require("./lawyer-notary/lawyer-notary.module");
 const auth_module_1 = require("./auth/auth.module");
 const vendors_module_1 = require("./vendors/vendors.module");
@@ -22,6 +18,11 @@ const health_module_1 = require("./health/health.module");
 const stripe_module_1 = require("./stripe/stripe.module");
 const email_module_1 = require("./email/email.module");
 const storage_module_1 = require("./storage/storage.module");
+const orders_module_1 = require("./orders/orders.module");
+const payments_module_1 = require("./payments/payments.module");
+const services_module_1 = require("./services/services.module");
+const categories_module_1 = require("./categories/categories.module");
+const admin_module_1 = require("./admin/admin.module");
 const wills_controller_1 = require("./wills/wills.controller");
 let AppModule = class AppModule {
 };
@@ -53,9 +54,14 @@ exports.AppModule = AppModule = __decorate([
             auth_module_1.AuthModule,
             vendors_module_1.VendorsModule,
             lawyer_notary_module_1.LawyerNotaryModule,
+            categories_module_1.CategoriesModule,
+            services_module_1.ServicesModule,
+            orders_module_1.OrdersModule,
+            payments_module_1.PaymentsModule,
+            admin_module_1.AdminModule,
         ],
-        controllers: [categories_controller_1.CategoriesController, services_controller_1.ServicesController, wills_controller_1.WillsController],
-        providers: [categories_service_1.CategoriesService, services_service_1.ServicesService],
+        controllers: [wills_controller_1.WillsController],
+        providers: [],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

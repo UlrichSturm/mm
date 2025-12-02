@@ -14,10 +14,8 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WillsController = void 0;
 const common_1 = require("@nestjs/common");
-const jwt_auth_guard_1 = require("../common/guards/jwt-auth.guard");
-const roles_guard_1 = require("../common/guards/roles.guard");
-const roles_decorator_1 = require("../common/decorators/roles.decorator");
-const role_enum_1 = require("../common/enums/role.enum");
+const swagger_1 = require("@nestjs/swagger");
+const nest_keycloak_connect_1 = require("nest-keycloak-connect");
 let WillsController = class WillsController {
     async getAllAppointments(_filters) {
         return [];
@@ -38,8 +36,9 @@ let WillsController = class WillsController {
 exports.WillsController = WillsController;
 __decorate([
     (0, common_1.Get)('appointments'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(role_enum_1.Role.ADMIN),
+    (0, nest_keycloak_connect_1.Roles)({ roles: ['admin'] }),
+    (0, swagger_1.ApiBearerAuth)('JWT-auth'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all will appointments (admin only)' }),
     __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -47,8 +46,9 @@ __decorate([
 ], WillsController.prototype, "getAllAppointments", null);
 __decorate([
     (0, common_1.Get)('appointments/:id'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(role_enum_1.Role.ADMIN),
+    (0, nest_keycloak_connect_1.Roles)({ roles: ['admin'] }),
+    (0, swagger_1.ApiBearerAuth)('JWT-auth'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get will appointment by ID (admin only)' }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -56,8 +56,9 @@ __decorate([
 ], WillsController.prototype, "getAppointment", null);
 __decorate([
     (0, common_1.Get)('executions'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(role_enum_1.Role.ADMIN),
+    (0, nest_keycloak_connect_1.Roles)({ roles: ['admin'] }),
+    (0, swagger_1.ApiBearerAuth)('JWT-auth'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get all will executions (admin only)' }),
     __param(0, (0, common_1.Query)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
@@ -65,8 +66,9 @@ __decorate([
 ], WillsController.prototype, "getAllExecutions", null);
 __decorate([
     (0, common_1.Get)('executions/:id'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(role_enum_1.Role.ADMIN),
+    (0, nest_keycloak_connect_1.Roles)({ roles: ['admin'] }),
+    (0, swagger_1.ApiBearerAuth)('JWT-auth'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get will execution by ID (admin only)' }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
@@ -74,14 +76,17 @@ __decorate([
 ], WillsController.prototype, "getExecution", null);
 __decorate([
     (0, common_1.Get)('data/:id'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
-    (0, roles_decorator_1.Roles)(role_enum_1.Role.ADMIN),
+    (0, nest_keycloak_connect_1.Roles)({ roles: ['admin'] }),
+    (0, swagger_1.ApiBearerAuth)('JWT-auth'),
+    (0, swagger_1.ApiOperation)({ summary: 'Get will data by ID (admin only)' }),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], WillsController.prototype, "getWillData", null);
 exports.WillsController = WillsController = __decorate([
-    (0, common_1.Controller)('wills')
+    (0, swagger_1.ApiTags)('wills'),
+    (0, common_1.Controller)('wills'),
+    (0, nest_keycloak_connect_1.Resource)('wills')
 ], WillsController);
 //# sourceMappingURL=wills.controller.js.map

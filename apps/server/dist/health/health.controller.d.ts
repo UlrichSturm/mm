@@ -1,19 +1,19 @@
-declare class HealthCheckResponse {
-    status: string;
-    timestamp: string;
-    version: string;
-    environment: string;
-}
-declare class DatabaseHealthResponse {
-    status: string;
-    database: string;
-    responseTimeMs: number;
-}
+import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma/prisma.service';
 export declare class HealthController {
-    check(): HealthCheckResponse;
-    ready(): Promise<DatabaseHealthResponse>;
-    live(): {
+    private readonly configService;
+    private readonly prisma;
+    private readonly logger;
+    constructor(configService: ConfigService, prisma: PrismaService);
+    getHealth(): {
+        status: string;
+        version: string;
+        env: string;
+    };
+    getReadiness(): Promise<{
+        database: string;
+    }>;
+    getLiveness(): {
         status: string;
     };
 }
-export {};

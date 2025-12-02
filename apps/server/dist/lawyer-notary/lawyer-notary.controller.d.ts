@@ -13,4 +13,5 @@ export declare class LawyerNotaryController {
     delete(id: string): Promise<{
         message: string;
     }>;
+    private getRoleFromKeycloakRoles;
 }

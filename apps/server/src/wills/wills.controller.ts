@@ -1,14 +1,15 @@
-import { Controller, Get, Query, UseGuards, Param } from '@nestjs/common';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../common/guards/roles.guard';
-import { Roles } from '../common/decorators/roles.decorator';
-import { Role } from '../common/enums/role.enum';
+import { Controller, Get, Query, Param } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { Roles, Resource } from 'nest-keycloak-connect';
 
+@ApiTags('wills')
 @Controller('wills')
+@Resource('wills')
 export class WillsController {
   @Get('appointments')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get all will appointments (admin only)' })
   async getAllAppointments(@Query() _filters: Record<string, unknown>) {
     // Return empty array - no mock data
     // Appointments should be retrieved from database via Prisma
@@ -16,16 +17,18 @@ export class WillsController {
   }
 
   @Get('appointments/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get will appointment by ID (admin only)' })
   async getAppointment(@Param('id') _id: string) {
     // Return empty object - no mock data
     return null;
   }
 
   @Get('executions')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get all will executions (admin only)' })
   async getAllExecutions(@Query() _filters: Record<string, unknown>) {
     // Return empty array - no mock data
     // Executions should be retrieved from database via Prisma
@@ -33,16 +36,18 @@ export class WillsController {
   }
 
   @Get('executions/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get will execution by ID (admin only)' })
   async getExecution(@Param('id') _id: string) {
     // Return empty object - no mock data
     return null;
   }
 
   @Get('data/:id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles({ roles: ['admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get will data by ID (admin only)' })
   async getWillData(@Param('id') _id: string) {
     // Return empty object - no mock data
     return null;
