@@ -12,7 +12,6 @@ import { API_BASE_URL } from '@/lib/config';
 export default function LoginPage() {
   const router = useRouter();
   const t = useTranslations('auth');
-  const tCommon = useTranslations('common');
   const tErrors = useTranslations('errors');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,22 +52,22 @@ export default function LoginPage() {
       }
 
       const data = await response.json();
-      
+
       // Сохраняем токен
       if (data.token && data.user) {
         console.log('[Login] Saving token:', data.token.substring(0, 20) + '...');
         localStorage.setItem('auth_token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        
+
         // Проверяем, что токен действительно сохранился
         const savedToken = localStorage.getItem('auth_token');
         console.log('[Login] Token saved:', !!savedToken, 'Length:', savedToken?.length);
-        
+
         if (!savedToken || savedToken !== data.token) {
           console.error('[Login] Token save failed!');
           throw new Error('Token save failed');
         }
-        
+
         console.log('[Login] Redirecting to dashboard...');
         // Используем window.location для гарантированного редиректа
         // Это гарантирует, что токен будет доступен при загрузке следующей страницы
@@ -90,18 +89,10 @@ export default function LoginPage() {
         <CardContent className="p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin Portal</h1>
-            <p className="text-sm text-gray-600">
-              {t('enterCredentials')}
-            </p>
+            <p className="text-sm text-gray-600">{t('enterCredentials')}</p>
           </div>
 
-          {error && (
-            <ErrorDisplay
-              error={error}
-              onDismiss={() => setError(null)}
-              variant="error"
-            />
-          )}
+          {error && <ErrorDisplay error={error} onDismiss={() => setError(null)} variant="error" />}
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -113,7 +104,7 @@ export default function LoginPage() {
                 type="email"
                 required
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={e => setFormData({ ...formData, email: e.target.value })}
                 placeholder="admin@memento-mori.com"
                 autoComplete="email"
               />
@@ -128,17 +119,13 @@ export default function LoginPage() {
                 type="password"
                 required
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                onChange={e => setFormData({ ...formData, password: e.target.value })}
                 placeholder={t('password')}
                 autoComplete="current-password"
               />
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-            >
+            <Button type="submit" className="w-full" disabled={loading}>
               {loading ? t('loggingIn') : t('loginButton')}
             </Button>
           </form>
@@ -151,4 +138,3 @@ export default function LoginPage() {
     </div>
   );
 }
-

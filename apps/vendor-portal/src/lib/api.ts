@@ -2,7 +2,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 // Helper function to get auth token from localStorage or cookie
 function getAuthToken(): string | null {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === 'undefined') {
+    return null;
+  }
   return localStorage.getItem('auth_token') || null;
 }
 
@@ -10,11 +12,11 @@ function getAuthToken(): string | null {
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
   const token = getAuthToken();
   const headers = new Headers(options.headers);
-  
+
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
   }
-  
+
   if (!headers.has('Content-Type') && !(options.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json');
   }
@@ -111,11 +113,19 @@ export const vendorApi = {
     limit?: number;
   }) {
     const query = new URLSearchParams();
-    if (filters?.status) query.append('status', filters.status);
-    if (filters?.search) query.append('search', filters.search);
-    if (filters?.page) query.append('page', filters.page.toString());
-    if (filters?.limit) query.append('limit', filters.limit.toString());
-    
+    if (filters?.status) {
+      query.append('status', filters.status);
+    }
+    if (filters?.search) {
+      query.append('search', filters.search);
+    }
+    if (filters?.page) {
+      query.append('page', filters.page.toString());
+    }
+    if (filters?.limit) {
+      query.append('limit', filters.limit.toString());
+    }
+
     return fetchWithAuth(`${API_BASE_URL}/wills/appointments?${query}`);
   },
 
@@ -123,7 +133,10 @@ export const vendorApi = {
     return fetchWithAuth(`${API_BASE_URL}/wills/appointments/${id}`);
   },
 
-  async confirmAppointment(id: string, data?: { appointmentDate?: string; appointmentTime?: string }) {
+  async confirmAppointment(
+    id: string,
+    data?: { appointmentDate?: string; appointmentTime?: string },
+  ) {
     return fetchWithAuth(`${API_BASE_URL}/wills/appointments/${id}/confirm`, {
       method: 'PATCH',
       body: JSON.stringify(data || {}),
@@ -178,7 +191,7 @@ export const vendorApi = {
   async uploadWillDocument(willDataId: string, file: File) {
     const formData = new FormData();
     formData.append('document', file);
-    
+
     return fetchWithAuth(`${API_BASE_URL}/wills/data/${willDataId}/documents`, {
       method: 'POST',
       body: formData,
@@ -195,17 +208,21 @@ export const vendorApi = {
     notifierContact: string;
   }) {
     const formData = new FormData();
-    if (data.clientId) formData.append('clientId', data.clientId);
-    if (data.appointmentId) formData.append('appointmentId', data.appointmentId);
+    if (data.clientId) {
+      formData.append('clientId', data.clientId);
+    }
+    if (data.appointmentId) {
+      formData.append('appointmentId', data.appointmentId);
+    }
     formData.append('deathDate', data.deathDate);
     formData.append('deathCertificate', data.deathCertificate);
     if (data.additionalDocuments) {
-      data.additionalDocuments.forEach((doc) => {
+      data.additionalDocuments.forEach(doc => {
         formData.append('additionalDocuments', doc);
       });
     }
     formData.append('notifierContact', data.notifierContact);
-    
+
     return fetchWithAuth(`${API_BASE_URL}/wills/executions`, {
       method: 'POST',
       body: formData,
@@ -213,15 +230,15 @@ export const vendorApi = {
   },
 
   // Clients
-  async getMyClients(filters?: {
-    status?: 'ACTIVE' | 'EXECUTING' | 'EXECUTED';
-    search?: string;
-  }) {
+  async getMyClients(filters?: { status?: 'ACTIVE' | 'EXECUTING' | 'EXECUTED'; search?: string }) {
     const query = new URLSearchParams();
-    if (filters?.status) query.append('status', filters.status);
-    if (filters?.search) query.append('search', filters.search);
-    
+    if (filters?.status) {
+      query.append('status', filters.status);
+    }
+    if (filters?.search) {
+      query.append('search', filters.search);
+    }
+
     return fetchWithAuth(`${API_BASE_URL}/wills/appointments?${query}`);
   },
 };
-

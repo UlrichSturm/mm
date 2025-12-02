@@ -1,11 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { vendorApi } from '@/lib/api';
 import { AppointmentsCalendar } from '@/components/calendar/AppointmentsCalendar';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/Select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select';
 
 export default function AppointmentsCalendarPage() {
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -38,9 +42,7 @@ export default function AppointmentsCalendarPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Календарь встреч</h1>
-          <p className="text-muted-foreground">
-            Просмотр всех встреч в календарном виде
-          </p>
+          <p className="text-muted-foreground">Просмотр всех встреч в календарном виде</p>
         </div>
         <div className="w-[200px]">
           <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -63,9 +65,9 @@ export default function AppointmentsCalendarPage() {
           <p>Загрузка...</p>
         </div>
       ) : (
-        <AppointmentsCalendar 
+        <AppointmentsCalendar
           appointments={appointments}
-          onAppointmentClick={(appointment) => {
+          onAppointmentClick={appointment => {
             window.location.href = `/appointments/${appointment.id}`;
           }}
         />
@@ -73,4 +75,3 @@ export default function AppointmentsCalendarPage() {
     </div>
   );
 }
-

@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { vendorApi } from '@/lib/api';
 import { ScheduleEditor } from '@/components/schedule/ScheduleEditor';
 import { BlockedDates } from '@/components/schedule/BlockedDates';
@@ -90,18 +88,12 @@ export default function SchedulePage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Управление расписанием</h1>
-        <p className="text-muted-foreground">
-          Настройте рабочие часы и доступность для клиентов
-        </p>
+        <p className="text-muted-foreground">Настройте рабочие часы и доступность для клиентов</p>
       </div>
 
-      <ScheduleEditor 
-        schedule={schedule} 
-        onSave={handleSave}
-        saving={saving}
-      />
+      <ScheduleEditor schedule={schedule} onSave={handleSave} saving={saving} />
 
-      <BlockedDates 
+      <BlockedDates
         blockedDates={blockedDates}
         onBlockDate={handleBlockDate}
         onUnblockDate={handleUnblockDate}
@@ -109,4 +101,3 @@ export default function SchedulePage() {
     </div>
   );
 }
-

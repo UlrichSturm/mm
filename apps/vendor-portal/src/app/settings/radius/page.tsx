@@ -1,9 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
 import { vendorApi } from '@/lib/api';
 import { RadiusSettings } from '@/components/settings/RadiusSettings';
 import { HomeVisitSettings } from '@/components/settings/HomeVisitSettings';
@@ -60,20 +57,9 @@ export default function RadiusSettingsPage() {
         </p>
       </div>
 
-      <RadiusSettings 
-        settings={settings} 
-        onSave={handleSave}
-        saving={saving}
-      />
+      <RadiusSettings settings={settings} onSave={handleSave} saving={saving} />
 
-      <HomeVisitSettings 
-        settings={settings} 
-        onSave={handleSave}
-        saving={saving}
-      />
+      <HomeVisitSettings settings={settings} onSave={handleSave} saving={saving} />
     </div>
   );
 }
-
-
-

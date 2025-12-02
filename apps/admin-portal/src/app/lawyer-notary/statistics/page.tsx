@@ -10,7 +10,7 @@ import { exportLawyersToCSV } from '@/lib/utils/export';
 import { ExportButton } from '@/components/shared/ExportButton';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import Link from 'next/link';
-import { ArrowLeft, TrendingUp, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { ArrowLeft, TrendingUp, CheckCircle } from 'lucide-react';
 
 interface LawyerStatistics {
   lawyer: LawyerNotaryProfile;
@@ -89,12 +89,7 @@ export default function LawyerStatisticsPage() {
       </div>
 
       {error && (
-        <ErrorDisplay
-          error={error}
-          onDismiss={clearError}
-          onRetry={loadData}
-          showRetry={true}
-        />
+        <ErrorDisplay error={error} onDismiss={clearError} onRetry={loadData} showRetry={true} />
       )}
 
       <Card>
@@ -148,7 +143,7 @@ export default function LawyerStatisticsPage() {
             </CardContent>
           </Card>
         ) : (
-          sortedStatistics.map((stat) => (
+          sortedStatistics.map(stat => (
             <Card key={stat.lawyer.id}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -215,4 +210,3 @@ export default function LawyerStatisticsPage() {
     </div>
   );
 }
-

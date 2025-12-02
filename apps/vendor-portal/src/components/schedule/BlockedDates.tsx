@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { vendorApi } from '@/lib/api';
 import { X, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -39,8 +38,10 @@ export function BlockedDates({ blockedDates = [], onBlockDate, onUnblockDate }: 
   };
 
   const handleUnblockDate = async (date: string) => {
-    if (!onUnblockDate) return;
-    
+    if (!onUnblockDate) {
+      return;
+    }
+
     if (!confirm('Вы уверены, что хотите разблокировать эту дату?')) {
       return;
     }
@@ -57,16 +58,14 @@ export function BlockedDates({ blockedDates = [], onBlockDate, onUnblockDate }: 
     <Card>
       <CardHeader>
         <CardTitle>Блокировка дат</CardTitle>
-        <CardDescription>
-          Заблокируйте конкретные даты (отпуск, выходные дни)
-        </CardDescription>
+        <CardDescription>Заблокируйте конкретные даты (отпуск, выходные дни)</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <form onSubmit={handleBlockDate} className="flex gap-2">
           <Input
             type="date"
             value={newBlockDate}
-            onChange={(e) => setNewBlockDate(e.target.value)}
+            onChange={e => setNewBlockDate(e.target.value)}
             className="flex-1"
             min={new Date().toISOString().split('T')[0]}
           />
@@ -79,11 +78,8 @@ export function BlockedDates({ blockedDates = [], onBlockDate, onUnblockDate }: 
           <div className="space-y-2">
             <p className="text-sm font-medium">Заблокированные даты:</p>
             <div className="space-y-1">
-              {blockedDates.map((date) => (
-                <div
-                  key={date}
-                  className="flex items-center justify-between p-2 border rounded-lg"
-                >
+              {blockedDates.map(date => (
+                <div key={date} className="flex items-center justify-between p-2 border rounded-lg">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">
@@ -91,11 +87,7 @@ export function BlockedDates({ blockedDates = [], onBlockDate, onUnblockDate }: 
                     </span>
                   </div>
                   {onUnblockDate && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleUnblockDate(date)}
-                    >
+                    <Button variant="ghost" size="icon" onClick={() => handleUnblockDate(date)}>
                       <X className="h-4 w-4" />
                     </Button>
                   )}
@@ -110,6 +102,3 @@ export function BlockedDates({ blockedDates = [], onBlockDate, onUnblockDate }: 
     </Card>
   );
 }
-
-
-

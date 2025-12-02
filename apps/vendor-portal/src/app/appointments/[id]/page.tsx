@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { useParams } from 'next/navigation';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { vendorApi } from '@/lib/api';
 import { AppointmentDetails } from '@/components/appointments/AppointmentDetails';
@@ -13,9 +13,8 @@ import Link from 'next/link';
 
 export default function AppointmentDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const appointmentId = params.id as string;
-  
+
   const [appointment, setAppointment] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -85,14 +84,8 @@ export default function AppointmentDetailPage() {
 
       <div className="grid gap-6 md:grid-cols-2">
         <AppointmentDetails appointment={appointment} />
-        <AppointmentActions 
-          appointment={appointment} 
-          onAction={handleAction}
-        />
+        <AppointmentActions appointment={appointment} onAction={handleAction} />
       </div>
     </div>
   );
 }
-
-
-

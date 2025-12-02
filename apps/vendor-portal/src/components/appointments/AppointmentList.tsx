@@ -1,18 +1,14 @@
 'use client';
 
-import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
 import { AppointmentCard } from '@/components/appointments/AppointmentCard';
-import { format } from 'date-fns';
-import { ru } from 'date-fns/locale';
 
 interface AppointmentListProps {
   appointments: any[];
   onRefresh: () => void;
 }
 
-export function AppointmentList({ appointments, onRefresh }: AppointmentListProps) {
+export function AppointmentList({ appointments, onRefresh: _onRefresh }: AppointmentListProps) {
   if (appointments.length === 0) {
     return (
       <Card>
@@ -27,16 +23,9 @@ export function AppointmentList({ appointments, onRefresh }: AppointmentListProp
 
   return (
     <div className="space-y-4">
-      {appointments.map((appointment) => (
-        <AppointmentCard
-          key={appointment.id}
-          appointment={appointment}
-          onRefresh={onRefresh}
-        />
+      {appointments.map(appointment => (
+        <AppointmentCard key={appointment.id} appointment={appointment} onRefresh={onRefresh} />
       ))}
     </div>
   );
 }
-
-
-

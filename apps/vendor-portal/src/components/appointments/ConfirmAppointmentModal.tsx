@@ -14,11 +14,11 @@ interface ConfirmAppointmentModalProps {
   loading: boolean;
 }
 
-export function ConfirmAppointmentModal({ 
-  appointment, 
-  onConfirm, 
-  onCancel, 
-  loading 
+export function ConfirmAppointmentModal({
+  appointment: _appointment,
+  onConfirm,
+  onCancel,
+  loading,
 }: ConfirmAppointmentModalProps) {
   const [appointmentDate, setAppointmentDate] = useState('');
   const [appointmentTime, setAppointmentTime] = useState('');
@@ -26,13 +26,17 @@ export function ConfirmAppointmentModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const data: any = {};
-    if (appointmentDate) data.appointmentDate = appointmentDate;
-    if (appointmentTime) data.appointmentTime = appointmentTime;
+    if (appointmentDate) {
+      data.appointmentDate = appointmentDate;
+    }
+    if (appointmentTime) {
+      data.appointmentTime = appointmentTime;
+    }
     onConfirm(Object.keys(data).length > 0 ? data : undefined);
   };
 
   return (
-    <DialogPrimitive.Root open={true} onOpenChange={(open) => !open && onCancel()}>
+    <DialogPrimitive.Root open={true} onOpenChange={open => !open && onCancel()}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 bg-black/50" />
         <DialogPrimitive.Content className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-full max-w-md bg-background border rounded-lg shadow-lg">
@@ -46,9 +50,7 @@ export function ConfirmAppointmentModal({
                   </Button>
                 </DialogPrimitive.Close>
               </div>
-              <CardDescription>
-                Подтвердите заявку или измените дату/время встречи
-              </CardDescription>
+              <CardDescription>Подтвердите заявку или измените дату/время встречи</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -60,7 +62,7 @@ export function ConfirmAppointmentModal({
                     id="appointmentDate"
                     type="date"
                     value={appointmentDate}
-                    onChange={(e) => setAppointmentDate(e.target.value)}
+                    onChange={e => setAppointmentDate(e.target.value)}
                   />
                 </div>
 
@@ -72,7 +74,7 @@ export function ConfirmAppointmentModal({
                     id="appointmentTime"
                     type="time"
                     value={appointmentTime}
-                    onChange={(e) => setAppointmentTime(e.target.value)}
+                    onChange={e => setAppointmentTime(e.target.value)}
                   />
                 </div>
 
@@ -92,4 +94,3 @@ export function ConfirmAppointmentModal({
     </DialogPrimitive.Root>
   );
 }
-
