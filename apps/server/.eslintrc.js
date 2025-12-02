@@ -1,13 +1,14 @@
 module.exports = {
   extends: ['../../.eslintrc.js'],
   parserOptions: {
-    project: './tsconfig.json',
+    project: ['./tsconfig.json', './prisma/tsconfig.json'],
     tsconfigRootDir: __dirname,
   },
   env: {
     node: true,
     jest: true,
   },
+  ignorePatterns: ['.eslintrc.js'],
   rules: {
     // NestJS specific
     '@typescript-eslint/interface-name-prefix': 'off',
@@ -18,4 +19,3 @@ module.exports = {
     'no-console': 'off',
   },
 };
-
