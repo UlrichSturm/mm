@@ -13,6 +13,7 @@ import { HealthModule } from './health/health.module';
 import { StripeModule } from './stripe/stripe.module';
 import { EmailModule } from './email/email.module';
 import { StorageModule } from './storage/storage.module';
+import { OrdersModule } from './orders/orders.module';
 import { WillsController } from './wills/wills.controller';
 
 @Module({
@@ -50,6 +51,7 @@ import { WillsController } from './wills/wills.controller';
     AuthModule,
     VendorsModule,
     LawyerNotaryModule,
+    OrdersModule,
   ],
   controllers: [CategoriesController, ServicesController, WillsController],
   providers: [CategoriesService, ServicesService],
