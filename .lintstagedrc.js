@@ -8,6 +8,6 @@ module.exports = {
   // CSS, SCSS
   '*.{css,scss}': ['prettier --write'],
 
-  // Prisma
-  '*.prisma': ['npx prisma format'],
+  // Prisma - skip auto-format, use prisma format manually
+  // '*.prisma': ['npx prisma format'],
 };

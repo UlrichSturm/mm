@@ -1,5 +1,6 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// ================================================
+// MEMENTO MORI - Database Schema
+// ================================================
 
 generator client {
   provider = "prisma-client-js"
@@ -10,6 +11,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ================================================
+// USER & AUTHENTICATION
+// ================================================
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   /// Hashed password (bcrypt) - will be removed when using Keycloak
+  firstName String?  @map("first_name")
+  lastName  String?  @map("last_name")
+  phone     String?
+  avatar    String?
+
+  role      Role     @default(CLIENT)
+  isBlocked Boolean  @default(false) @map("is_blocked")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  vendorProfile       VendorProfile?
+  lawyerNotaryProfile LawyerNotaryProfile?
+  orders              Order[]              @relation("ClientOrders")
+
+  @@index([email])
+  @@index([role])
+  @@map("users")
+}
+
 enum Role {
   CLIENT
   VENDOR
@@ -17,10 +47,115 @@ enum Role {
   ADMIN
 }
 
+// ================================================
+// VENDOR
+// ================================================
+
+model VendorProfile {
+  id           String @id @default(uuid())
+  userId       String @unique @map("user_id")
+
+  businessName  String  @map("business_name")
+  description   String? @db.Text
+  contactEmail  String  @map("contact_email")
+  contactPhone  String? @map("contact_phone")
+  website       String?
+
+  // Address
+  address    String?
+  city       String?
+  postalCode String? @map("postal_code")
+  country    String  @default("DE")
+
+  // Geo coordinates for search
+  latitude  Float?
+  longitude Float?
+
+  // Verification
+  status          VendorStatus @default(PENDING)
+  rejectionReason String?      @map("rejection_reason") @db.Text
+  verifiedAt      DateTime?    @map("verified_at")
+
+  // Stripe Connect
+  stripeAccountId String? @unique @map("stripe_account_id")
+  stripeOnboarded Boolean @default(false) @map("stripe_onboarded")
+
+  // Statistics
+  rating      Float @default(0)
+  reviewCount Int   @default(0) @map("review_count")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  services Service[]
+
+  @@index([status])
+  @@index([postalCode])
+  @@index([city])
+  @@map("vendor_profiles")
+}
+
+enum VendorStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  SUSPENDED
+}
+
+// ================================================
+// LAWYER / NOTARY
+// ================================================
+
+model LawyerNotaryProfile {
+  id     String @id @default(uuid())
+  userId String @unique @map("user_id")
+
+  licenseNumber    String      @map("license_number")
+  licenseType      LicenseType @map("license_type")
+  organizationName String?     @map("organization_name")
+  specialization   String?
+
+  // Experience
+  yearsOfExperience Int? @map("years_of_experience")
+
+  // Location
+  address    String?
+  postalCode String? @map("postal_code")
+  city       String?
+  country    String  @default("DE")
+
+  // Home visit options
+  homeVisitAvailable Boolean @default(false) @map("home_visit_available")
+  maxTravelRadius    Int?    @map("max_travel_radius") // in km
+
+  // Verification
+  status          LawyerNotaryStatus @default(PENDING)
+  rejectionReason String?            @map("rejection_reason") @db.Text
+  verifiedAt      DateTime?          @map("verified_at")
+
+  // Statistics
+  rating      Float @default(0)
+  reviewCount Int   @default(0) @map("review_count")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([licenseType])
+  @@index([postalCode])
+  @@map("lawyer_notary_profiles")
+}
+
 enum LawyerNotaryStatus {
   PENDING
   APPROVED
   REJECTED
+  SUSPENDED
 }
 
 enum LicenseType {
@@ -29,71 +164,197 @@ enum LicenseType {
   BOTH
 }
 
-enum VendorStatus {
+// ================================================
+// CATEGORY
+// ================================================
+
+model Category {
+  id          String  @id @default(uuid())
+  name        String  @unique
+  slug        String  @unique
+  description String? @db.Text
+  icon        String?
+
+  sortOrder Int     @default(0) @map("sort_order")
+  isActive  Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  services Service[]
+
+  @@index([slug])
+  @@index([isActive])
+  @@map("categories")
+}
+
+// ================================================
+// SERVICE
+// ================================================
+
+model Service {
+  id         String  @id @default(uuid())
+  vendorId   String  @map("vendor_id")
+  categoryId String? @map("category_id")
+
+  name        String
+  description String  @db.Text
+  price       Decimal @db.Decimal(10, 2)
+  currency    String  @default("EUR")
+
+  // Media
+  images String[]
+
+  // Duration in minutes (for appointments)
+  duration Int?
+
+  // Availability
+  status ServiceStatus @default(ACTIVE)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  vendor     VendorProfile @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  category   Category?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  orderItems OrderItem[]
+
+  @@index([vendorId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([price])
+  @@index([createdAt])
+  @@map("services")
+}
+
+enum ServiceStatus {
+  ACTIVE
+  INACTIVE
+  PENDING_REVIEW
+  DELETED
+}
+
+// ================================================
+// ORDER
+// ================================================
+
+model Order {
+  id          String @id @default(uuid())
+  orderNumber String @unique @map("order_number")
+  clientId    String @map("client_id")
+
+  // Totals
+  subtotal   Decimal @db.Decimal(10, 2)
+  tax        Decimal @default(0) @db.Decimal(10, 2)
+  totalPrice Decimal @map("total_price") @db.Decimal(10, 2)
+  currency   String  @default("EUR")
+
+  // Notes
+  notes String? @db.Text
+
+  // Scheduling
+  scheduledDate DateTime? @map("scheduled_date")
+
+  // Status
+  status      OrderStatus @default(PENDING)
+  completedAt DateTime?   @map("completed_at")
+  cancelledAt DateTime?   @map("cancelled_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  client  User        @relation("ClientOrders", fields: [clientId], references: [id], onDelete: Cascade)
+  items   OrderItem[]
+  payment Payment?
+
+  @@index([clientId])
+  @@index([orderNumber])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(uuid())
+  orderId   String @map("order_id")
+  serviceId String @map("service_id")
+
+  // Snapshot of service at order time
+  serviceName  String  @map("service_name")
+  servicePrice Decimal @map("service_price") @db.Decimal(10, 2)
+
+  quantity   Int     @default(1)
+  unitPrice  Decimal @map("unit_price") @db.Decimal(10, 2)
+  totalPrice Decimal @map("total_price") @db.Decimal(10, 2)
+
+  notes String? @db.Text
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  service Service @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([serviceId])
+  @@map("order_items")
+}
+
+enum OrderStatus {
   PENDING
-  APPROVED
-  REJECTED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  REFUNDED
 }
 
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  role      Role     @default(CLIENT)
-  firstName String?
-  lastName  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+// ================================================
+// PAYMENT
+// ================================================
+
+model Payment {
+  id      String @id @default(uuid())
+  orderId String @unique @map("order_id")
+
+  // Stripe
+  stripePaymentIntentId String? @unique @map("stripe_payment_intent_id")
+  stripeChargeId        String? @map("stripe_charge_id")
+
+  // Amount
+  amount   Decimal @db.Decimal(10, 2)
+  currency String  @default("EUR")
+
+  // Fees
+  platformFee Decimal @default(0) @map("platform_fee") @db.Decimal(10, 2)
+  stripeFee   Decimal @default(0) @map("stripe_fee") @db.Decimal(10, 2)
+  vendorPayout Decimal @default(0) @map("vendor_payout") @db.Decimal(10, 2)
+
+  // Status
+  status PaymentStatus @default(PENDING)
+
+  // Timestamps
+  paidAt     DateTime? @map("paid_at")
+  refundedAt DateTime? @map("refunded_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  lawyerNotaryProfile LawyerNotaryProfile?
-  vendorProfile       VendorProfile?
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  @@map("users")
+  @@index([stripePaymentIntentId])
+  @@index([status])
+  @@map("payments")
 }
 
-model LawyerNotaryProfile {
-  id                  String              @id @default(uuid())
-  userId              String              @unique
-  licenseNumber       String
-  licenseType         LicenseType
-  organizationName    String?
-  status              LawyerNotaryStatus   @default(PENDING)
-  specialization      String?
-  yearsOfExperience   Int?
-  postalCode          String?
-  address             String?
-  homeVisitAvailable  Boolean              @default(false)
-  maxTravelRadius     Int?
-  rating              Float?
-  name                String?
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("lawyer_notary_profiles")
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
 }
-
-model VendorProfile {
-  id              String        @id @default(uuid())
-  userId          String        @unique
-  businessName    String
-  contactEmail    String
-  contactPhone    String?
-  address         String?
-  postalCode      String?
-  description     String?
-  status          VendorStatus  @default(PENDING)
-  registrationDate DateTime?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  // Relations
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("vendor_profiles")
-}
-
-
