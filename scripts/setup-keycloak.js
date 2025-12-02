@@ -2,12 +2,12 @@
 
 /**
  * Keycloak Auto-Setup Script
- * 
+ *
  * Automatically configures Keycloak realm, clients, roles, and test users
- * 
+ *
  * Usage:
  *   node scripts/setup-keycloak.js
- * 
+ *
  * Environment variables:
  *   KEYCLOAK_URL - Keycloak server URL (default: http://localhost:8080)
  *   KEYCLOAK_ADMIN_USER - Admin username (default: admin)
@@ -54,7 +54,7 @@ function warning(message) {
  */
 async function getAdminToken() {
   info('Getting admin access token...');
-  
+
   const response = await fetch(`${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token`, {
     method: 'POST',
     headers: {
@@ -83,7 +83,7 @@ async function getAdminToken() {
 async function keycloakRequest(method, path, token, body = null) {
   const url = `${KEYCLOAK_URL}${path}`;
   const headers = {
-    'Authorization': `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
     'Content-Type': 'application/json',
   };
 
@@ -97,8 +97,9 @@ async function keycloakRequest(method, path, token, body = null) {
   }
 
   const response = await fetch(url, options);
-  
-  if (!response.ok && response.status !== 409) { // 409 = already exists
+
+  if (!response.ok && response.status !== 409) {
+    // 409 = already exists
     const text = await response.text();
     throw new Error(`Keycloak request failed: ${method} ${path} - ${response.status} ${text}`);
   }
@@ -115,8 +116,14 @@ async function keycloakRequest(method, path, token, body = null) {
  */
 async function checkKeycloakHealth() {
   try {
-    const response = await fetch(`${KEYCLOAK_URL}/health`);
-    return response.ok;
+    // Try health endpoint first
+    const healthResponse = await fetch(`${KEYCLOAK_URL}/health`);
+    if (healthResponse.ok) {
+      return true;
+    }
+    // Fallback: check if Keycloak is responding at all
+    const rootResponse = await fetch(`${KEYCLOAK_URL}/realms/master`);
+    return rootResponse.ok || rootResponse.status === 404; // 404 means Keycloak is running but realm doesn't exist yet
   } catch {
     return false;
   }
@@ -127,7 +134,7 @@ async function checkKeycloakHealth() {
  */
 async function createRealm(token) {
   info('Creating realm...');
-  
+
   const realm = {
     realm: REALM_NAME,
     enabled: true,
@@ -152,7 +159,7 @@ async function createRealm(token) {
  */
 async function createClient(token, clientId, clientConfig) {
   info(`Creating client '${clientId}'...`);
-  
+
   const client = {
     clientId,
     enabled: true,
@@ -173,7 +180,11 @@ async function createClient(token, clientId, clientConfig) {
  * Get client by ID
  */
 async function getClient(token, clientId) {
-  const clients = await keycloakRequest('GET', `/admin/realms/${REALM_NAME}/clients?clientId=${clientId}`, token);
+  const clients = await keycloakRequest(
+    'GET',
+    `/admin/realms/${REALM_NAME}/clients?clientId=${clientId}`,
+    token,
+  );
   return clients?.[0];
 }
 
@@ -186,7 +197,11 @@ async function getClientSecret(token, clientId) {
     throw new Error(`Client '${clientId}' not found`);
   }
 
-  const secret = await keycloakRequest('GET', `/admin/realms/${REALM_NAME}/clients/${client.id}/client-secret`, token);
+  const secret = await keycloakRequest(
+    'GET',
+    `/admin/realms/${REALM_NAME}/clients/${client.id}/client-secret`,
+    token,
+  );
   return secret?.value;
 }
 
@@ -195,7 +210,7 @@ async function getClientSecret(token, clientId) {
  */
 async function createRole(token, roleName) {
   info(`Creating role '${roleName}'...`);
-  
+
   const role = {
     name: roleName,
     description: `Role for ${roleName} users`,
@@ -210,7 +225,7 @@ async function createRole(token, roleName) {
  */
 async function createUser(token, userData) {
   info(`Creating user '${userData.username}'...`);
-  
+
   const user = {
     username: userData.username,
     email: userData.email,
@@ -227,17 +242,14 @@ async function createUser(token, userData) {
     ],
   };
 
-  const response = await fetch(
-    `${KEYCLOAK_URL}/admin/realms/${REALM_NAME}/users`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(user),
-    }
-  );
+  const response = await fetch(`${KEYCLOAK_URL}/admin/realms/${REALM_NAME}/users`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(user),
+  });
 
   if (response.status === 409) {
     warning(`User '${userData.username}' already exists, skipping...`);
@@ -271,7 +283,12 @@ async function assignRoleToUser(token, userId, roleName) {
   }
 
   // Assign role
-  await keycloakRequest('POST', `/admin/realms/${REALM_NAME}/users/${userId}/role-mappings/realm`, token, [role]);
+  await keycloakRequest(
+    'POST',
+    `/admin/realms/${REALM_NAME}/users/${userId}/role-mappings/realm`,
+    token,
+    [role],
+  );
   success(`Role '${roleName}' assigned to user`);
 }
 
@@ -280,13 +297,15 @@ async function assignRoleToUser(token, userId, roleName) {
  */
 async function setup() {
   log('\n🔐 Keycloak Auto-Setup Script\n', 'blue');
-  
+
   // Check Keycloak health
   info('Checking Keycloak health...');
   const isHealthy = await checkKeycloakHealth();
   if (!isHealthy) {
     error(`Keycloak is not accessible at ${KEYCLOAK_URL}`);
-    error('Please ensure Keycloak is running: docker-compose -f docker-compose.dev.yml up -d keycloak');
+    error(
+      'Please ensure Keycloak is running: docker-compose -f docker-compose.dev.yml up -d keycloak',
+    );
     process.exit(1);
   }
   success('Keycloak is accessible');
@@ -442,9 +461,8 @@ async function setup() {
 }
 
 // Run setup
-setup().catch((err) => {
+setup().catch(err => {
   error(`Setup failed: ${err.message}`);
   console.error(err);
   process.exit(1);
 });
-

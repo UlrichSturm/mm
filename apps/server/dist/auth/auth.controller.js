@@ -33,6 +33,15 @@ let AuthController = class AuthController {
         const keycloakUserId = req.user.sub;
         return this.authService.updateProfile(keycloakUserId, body);
     }
+    async login(body) {
+        if (!body.username || !body.password) {
+            throw new common_1.BadRequestException('Username and password are required');
+        }
+        return this.authService.loginUser(body.username, body.password);
+    }
+    async register(body) {
+        return this.authService.registerUser(body);
+    }
     healthCheck() {
         return { status: 'ok', service: 'auth', timestamp: new Date() };
     }
@@ -94,6 +103,75 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "updateProfile", null);
+__decorate([
+    (0, common_1.Post)('login'),
+    (0, nest_keycloak_connect_1.Public)(),
+    (0, nest_keycloak_connect_1.Unprotected)(),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Login user',
+        description: 'Authenticates user with Keycloak using Direct Access Grants',
+    }),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            required: ['username', 'password'],
+            properties: {
+                username: { type: 'string', example: 'user@example.com' },
+                password: { type: 'string', example: 'password123' },
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 200,
+        description: 'Login successful',
+        schema: {
+            type: 'object',
+            properties: {
+                access_token: { type: 'string' },
+                refresh_token: { type: 'string' },
+                expires_in: { type: 'number' },
+                token_type: { type: 'string' },
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({ status: 401, description: 'Invalid credentials' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "login", null);
+__decorate([
+    (0, common_1.Post)('register'),
+    (0, nest_keycloak_connect_1.Public)(),
+    (0, nest_keycloak_connect_1.Unprotected)(),
+    (0, swagger_1.ApiOperation)({
+        summary: 'Register new user',
+        description: 'Creates a new user in Keycloak and syncs to local database',
+    }),
+    (0, swagger_1.ApiBody)({
+        schema: {
+            type: 'object',
+            required: ['email', 'password'],
+            properties: {
+                email: { type: 'string', example: 'user@example.com' },
+                username: { type: 'string', example: 'username' },
+                password: { type: 'string', example: 'password123' },
+                firstName: { type: 'string', example: 'John' },
+                lastName: { type: 'string', example: 'Doe' },
+            },
+        },
+    }),
+    (0, swagger_1.ApiResponse)({
+        status: 201,
+        description: 'User registered successfully',
+    }),
+    (0, swagger_1.ApiResponse)({ status: 400, description: 'Invalid input data' }),
+    (0, swagger_1.ApiResponse)({ status: 409, description: 'User already exists' }),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], AuthController.prototype, "register", null);
 __decorate([
     (0, common_1.Get)('health'),
     (0, nest_keycloak_connect_1.Public)(),

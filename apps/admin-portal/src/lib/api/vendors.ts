@@ -42,10 +42,10 @@ class VendorsApiClient {
     if (filters?.status) {
       params.append('status', filters.status);
     }
-    
+
     const query = params.toString();
     const endpoint = `/vendors${query ? `?${query}` : ''}`;
-    
+
     return this.request<VendorProfile[]>(endpoint);
   }
 
@@ -82,4 +82,3 @@ class VendorsApiClient {
 }
 
 export const vendorsApi = new VendorsApiClient();
-

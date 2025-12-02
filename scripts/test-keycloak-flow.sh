@@ -64,16 +64,16 @@ if [ -z "$CLIENT_SECRET" ]; then
   echo -e "\n${YELLOW}Step 4: Getting API client secret...${NC}"
   CLIENT_ID_OBJ=$(curl -s -H "Authorization: Bearer ${ADMIN_TOKEN}" \
     "${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/clients?clientId=${CLIENT_ID}" | jq -r '.[0]')
-  
+
   if [ -z "$CLIENT_ID_OBJ" ] || [ "$CLIENT_ID_OBJ" = "null" ]; then
     echo -e "${RED}❌ Client '${CLIENT_ID}' not found${NC}"
     exit 1
   fi
-  
+
   CLIENT_UUID=$(echo "$CLIENT_ID_OBJ" | jq -r '.id')
   CLIENT_SECRET=$(curl -s -H "Authorization: Bearer ${ADMIN_TOKEN}" \
     "${KEYCLOAK_URL}/admin/realms/${KEYCLOAK_REALM}/clients/${CLIENT_UUID}/client-secret" | jq -r '.value')
-  
+
   if [ -z "$CLIENT_SECRET" ] || [ "$CLIENT_SECRET" = "null" ]; then
     echo -e "${RED}❌ Failed to get client secret${NC}"
     exit 1

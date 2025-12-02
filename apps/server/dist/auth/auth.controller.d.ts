@@ -40,6 +40,34 @@ export declare class AuthController {
         avatar: string;
         role: import(".prisma/client").$Enums.Role;
     }>;
+    login(body: {
+        username: string;
+        password: string;
+    }): Promise<{
+        access_token: any;
+        refresh_token: any;
+        expires_in: any;
+        token_type: any;
+    }>;
+    register(body: {
+        email: string;
+        username?: string;
+        password: string;
+        firstName?: string;
+        lastName?: string;
+    }): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        password: string;
+        firstName: string | null;
+        lastName: string | null;
+        phone: string | null;
+        avatar: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        isBlocked: boolean;
+    }>;
     healthCheck(): {
         status: string;
         service: string;

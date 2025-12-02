@@ -1,6 +1,6 @@
 # Complete Setup Guide - Memento Mori
 
-**Last Updated:** 2025-12-02  
+**Last Updated:** 2025-12-02
 **Status:** ✅ Ready for Development
 
 ---
@@ -82,12 +82,14 @@ node scripts/setup-keycloak.js
 ```
 
 **What it creates:**
+
 - Realm: `memento-mori`
 - Clients: `memento-mori-api`, `memento-mori-client`, `memento-mori-vendor`, `memento-mori-admin`
 - Roles: `client`, `vendor`, `lawyer_notary`, `admin`
 - Test users: 4 users with different roles
 
 **Test Credentials:**
+
 - Admin: `admin@mementomori.de` / `admin123`
 - Client: `client1@test.com` / `password123`
 - Vendor: `vendor1@test.com` / `password123`
@@ -174,6 +176,7 @@ NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
 **What it tests:**
+
 1. ✅ Keycloak health check
 2. ✅ Realm existence
 3. ✅ Client configuration
@@ -220,14 +223,14 @@ curl -X GET http://localhost:3001/api/orders/my \
 
 ## 📚 Documentation
 
-| Document | Description |
-|----------|-------------|
-| [KEYCLOAK_SETUP.md](./KEYCLOAK_SETUP.md) | Manual Keycloak setup guide |
-| [KEYCLOAK_AUTO_SETUP.md](./KEYCLOAK_AUTO_SETUP.md) | Automatic setup script guide |
+| Document                                                               | Description                  |
+| ---------------------------------------------------------------------- | ---------------------------- |
+| [KEYCLOAK_SETUP.md](./KEYCLOAK_SETUP.md)                               | Manual Keycloak setup guide  |
+| [KEYCLOAK_AUTO_SETUP.md](./KEYCLOAK_AUTO_SETUP.md)                     | Automatic setup script guide |
 | [FRONTEND_KEYCLOAK_INTEGRATION.md](./FRONTEND_KEYCLOAK_INTEGRATION.md) | Frontend integration details |
-| [API_REFERENCE.md](./API_REFERENCE.md) | Complete API documentation |
-| [API_IMPLEMENTATION_SUMMARY.md](./API_IMPLEMENTATION_SUMMARY.md) | API implementation summary |
-| [TEST_CREDENTIALS.md](./TEST_CREDENTIALS.md) | Test user accounts |
+| [API_REFERENCE.md](./API_REFERENCE.md)                                 | Complete API documentation   |
+| [API_IMPLEMENTATION_SUMMARY.md](./API_IMPLEMENTATION_SUMMARY.md)       | API implementation summary   |
+| [TEST_CREDENTIALS.md](./TEST_CREDENTIALS.md)                           | Test user accounts           |
 
 ---
 
@@ -344,6 +347,7 @@ After setup, verify:
 Everything is set up and ready for development. Start building features! 🚀
 
 **Next Steps:**
+
 1. Test login flow in all three apps
 2. Create your first order
 3. Test payment flow
@@ -352,4 +356,3 @@ Everything is set up and ready for development. Start building features! 🚀
 ---
 
 **Need Help?** Check the troubleshooting section or review the detailed documentation files.
-

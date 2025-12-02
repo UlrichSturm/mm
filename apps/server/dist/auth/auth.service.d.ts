@@ -1,8 +1,14 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
 export declare class AuthService {
     private readonly prisma;
+    private readonly configService;
     private readonly logger;
-    constructor(prisma: PrismaService);
+    private readonly keycloakUrl;
+    private readonly keycloakRealm;
+    private readonly keycloakAdminUser;
+    private readonly keycloakAdminPassword;
+    constructor(prisma: PrismaService, configService: ConfigService);
     getProfile(userId: string): Promise<{
         id: string;
         createdAt: Date;
@@ -75,4 +81,33 @@ export declare class AuthService {
         role: import(".prisma/client").$Enums.Role;
         isBlocked: boolean;
     }>;
+    loginUser(username: string, password: string): Promise<{
+        access_token: any;
+        refresh_token: any;
+        expires_in: any;
+        token_type: any;
+    }>;
+    private parseJwt;
+    registerUser(data: {
+        email: string;
+        username?: string;
+        password: string;
+        firstName?: string;
+        lastName?: string;
+    }): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        password: string;
+        firstName: string | null;
+        lastName: string | null;
+        phone: string | null;
+        avatar: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        isBlocked: boolean;
+    }>;
+    private getKeycloakAdminToken;
+    private createKeycloakUser;
+    private assignRoleToUser;
 }

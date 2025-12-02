@@ -11,13 +11,13 @@ export function getAuthToken(): string | null {
   if (typeof window === 'undefined') {
     return null;
   }
-  
+
   // Try Keycloak token first
   const keycloakToken = getToken();
   if (keycloakToken) {
     return keycloakToken;
   }
-  
+
   // Fallback to localStorage
   return localStorage.getItem('authToken') || localStorage.getItem('auth_token') || null;
 }
@@ -25,17 +25,14 @@ export function getAuthToken(): string | null {
 /**
  * Make authenticated API request
  */
-export async function apiRequest<T>(
-  endpoint: string,
-  options: RequestInit = {},
-): Promise<T> {
+export async function apiRequest<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
   const url = `${API_BASE_URL}/api${endpoint}`;
   const token = getAuthToken();
 
   const headers = new Headers(options.headers);
   headers.set('Content-Type', 'application/json');
-  
+
   if (token) {
     headers.set('Authorization', `Bearer ${token}`);
   }
@@ -68,4 +65,3 @@ export async function apiRequest<T>(
 
   return response.json();
 }
-

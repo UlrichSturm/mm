@@ -6,7 +6,13 @@
  */
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { initKeycloak, keycloak, isAuthenticated, getUserInfo } from '@/lib/keycloak';
+import {
+  initKeycloak,
+  keycloak,
+  getUserInfo,
+  loginWithCredentials,
+  registerWithCredentials,
+} from '@/lib/keycloak';
 
 interface KeycloakContextType {
   isAuthenticated: boolean;
@@ -15,6 +21,17 @@ interface KeycloakContextType {
   login: () => void;
   logout: () => void;
   register: () => void;
+  loginWithCredentials: (
+    username: string,
+    password: string,
+  ) => Promise<{ success: boolean; error?: string }>;
+  registerWithCredentials: (
+    email: string,
+    username: string,
+    password: string,
+    firstName?: string,
+    lastName?: string,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 const KeycloakContext = createContext<KeycloakContextType | undefined>(undefined);
@@ -45,14 +62,14 @@ export function KeycloakProvider({ children }: KeycloakProviderProps) {
         setUser(getUserInfo());
         setIsLoading(false);
       },
-      (error) => {
+      error => {
         // On error
         console.error('Keycloak initialization error:', error);
         setIsAuthenticatedState(false);
         setUser(null);
         setIsLoading(false);
       },
-    ).then((authenticated) => {
+    ).then(authenticated => {
       if (!authenticated) {
         setIsLoading(false);
       }
@@ -98,6 +115,30 @@ export function KeycloakProvider({ children }: KeycloakProviderProps) {
     });
   };
 
+  const handleLoginWithCredentials = async (username: string, password: string) => {
+    const result = await loginWithCredentials(username, password);
+    if (result.success) {
+      setIsAuthenticatedState(true);
+      setUser(getUserInfo());
+    }
+    return result;
+  };
+
+  const handleRegisterWithCredentials = async (
+    email: string,
+    username: string,
+    password: string,
+    firstName?: string,
+    lastName?: string,
+  ) => {
+    const result = await registerWithCredentials(email, username, password, firstName, lastName);
+    if (result.success) {
+      setIsAuthenticatedState(true);
+      setUser(getUserInfo());
+    }
+    return result;
+  };
+
   return (
     <KeycloakContext.Provider
       value={{
@@ -107,10 +148,11 @@ export function KeycloakProvider({ children }: KeycloakProviderProps) {
         login,
         logout,
         register,
+        loginWithCredentials: handleLoginWithCredentials,
+        registerWithCredentials: handleRegisterWithCredentials,
       }}
     >
       {children}
     </KeycloakContext.Provider>
   );
 }
-

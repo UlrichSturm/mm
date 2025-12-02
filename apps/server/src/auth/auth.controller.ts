@@ -1,11 +1,5 @@
-import { Controller, Get, Patch, Body, Request } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { Controller, Get, Post, Patch, Body, Request, BadRequestException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { Public, Unprotected } from 'nest-keycloak-connect';
 
@@ -47,7 +41,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Not authenticated' })
   async getProfile(@Request() req: AuthenticatedRequest) {
     const keycloakUserId = req.user.sub;
-    
+
     // Try to get user from database
     let user = await this.authService.findByKeycloakId(keycloakUserId);
 
@@ -87,6 +81,83 @@ export class AuthController {
   ) {
     const keycloakUserId = req.user.sub;
     return this.authService.updateProfile(keycloakUserId, body);
+  }
+
+  @Post('login')
+  @Public()
+  @Unprotected()
+  @ApiOperation({
+    summary: 'Login user',
+    description: 'Authenticates user with Keycloak using Direct Access Grants',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['username', 'password'],
+      properties: {
+        username: { type: 'string', example: 'user@example.com' },
+        password: { type: 'string', example: 'password123' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Login successful',
+    schema: {
+      type: 'object',
+      properties: {
+        access_token: { type: 'string' },
+        refresh_token: { type: 'string' },
+        expires_in: { type: 'number' },
+        token_type: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Invalid credentials' })
+  async login(@Body() body: { username: string; password: string }) {
+    if (!body.username || !body.password) {
+      throw new BadRequestException('Username and password are required');
+    }
+    return this.authService.loginUser(body.username, body.password);
+  }
+
+  @Post('register')
+  @Public()
+  @Unprotected()
+  @ApiOperation({
+    summary: 'Register new user',
+    description: 'Creates a new user in Keycloak and syncs to local database',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['email', 'password'],
+      properties: {
+        email: { type: 'string', example: 'user@example.com' },
+        username: { type: 'string', example: 'username' },
+        password: { type: 'string', example: 'password123' },
+        firstName: { type: 'string', example: 'John' },
+        lastName: { type: 'string', example: 'Doe' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'User registered successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input data' })
+  @ApiResponse({ status: 409, description: 'User already exists' })
+  async register(
+    @Body()
+    body: {
+      email: string;
+      username?: string;
+      password: string;
+      firstName?: string;
+      lastName?: string;
+    },
+  ) {
+    return this.authService.registerUser(body);
   }
 
   @Get('health')

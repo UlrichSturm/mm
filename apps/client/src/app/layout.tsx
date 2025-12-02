@@ -13,36 +13,35 @@ import { KeycloakProvider } from '@/components/auth/KeycloakProvider';
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-    title: 'Memento Mori',
-    description: 'Platform for organizing ritual services',
+  title: 'Memento Mori',
+  description: 'Platform for organizing ritual services',
 };
 
 export default function RootLayout({
-    children,
+  children,
 }: Readonly<{
-    children: React.ReactNode;
+  children: React.ReactNode;
 }>) {
-    return (
-        <html lang="en">
-            <body className={`${inter.variable} ${inter.className}`}>
-                <KeycloakProvider>
-                    <LanguageProvider>
-                        <CartProviderWrapper>
-                            <FaithProvider>
-                                <ErrorBoundaryWrapper>
-                                    <div className="flex min-h-screen flex-col bg-iso26-white">
-                                    <Header />
-                                    <main className="flex-1">{children}</main>
-                                    <Footer />
-                                </div>
-                                <FaithSelector />
-                                </ErrorBoundaryWrapper>
-                            </FaithProvider>
-                        </CartProviderWrapper>
-                    </LanguageProvider>
-                </KeycloakProvider>
-            </body>
-        </html>
-    );
+  return (
+    <html lang="en">
+      <body className={`${inter.variable} ${inter.className}`}>
+        <KeycloakProvider>
+          <LanguageProvider>
+            <CartProviderWrapper>
+              <FaithProvider>
+                <ErrorBoundaryWrapper>
+                  <div className="flex min-h-screen flex-col bg-iso26-white">
+                    <Header />
+                    <main className="flex-1">{children}</main>
+                    <Footer />
+                  </div>
+                  <FaithSelector />
+                </ErrorBoundaryWrapper>
+              </FaithProvider>
+            </CartProviderWrapper>
+          </LanguageProvider>
+        </KeycloakProvider>
+      </body>
+    </html>
+  );
 }
-

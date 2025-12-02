@@ -1,12 +1,10 @@
-version: '3.8'
-
 services:
   # ===== PostgreSQL =====
   postgres:
     image: postgres:15-alpine
     container_name: mm-postgres
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
@@ -15,7 +13,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -28,15 +26,37 @@ services:
     image: redis:7-alpine
     container_name: mm-redis
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-redis}
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis}", "ping"]
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD:-redis}', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    networks:
+      - mm-network
+
+  # ===== Keycloak =====
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    platform: linux/amd64
+    container_name: mm-keycloak
+    ports:
+      - '8080:8080'
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: ${POSTGRES_USER:-postgres}
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+    command: start-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - mm-network
@@ -48,16 +68,19 @@ services:
       dockerfile: Dockerfile
     container_name: mm-server
     ports:
-      - "3001:3001"
+      - '3001:3001'
     environment:
       NODE_ENV: production
       PORT: 3001
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-memento_mori}?schema=public
       REDIS_URL: redis://:${REDIS_PASSWORD:-redis}@redis:6379
       JWT_SECRET: ${JWT_SECRET}
-      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_URL: ${KEYCLOAK_URL:-http://mm-keycloak-dev:8080}
       KEYCLOAK_REALM: ${KEYCLOAK_REALM:-memento-mori}
-      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-backend-api}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-memento-mori-api}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      KEYCLOAK_ADMIN_USER: ${KEYCLOAK_ADMIN_USER:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
     depends_on:
@@ -65,9 +88,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      keycloak:
+        condition: service_started
     restart: unless-stopped
     networks:
       - mm-network
+      - mm-dev-network
 
   # ===== Client App =====
   client:
@@ -81,7 +107,7 @@ services:
         NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID:-client-app}
     container_name: mm-client
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       NODE_ENV: production
     depends_on:
@@ -102,7 +128,7 @@ services:
         NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID:-vendor-portal}
     container_name: mm-vendor-portal
     ports:
-      - "3002:3002"
+      - '3002:3002'
     environment:
       NODE_ENV: production
     depends_on:
@@ -123,7 +149,7 @@ services:
         NEXT_PUBLIC_KEYCLOAK_CLIENT_ID: ${NEXT_PUBLIC_KEYCLOAK_CLIENT_ID:-admin-portal}
     container_name: mm-admin-portal
     ports:
-      - "3003:3003"
+      - '3003:3003'
     environment:
       NODE_ENV: production
     depends_on:
@@ -139,3 +165,6 @@ volumes:
 networks:
   mm-network:
     driver: bridge
+  mm-dev-network:
+    name: mm_mm-dev-network
+    external: true

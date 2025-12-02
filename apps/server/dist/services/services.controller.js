@@ -65,12 +65,15 @@ let ServicesController = class ServicesController {
         return this.servicesService.updateStatus(id, status);
     }
     getRoleFromKeycloakRoles(roles) {
-        if (roles?.includes('admin'))
+        if (roles?.includes('admin')) {
             return role_enum_1.Role.ADMIN;
-        if (roles?.includes('vendor'))
+        }
+        if (roles?.includes('vendor')) {
             return role_enum_1.Role.VENDOR;
-        if (roles?.includes('lawyer_notary'))
+        }
+        if (roles?.includes('lawyer_notary')) {
             return role_enum_1.Role.LAWYER_NOTARY;
+        }
         return role_enum_1.Role.CLIENT;
     }
 };
