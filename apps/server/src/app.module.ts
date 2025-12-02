@@ -14,6 +14,7 @@ import { StripeModule } from './stripe/stripe.module';
 import { EmailModule } from './email/email.module';
 import { StorageModule } from './storage/storage.module';
 import { OrdersModule } from './orders/orders.module';
+import { PaymentsModule } from './payments/payments.module';
 import { WillsController } from './wills/wills.controller';
 
 @Module({
@@ -52,6 +53,7 @@ import { WillsController } from './wills/wills.controller';
     VendorsModule,
     LawyerNotaryModule,
     OrdersModule,
+    PaymentsModule,
   ],
   controllers: [CategoriesController, ServicesController, WillsController],
   providers: [CategoriesService, ServicesService],
