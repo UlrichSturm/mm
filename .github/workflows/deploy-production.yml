@@ -1,0 +1,155 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      deploy_backend:
+        description: 'Deploy Backend'
+        type: boolean
+        default: true
+      deploy_client:
+        description: 'Deploy Client'
+        type: boolean
+        default: true
+      deploy_vendor:
+        description: 'Deploy Vendor Portal'
+        type: boolean
+        default: true
+      deploy_admin:
+        description: 'Deploy Admin Portal'
+        type: boolean
+        default: true
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ===== RUN CI FIRST =====
+  ci:
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  # ===== DEPLOY BACKEND =====
+  deploy-backend:
+    name: Deploy Backend to Production
+    runs-on: ubuntu-latest
+    needs: [ci]
+    environment: production
+    if: ${{ github.event_name == 'push' || inputs.deploy_backend }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Railway
+        uses: bervProject/railway-deploy@main
+        with:
+          railway_token: ${{ secrets.RAILWAY_TOKEN_PROD }}
+          service: memento-mori-server-prod
+
+  # ===== DEPLOY CLIENT =====
+  deploy-client:
+    name: Deploy Client App to Production
+    runs-on: ubuntu-latest
+    needs: [ci]
+    environment: production
+    if: ${{ github.event_name == 'push' || inputs.deploy_client }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel Production
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_CLIENT }}
+          vercel-args: '--prod'
+          working-directory: ./apps/client
+
+  # ===== DEPLOY VENDOR PORTAL =====
+  deploy-vendor:
+    name: Deploy Vendor Portal to Production
+    runs-on: ubuntu-latest
+    needs: [ci]
+    environment: production
+    if: ${{ github.event_name == 'push' || inputs.deploy_vendor }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel Production
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_VENDOR }}
+          vercel-args: '--prod'
+          working-directory: ./apps/vendor-portal
+
+  # ===== DEPLOY ADMIN PORTAL =====
+  deploy-admin:
+    name: Deploy Admin Portal to Production
+    runs-on: ubuntu-latest
+    needs: [ci]
+    environment: production
+    if: ${{ github.event_name == 'push' || inputs.deploy_admin }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Vercel Production
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID_ADMIN }}
+          vercel-args: '--prod'
+          working-directory: ./apps/admin-portal
+
+  # ===== CREATE RELEASE =====
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-client, deploy-vendor, deploy-admin]
+    if: success()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(date +'%Y.%m.%d')-$(git rev-parse --short HEAD)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: Release ${{ steps.version.outputs.version }}
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+
+  # ===== NOTIFY =====
+  notify:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-backend, deploy-client, deploy-vendor, deploy-admin]
+    if: always()
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "## Production Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Service | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend | ${{ needs.deploy-backend.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Client | ${{ needs.deploy-client.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Vendor Portal | ${{ needs.deploy-vendor.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Admin Portal | ${{ needs.deploy-admin.result }} |" >> $GITHUB_STEP_SUMMARY
+
