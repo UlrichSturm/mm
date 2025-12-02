@@ -5,6 +5,10 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        required: false
 
 env:
   NODE_VERSION: '20'
@@ -180,4 +184,3 @@ jobs:
           cd apps/server && npm audit --audit-level=high || true
           cd ../client && npm audit --audit-level=high || true
         continue-on-error: true
-
