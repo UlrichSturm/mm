@@ -1,0 +1,41 @@
+# Dependencies
+node_modules
+
+# Build outputs
+dist
+build
+.next
+out
+
+# Coverage
+coverage
+
+# Logs
+*.log
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Generated files
+*.generated.*
+prisma/migrations
+
+# Assets
+*.svg
+*.ico
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webp
+
+# Config files that should not be formatted
+*.config.js
+*.config.ts
+*.config.mjs
+
+# Documentation that should keep its formatting
+CHANGELOG.md
+

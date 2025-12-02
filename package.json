@@ -32,6 +32,7 @@
     "test:cov": "npm run -w apps/server test:cov",
     "test:e2e": "npm run -w apps/server test:e2e",
     "lint": "npm run lint:server && npm run lint:client && npm run lint:vendor && npm run lint:admin",
+    "lint:fix": "npm run lint:server -- --fix && npm run lint:client -- --fix && npm run lint:vendor -- --fix && npm run lint:admin -- --fix",
     "lint:server": "npm run -w apps/server lint",
     "lint:client": "npm run -w apps/client lint",
     "lint:vendor": "npm run -w apps/vendor-portal lint",
@@ -57,13 +58,18 @@
     "prepare": "husky install || true"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "concurrently": "^8.2.2",
-    "prettier": "^3.2.4",
-    "husky": "^9.0.11"
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "husky": "^9.0.11",
+    "prettier": "^3.2.4"
   },
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
   }
 }
-
