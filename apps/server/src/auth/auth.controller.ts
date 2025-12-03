@@ -2,6 +2,8 @@ import { Controller, Get, Post, Patch, Body, Request, BadRequestException } from
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { Public, Unprotected } from 'nest-keycloak-connect';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 
 interface AuthenticatedRequest {
   user: {
@@ -57,30 +59,62 @@ export class AuthController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Update current user profile',
-    description: 'Update user profile information (firstName, lastName, phone, avatar)',
+    description: 'Update user profile information including addresses',
   })
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        firstName: { type: 'string', example: 'John' },
-        lastName: { type: 'string', example: 'Smith' },
-        phone: { type: 'string', example: '+49 123 456 7890' },
-        avatar: { type: 'string', example: 'https://example.com/avatar.jpg' },
-      },
-    },
-  })
+  @ApiBody({ type: UpdateProfileDto })
   @ApiResponse({
     status: 200,
     description: 'Profile updated successfully',
+    schema: {
+      example: {
+        id: 'uuid',
+        email: 'user@example.com',
+        firstName: 'John',
+        lastName: 'Smith',
+        phone: '+49 123 456 7890',
+        deliveryAddress: 'Musterstraße 123',
+        deliveryPostalCode: '10115',
+        deliveryCity: 'Berlin',
+        deliveryCountry: 'DE',
+        billingAddress: 'Rechnungsstraße 456',
+        billingPostalCode: '20095',
+        billingCity: 'Hamburg',
+        billingCountry: 'DE',
+        role: 'CLIENT',
+        createdAt: '2025-12-01T00:00:00.000Z',
+        updatedAt: '2025-12-01T00:00:00.000Z',
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Not authenticated' })
-  async updateProfile(
-    @Request() req: AuthenticatedRequest,
-    @Body() body: { firstName?: string; lastName?: string; phone?: string; avatar?: string },
-  ) {
+  async updateProfile(@Request() req: AuthenticatedRequest, @Body() body: UpdateProfileDto) {
     const keycloakUserId = req.user.sub;
     return this.authService.updateProfile(keycloakUserId, body);
+  }
+
+  @Patch('password')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Change user password',
+    description:
+      'Change password using Keycloak Admin API. Requires current password verification.',
+  })
+  @ApiBody({ type: ChangePasswordDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Password changed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        message: { type: 'string', example: 'Password changed successfully' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid current password or validation error' })
+  @ApiResponse({ status: 401, description: 'Not authenticated' })
+  async changePassword(@Request() req: AuthenticatedRequest, @Body() body: ChangePasswordDto) {
+    const keycloakUserId = req.user.sub;
+    return this.authService.changePassword(keycloakUserId, body.currentPassword, body.newPassword);
   }
 
   @Post('login')

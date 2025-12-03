@@ -1,9 +1,9 @@
 # US-005: RBAC система
 
-**Epic:** E-001 Authentication & Authorization  
-**Portal:** Backend  
-**Приоритет:** 🔴 Must Have  
-**Story Points:** 3  
+**Epic:** E-001 Authentication & Authorization
+**Portal:** Backend
+**Приоритет:** 🔴 Must Have
+**Story Points:** 3
 **Статус:** ✅ Выполнено
 
 ---

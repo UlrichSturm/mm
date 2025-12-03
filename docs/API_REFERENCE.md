@@ -106,7 +106,18 @@ Get current user profile. 🔒 **Requires Auth**
   "email": "user@example.com",
   "firstName": "John",
   "lastName": "Doe",
-  "role": "CLIENT"
+  "phone": "+49 123 456 7890",
+  "deliveryAddress": "Musterstraße 123",
+  "deliveryPostalCode": "10115",
+  "deliveryCity": "Berlin",
+  "deliveryCountry": "DE",
+  "billingAddress": "Rechnungsstraße 456",
+  "billingPostalCode": "20095",
+  "billingCity": "Hamburg",
+  "billingCountry": "DE",
+  "role": "CLIENT",
+  "createdAt": "2025-12-01T00:00:00.000Z",
+  "updatedAt": "2025-12-01T00:00:00.000Z"
 }
 ```
 
@@ -122,11 +133,49 @@ Update current user profile. 🔒 **Requires Auth**
 {
   "firstName": "John",
   "lastName": "Smith",
-  "email": "newemail@example.com"
+  "phone": "+49 123 456 7890",
+  "deliveryAddress": "Musterstraße 123",
+  "deliveryPostalCode": "10115",
+  "deliveryCity": "Berlin",
+  "deliveryCountry": "DE",
+  "billingAddress": "Rechnungsstraße 456",
+  "billingPostalCode": "20095",
+  "billingCity": "Hamburg",
+  "billingCountry": "DE"
 }
 ```
 
-**Response (200):** Updated user object
+**Response (200):** Updated user object with all profile fields
+
+**Note:** All fields are optional. Only provided fields will be updated.
+
+---
+
+### PATCH `/auth/password`
+
+Change user password. 🔒 **Requires Auth**
+
+**Body:**
+
+```json
+{
+  "currentPassword": "oldPassword123",
+  "newPassword": "newSecurePassword123"
+}
+```
+
+**Response (200):**
+
+```json
+{
+  "message": "Password changed successfully"
+}
+```
+
+**Error Responses:**
+
+- `400` - Current password is incorrect or validation error
+- `401` - Not authenticated
 
 ---
 

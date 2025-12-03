@@ -1,9 +1,9 @@
 # US-001: Регистрация Client пользователя
 
-**Epic:** E-001 Authentication & Authorization  
-**Portal:** Backend  
-**Приоритет:** 🔴 Must Have  
-**Story Points:** 3  
+**Epic:** E-001 Authentication & Authorization
+**Portal:** Backend
+**Приоритет:** 🔴 Must Have
+**Story Points:** 3
 **Статус:** ✅ Выполнено
 
 ---

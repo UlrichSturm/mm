@@ -1,6 +1,6 @@
 # 📋 User Stories MVP
 
-**Всего User Stories:** 75  
+**Всего User Stories:** 75
 **Всего Story Points:** 152
 
 ---

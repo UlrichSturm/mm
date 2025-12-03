@@ -42,6 +42,14 @@ export class AuthService {
         lastName: true,
         phone: true,
         avatar: true,
+        deliveryAddress: true,
+        deliveryPostalCode: true,
+        deliveryCity: true,
+        deliveryCountry: true,
+        billingAddress: true,
+        billingPostalCode: true,
+        billingCity: true,
+        billingCountry: true,
         role: true,
         createdAt: true,
         updatedAt: true,
@@ -67,6 +75,14 @@ export class AuthService {
       lastName?: string;
       phone?: string;
       avatar?: string;
+      deliveryAddress?: string;
+      deliveryPostalCode?: string;
+      deliveryCity?: string;
+      deliveryCountry?: string;
+      billingAddress?: string;
+      billingPostalCode?: string;
+      billingCity?: string;
+      billingCountry?: string;
     },
   ) {
     const user = await this.prisma.user.update({
@@ -76,6 +92,14 @@ export class AuthService {
         lastName: data.lastName,
         phone: data.phone,
         avatar: data.avatar,
+        deliveryAddress: data.deliveryAddress,
+        deliveryPostalCode: data.deliveryPostalCode,
+        deliveryCity: data.deliveryCity,
+        deliveryCountry: data.deliveryCountry,
+        billingAddress: data.billingAddress,
+        billingPostalCode: data.billingPostalCode,
+        billingCity: data.billingCity,
+        billingCountry: data.billingCountry,
       },
       select: {
         id: true,
@@ -84,6 +108,14 @@ export class AuthService {
         lastName: true,
         phone: true,
         avatar: true,
+        deliveryAddress: true,
+        deliveryPostalCode: true,
+        deliveryCity: true,
+        deliveryCountry: true,
+        billingAddress: true,
+        billingPostalCode: true,
+        billingCity: true,
+        billingCountry: true,
         role: true,
         createdAt: true,
         updatedAt: true,
@@ -92,6 +124,85 @@ export class AuthService {
 
     this.logger.log(`User ${userId} profile updated`);
     return user;
+  }
+
+  /**
+   * Change user password via Keycloak Admin API
+   */
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    this.logger.log(`Changing password for user ${userId}`);
+
+    // First, verify current password by attempting to login
+    try {
+      const keycloakClientId =
+        this.configService.get<string>('KEYCLOAK_CLIENT_ID') || 'memento-mori-api';
+      const keycloakClientSecret = this.configService.get<string>('KEYCLOAK_CLIENT_SECRET');
+
+      if (!keycloakClientSecret) {
+        throw new BadRequestException('Keycloak client secret not configured');
+      }
+
+      // Get user email from database
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true },
+      });
+
+      if (!user) {
+        throw new BadRequestException('User not found');
+      }
+
+      // Verify current password
+      await axios.post(
+        `${this.keycloakUrl}/realms/${this.keycloakRealm}/protocol/openid-connect/token`,
+        new URLSearchParams({
+          grant_type: 'password',
+          client_id: keycloakClientId,
+          client_secret: keycloakClientSecret,
+          username: user.email,
+          password: currentPassword,
+        }).toString(),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        },
+      );
+
+      // Current password is correct, now update it via Admin API
+      const adminToken = await this.getKeycloakAdminToken();
+      if (!adminToken) {
+        throw new BadRequestException('Failed to authenticate with Keycloak admin');
+      }
+
+      // Update password in Keycloak
+      await axios.put(
+        `${this.keycloakUrl}/admin/realms/${this.keycloakRealm}/users/${userId}/reset-password`,
+        {
+          type: 'password',
+          value: newPassword,
+          temporary: false,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${adminToken}`,
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      this.logger.log(`Password changed successfully for user ${userId}`);
+      return { message: 'Password changed successfully' };
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          throw new BadRequestException('Current password is incorrect');
+        }
+        this.logger.error('Error changing password:', error.response?.data || error.message);
+        throw new BadRequestException('Failed to change password');
+      }
+      throw error;
+    }
   }
 
   /**

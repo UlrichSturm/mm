@@ -1,9 +1,9 @@
 # US-003: Логин пользователя
 
-**Epic:** E-001 Authentication & Authorization  
-**Portal:** Backend  
-**Приоритет:** 🔴 Must Have  
-**Story Points:** 2  
+**Epic:** E-001 Authentication & Authorization
+**Portal:** Backend
+**Приоритет:** 🔴 Must Have
+**Story Points:** 2
 **Статус:** ✅ Выполнено
 
 ---

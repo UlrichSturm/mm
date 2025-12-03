@@ -24,6 +24,18 @@ model User {
   phone     String?
   avatar    String?
 
+  // Delivery Address
+  deliveryAddress    String? @map("delivery_address")
+  deliveryPostalCode String? @map("delivery_postal_code")
+  deliveryCity       String? @map("delivery_city")
+  deliveryCountry    String? @default("DE") @map("delivery_country")
+
+  // Billing Address
+  billingAddress    String? @map("billing_address")
+  billingPostalCode String? @map("billing_postal_code")
+  billingCity       String? @map("billing_city")
+  billingCountry    String? @default("DE") @map("billing_country")
+
   role      Role     @default(CLIENT)
   isBlocked Boolean  @default(false) @map("is_blocked")
 

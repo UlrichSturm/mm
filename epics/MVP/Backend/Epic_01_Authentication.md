@@ -1,8 +1,8 @@
 # Epic 1: Authentication & Authorization (MVP)
 
-**Phase:** MVP  
-**Portal:** Backend  
-**Module:** AuthModule  
+**Phase:** MVP
+**Portal:** Backend
+**Module:** AuthModule
 **Epic ID:** E-001
 
 ---

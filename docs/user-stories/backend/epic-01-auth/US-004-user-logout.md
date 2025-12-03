@@ -1,9 +1,9 @@
 # US-004: Logout пользователя
 
-**Epic:** E-001 Authentication & Authorization  
-**Portal:** Backend  
-**Приоритет:** 🔴 Must Have  
-**Story Points:** 1  
+**Epic:** E-001 Authentication & Authorization
+**Portal:** Backend
+**Приоритет:** 🔴 Must Have
+**Story Points:** 1
 **Статус:** ✅ Выполнено
 
 ---
