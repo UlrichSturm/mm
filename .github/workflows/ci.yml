@@ -28,27 +28,20 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install root dependencies
+      - name: Install all dependencies (workspaces)
         run: npm ci
 
-      - name: Install app dependencies
-        run: |
-          cd apps/server && npm ci
-          cd ../client && npm ci
-          cd ../vendor-portal && npm ci
-          cd ../admin-portal && npm ci
-
       - name: Run ESLint (server)
-        run: cd apps/server && npm run lint
+        run: npm run lint:server
 
       - name: Run ESLint (client)
-        run: cd apps/client && npm run lint
+        run: npm run lint:client
 
       - name: Run ESLint (vendor-portal)
-        run: cd apps/vendor-portal && npm run lint
+        run: npm run lint:vendor
 
       - name: Run ESLint (admin-portal)
-        run: cd apps/admin-portal && npm run lint
+        run: npm run lint:admin
 
   # ===== TYPE CHECK =====
   typecheck:
@@ -64,34 +57,26 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install root dependencies
+      - name: Install all dependencies (workspaces)
         run: npm ci
 
-      - name: Install app dependencies
-        run: |
-          cd apps/server && npm ci
-          cd ../client && npm ci
-          cd ../vendor-portal && npm ci
-          cd ../admin-portal && npm ci
-          cd ../../packages/shared && npm ci
-
       - name: Type check (shared)
-        run: cd packages/shared && npm run build
+        run: npm run build:shared
 
       - name: Generate Prisma Client
-        run: cd apps/server && npx prisma generate
+        run: npm run db:generate
 
       - name: Type check (server)
-        run: cd apps/server && npx tsc --noEmit
+        run: npm run -w apps/server -- tsc --noEmit
 
       - name: Type check (client)
-        run: cd apps/client && npx tsc --noEmit
+        run: npm run -w apps/client -- tsc --noEmit
 
       - name: Type check (vendor-portal)
-        run: cd apps/vendor-portal && npx tsc --noEmit
+        run: npm run -w apps/vendor-portal -- tsc --noEmit
 
       - name: Type check (admin-portal)
-        run: cd apps/admin-portal && npx tsc --noEmit
+        run: npm run -w apps/admin-portal -- tsc --noEmit
 
   # ===== UNIT TESTS =====
   test:
@@ -107,14 +92,11 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install root dependencies
+      - name: Install all dependencies (workspaces)
         run: npm ci
 
-      - name: Install server dependencies
-        run: cd apps/server && npm ci
-
       - name: Run tests
-        run: cd apps/server && npm run test -- --coverage --passWithNoTests
+        run: npm run test -- --coverage --passWithNoTests
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4
@@ -138,34 +120,26 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install root dependencies
+      - name: Install all dependencies (workspaces)
         run: npm ci
 
-      - name: Install app dependencies
-        run: |
-          cd apps/server && npm ci
-          cd ../client && npm ci
-          cd ../vendor-portal && npm ci
-          cd ../admin-portal && npm ci
-          cd ../../packages/shared && npm ci
-
       - name: Generate Prisma Client
-        run: cd apps/server && npx prisma generate
+        run: npm run db:generate
 
       - name: Build shared package
-        run: cd packages/shared && npm run build
+        run: npm run build:shared
 
       - name: Build server
-        run: cd apps/server && npm run build
+        run: npm run build:server
 
       - name: Build client
-        run: cd apps/client && npm run build
+        run: npm run build:client
 
       - name: Build vendor-portal
-        run: cd apps/vendor-portal && npm run build
+        run: npm run build:vendor
 
       - name: Build admin-portal
-        run: cd apps/admin-portal && npm run build
+        run: npm run build:admin
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -192,11 +166,6 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install root dependencies
-        run: npm ci
-
       - name: Run npm audit
-        run: |
-          cd apps/server && npm audit --audit-level=high || true
-          cd ../client && npm audit --audit-level=high || true
+        run: npm audit --audit-level=high || true
         continue-on-error: true
