@@ -1,8 +1,8 @@
-import { Injectable, Logger, ConflictException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { Role } from '../common/enums/role.enum';
+import { BadRequestException, ConflictException, Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { Role } from '../common/enums/role.enum';
+import { PrismaService } from '../prisma/prisma.service';
 
 /**
  * AuthService for Keycloak integration
@@ -132,27 +132,26 @@ export class AuthService {
   async changePassword(userId: string, currentPassword: string, newPassword: string) {
     this.logger.log(`Changing password for user ${userId}`);
 
-    // First, verify current password by attempting to login
+    const keycloakClientId =
+      this.configService.get<string>('KEYCLOAK_CLIENT_ID') || 'memento-mori-api';
+    const keycloakClientSecret = this.configService.get<string>('KEYCLOAK_CLIENT_SECRET');
+
+    if (!keycloakClientSecret) {
+      throw new BadRequestException('Keycloak client secret not configured');
+    }
+
+    // Get user email from database
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    // Step 1: Verify current password by attempting to login
     try {
-      const keycloakClientId =
-        this.configService.get<string>('KEYCLOAK_CLIENT_ID') || 'memento-mori-api';
-      const keycloakClientSecret = this.configService.get<string>('KEYCLOAK_CLIENT_SECRET');
-
-      if (!keycloakClientSecret) {
-        throw new BadRequestException('Keycloak client secret not configured');
-      }
-
-      // Get user email from database
-      const user = await this.prisma.user.findUnique({
-        where: { id: userId },
-        select: { email: true },
-      });
-
-      if (!user) {
-        throw new BadRequestException('User not found');
-      }
-
-      // Verify current password
       await axios.post(
         `${this.keycloakUrl}/realms/${this.keycloakRealm}/protocol/openid-connect/token`,
         new URLSearchParams({
@@ -168,14 +167,24 @@ export class AuthService {
           },
         },
       );
-
-      // Current password is correct, now update it via Admin API
-      const adminToken = await this.getKeycloakAdminToken();
-      if (!adminToken) {
-        throw new BadRequestException('Failed to authenticate with Keycloak admin');
+    } catch (error) {
+      // Only handle 401 from password verification, not from admin API
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        throw new BadRequestException('Current password is incorrect');
       }
+      // Re-throw other errors from password verification
+      this.logger.error('Error verifying current password:', error);
+      throw new BadRequestException('Failed to verify current password');
+    }
 
-      // Update password in Keycloak
+    // Step 2: Current password is correct, now update it via Admin API
+    const adminToken = await this.getKeycloakAdminToken();
+    if (!adminToken) {
+      throw new BadRequestException('Failed to authenticate with Keycloak admin');
+    }
+
+    // Step 3: Update password in Keycloak
+    try {
       await axios.put(
         `${this.keycloakUrl}/admin/realms/${this.keycloakRealm}/users/${userId}/reset-password`,
         {
@@ -194,12 +203,22 @@ export class AuthService {
       this.logger.log(`Password changed successfully for user ${userId}`);
       return { message: 'Password changed successfully' };
     } catch (error) {
+      // Handle errors from admin API separately
       if (axios.isAxiosError(error)) {
+        this.logger.error(
+          'Error changing password via Keycloak Admin API:',
+          error.response?.data || error.message,
+        );
         if (error.response?.status === 401) {
-          throw new BadRequestException('Current password is incorrect');
+          throw new BadRequestException('Failed to authenticate with Keycloak admin');
         }
-        this.logger.error('Error changing password:', error.response?.data || error.message);
-        throw new BadRequestException('Failed to change password');
+        if (error.response?.status === 403) {
+          throw new BadRequestException('Insufficient permissions to change password');
+        }
+        if (error.response?.status === 404) {
+          throw new BadRequestException('User not found in Keycloak');
+        }
+        throw new BadRequestException('Failed to change password in Keycloak');
       }
       throw error;
     }
