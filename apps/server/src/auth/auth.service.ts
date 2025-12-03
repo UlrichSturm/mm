@@ -41,7 +41,6 @@ export class AuthService {
         firstName: true,
         lastName: true,
         phone: true,
-        avatar: true,
         deliveryAddress: true,
         deliveryPostalCode: true,
         deliveryCity: true,
@@ -74,7 +73,6 @@ export class AuthService {
       firstName?: string;
       lastName?: string;
       phone?: string;
-      avatar?: string;
       deliveryAddress?: string;
       deliveryPostalCode?: string;
       deliveryCity?: string;
@@ -91,7 +89,6 @@ export class AuthService {
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone,
-        avatar: data.avatar,
         deliveryAddress: data.deliveryAddress,
         deliveryPostalCode: data.deliveryPostalCode,
         deliveryCity: data.deliveryCity,
@@ -107,7 +104,6 @@ export class AuthService {
         firstName: true,
         lastName: true,
         phone: true,
-        avatar: true,
         deliveryAddress: true,
         deliveryPostalCode: true,
         deliveryCity: true,
