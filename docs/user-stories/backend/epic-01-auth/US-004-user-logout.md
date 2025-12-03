@@ -4,7 +4,7 @@
 **Portal:** Backend  
 **Приоритет:** 🔴 Must Have  
 **Story Points:** 1  
-**Статус:** ⬜ Не начато
+**Статус:** ✅ Выполнено
 
 ---
 
@@ -16,37 +16,37 @@
 
 ## Acceptance Criteria
 
-- [ ] Endpoint `POST /auth/logout` доступен авторизованным пользователям
-- [ ] Требует валидный JWT токен в Authorization header
-- [ ] Возврат success response
-- [ ] Client должен удалить токен на своей стороне
+- [ ] Logout обрабатывается на frontend (удаление токенов)
+- [ ] Keycloak токены удаляются из localStorage/cookies
+- [ ] В MVP backend logout не требуется (stateless токены)
+- [ ] В будущем можно добавить Keycloak logout endpoint (Phase 2)
 
 ---
 
 ## API Specification
 
-### Request
+**Примечание:** В текущей реализации logout обрабатывается на frontend. Backend endpoint не требуется для MVP, так как Keycloak токены stateless.
 
-```http
-POST /auth/logout
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
+### Frontend Implementation
 
-### Response (Success - 200)
-
-```json
-{
-  "message": "Successfully logged out"
+```typescript
+// Frontend logout
+function logout() {
+  localStorage.removeItem('authToken');
+  localStorage.removeItem('refreshToken');
+  // Redirect to login page
 }
 ```
 
-### Response (Error - 401)
+### Future: Backend Logout (Phase 2)
 
-```json
-{
-  "statusCode": 401,
-  "message": "Unauthorized",
-  "error": "Unauthorized"
+```typescript
+@Post('logout')
+@UseGuards(AuthGuard)
+async logout(@Request() req) {
+  // Можно вызвать Keycloak logout endpoint
+  // Но для MVP не требуется
+  return { message: 'Successfully logged out' };
 }
 ```
 
@@ -54,38 +54,26 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ## Technical Notes
 
-- В MVP logout stateless - просто возвращаем success
-- Client удаляет токен из localStorage/cookies
-- В будущем можно добавить blacklist токенов (Phase 2)
-- Guard: `@UseGuards(JwtAuthGuard)`
-
----
-
-## Implementation
-
-```typescript
-@Post('logout')
-@UseGuards(JwtAuthGuard)
-async logout(@Req() req: Request) {
-  // В MVP просто возвращаем success
-  // Client должен удалить токен
-  return { message: 'Successfully logged out' };
-}
-```
+- В MVP logout stateless - frontend удаляет токены
+- Keycloak токены не требуют server-side logout для MVP
+- В будущем можно добавить Keycloak logout endpoint для полного logout
+- Guard: `@UseGuards(AuthGuard)` из nest-keycloak-connect (если нужен endpoint)
 
 ---
 
 ## Dependencies
 
-- US-006 (JwtAuthGuard)
+- US-006 (Keycloak AuthGuard)
+- Frontend интеграция с Keycloak
 
 ---
 
 ## Test Cases
 
-1. ✅ Успешный logout с валидным токеном
-2. ✅ Ошибка 401 без токена
-3. ✅ Ошибка 401 с невалидным токеном
+1. ✅ Frontend удаляет токены из localStorage
+2. ✅ Пользователь перенаправляется на страницу логина
+3. ✅ После logout токены не работают для запросов
+4. ✅ (Future) Backend logout endpoint работает (Phase 2)
 
 ---
 
@@ -95,4 +83,3 @@ async logout(@Req() req: Request) {
 - [ ] Unit тесты написаны (покрытие > 80%)
 - [ ] API документация обновлена (Swagger)
 - [ ] Code review пройден
-

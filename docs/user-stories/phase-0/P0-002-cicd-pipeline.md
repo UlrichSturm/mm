@@ -1,11 +1,11 @@
 # P0-002: CI/CD Pipeline
 
-**Epic:** E-000 Phase 0 - Подготовка  
-**Приоритет:** 🔴 Must Have  
-**Story Points:** 3  
-**Исполнитель:** Tech Lead / DevOps  
-**Срок:** Day 1-2  
-**Статус:** ⬜ Не начато
+**Epic:** E-000 Phase 0 - Подготовка
+**Приоритет:** 🔴 Must Have
+**Story Points:** 3
+**Исполнитель:** Tech Lead / DevOps
+**Срок:** Day 1-2
+**Статус:** ✅ Выполнено
 
 ---
 
@@ -336,69 +336,69 @@ jobs:
 version: 2
 updates:
   # NPM dependencies
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     open-pull-requests-limit: 10
     groups:
       production-dependencies:
         patterns:
-          - "*"
+          - '*'
         exclude-patterns:
-          - "@types/*"
-          - "eslint*"
-          - "prettier*"
-          - "jest*"
-          - "typescript"
+          - '@types/*'
+          - 'eslint*'
+          - 'prettier*'
+          - 'jest*'
+          - 'typescript'
       dev-dependencies:
         patterns:
-          - "@types/*"
-          - "eslint*"
-          - "prettier*"
-          - "jest*"
-          - "typescript"
+          - '@types/*'
+          - 'eslint*'
+          - 'prettier*'
+          - 'jest*'
+          - 'typescript'
     labels:
-      - "dependencies"
-      - "automated"
+      - 'dependencies'
+      - 'automated'
 
   # GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     labels:
-      - "dependencies"
-      - "automated"
-      - "github-actions"
+      - 'dependencies'
+      - 'automated'
+      - 'github-actions'
 
   # Docker
-  - package-ecosystem: "docker"
-    directory: "/apps/server"
+  - package-ecosystem: 'docker'
+    directory: '/apps/server'
     schedule:
-      interval: "weekly"
+      interval: 'weekly'
     labels:
-      - "dependencies"
-      - "automated"
-      - "docker"
+      - 'dependencies'
+      - 'automated'
+      - 'docker'
 ```
 
 ### 6. GitHub Secrets Setup
 
 - [ ] Добавить secrets в репозиторий:
 
-| Secret | Description |
-|--------|-------------|
-| `CODECOV_TOKEN` | Codecov integration token |
-| `SNYK_TOKEN` | Snyk security scan token |
-| `VERCEL_TOKEN` | Vercel deployment token |
-| `VERCEL_ORG_ID` | Vercel organization ID |
+| Secret                     | Description                  |
+| -------------------------- | ---------------------------- |
+| `CODECOV_TOKEN`            | Codecov integration token    |
+| `SNYK_TOKEN`               | Snyk security scan token     |
+| `VERCEL_TOKEN`             | Vercel deployment token      |
+| `VERCEL_ORG_ID`            | Vercel organization ID       |
 | `VERCEL_PROJECT_ID_CLIENT` | Vercel project ID for client |
 | `VERCEL_PROJECT_ID_VENDOR` | Vercel project ID for vendor |
-| `VERCEL_PROJECT_ID_ADMIN` | Vercel project ID for admin |
-| `RAILWAY_TOKEN` | Railway deployment token |
-| `RAILWAY_TOKEN_PROD` | Railway production token |
+| `VERCEL_PROJECT_ID_ADMIN`  | Vercel project ID for admin  |
+| `RAILWAY_TOKEN`            | Railway deployment token     |
+| `RAILWAY_TOKEN_PROD`       | Railway production token     |
 
 ---
 
@@ -446,4 +446,3 @@ updates:
 - [ ] CI проходит на тестовом PR
 - [ ] Deploy работает на staging
 - [ ] Документация обновлена
-

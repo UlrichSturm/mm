@@ -9,24 +9,24 @@
 
 ## Описание
 
-Реализация базовой системы аутентификации и авторизации для платформы. Включает регистрацию пользователей (Client, Vendor), логин/логаут, JWT токены и базовую RBAC систему.
+Реализация базовой системы аутентификации и авторизации для платформы с использованием **Keycloak** как Identity Provider (IdP). Включает регистрацию пользователей (Client, Vendor), логин/логаут через Keycloak, и базовую RBAC систему.
 
 ---
 
 ## Функциональность
 
-- Регистрация Client пользователей
-- Регистрация Vendor пользователей
-- Логин/Logout
-- JWT токены (access tokens)
-- RBAC (Role-Based Access Control) - базовый
-- Защита endpoints через Guards
+- Регистрация Client пользователей (через Keycloak Admin API)
+- Регистрация Vendor пользователей (через Keycloak Admin API)
+- Логин/Logout через Keycloak Direct Access Grants
+- Keycloak токены (access tokens, refresh tokens)
+- RBAC (Role-Based Access Control) через Keycloak роли
+- Защита endpoints через Keycloak Guards
 
 **Исключено из MVP:**
-- Refresh tokens
-- Password reset
-- Email verification
-- OAuth интеграции
+
+- Password reset (управляется Keycloak)
+- Email verification (управляется Keycloak)
+- OAuth интеграции (кроме базовой Keycloak)
 
 ---
 
@@ -35,9 +35,11 @@
 **Предшествующие эпики:** Нет (стартовый эпик)
 
 **Требует завершения:**
+
 - Нет
 
 **Блокирует:**
+
 - Epic 2: Vendors Management
 - Epic 9: Client App - Authentication
 - Epic 13: Vendor Portal - Authentication
@@ -58,10 +60,11 @@
 **Оценка:** 13 points
 
 **Обоснование:**
+
 - Регистрация (Client + Vendor): 3 points
 - Логин/Logout: 2 points
-- JWT токены: 3 points
-- RBAC система: 3 points
+- Keycloak интеграция: 3 points
+- RBAC система через Keycloak: 3 points
 - Guards и декораторы: 2 points
 
 ---
@@ -71,23 +74,26 @@
 **Порядок:** 1 (первый эпик)
 
 **Последовательность:**
-1. Настройка AuthModule и базовой структуры
-2. Регистрация Client пользователей
-3. Регистрация Vendor пользователей
-4. Логин/Logout
-5. JWT токены
-6. RBAC система
-7. Guards и декораторы
+
+1. Настройка Keycloak сервера и realm
+2. Настройка AuthModule с Keycloak интеграцией
+3. Регистрация Client пользователей (через Keycloak Admin API)
+4. Регистрация Vendor пользователей (через Keycloak Admin API)
+5. Логин/Logout через Keycloak Direct Access Grants
+6. RBAC система через Keycloak роли
+7. Guards и декораторы (nest-keycloak-connect)
 
 ---
 
 ## Параллельная разработка
 
 **Возможна параллельная работа:**
+
 - ✅ Frontend команда может начать работу над UI после определения API контракта
 - ✅ Можно работать параллельно над Client и Vendor регистрацией
 
 **Не может быть параллельной:**
+
 - ❌ Другие backend модули не могут начаться без Auth
 - ❌ Frontend не может интегрироваться без готового API
 
@@ -95,12 +101,14 @@
 
 ## Критерии готовности (Definition of Done)
 
-- [ ] Регистрация Client пользователей работает
-- [ ] Регистрация Vendor пользователей работает
-- [ ] Логин/Logout работает
-- [ ] JWT токены генерируются и валидируются
-- [ ] RBAC система работает (CLIENT, VENDOR, ADMIN роли)
-- [ ] Guards защищают endpoints
+- [ ] Keycloak сервер настроен и работает
+- [ ] Keycloak realm и clients созданы
+- [ ] Регистрация Client пользователей работает (через Keycloak Admin API)
+- [ ] Регистрация Vendor пользователей работает (через Keycloak Admin API)
+- [ ] Логин/Logout работает через Keycloak Direct Access Grants
+- [ ] Keycloak токены валидируются на backend
+- [ ] RBAC система работает через Keycloak роли (client, vendor, admin)
+- [ ] Guards защищают endpoints (nest-keycloak-connect)
 - [ ] Unit тесты написаны (покрытие > 80%)
 - [ ] API документация обновлена
 - [ ] Code review пройден
@@ -119,32 +127,47 @@
 ## Технические детали
 
 **Технологии:**
+
 - NestJS
-- @nestjs/jwt
-- @nestjs/passport
-- bcrypt (для хеширования паролей)
+- nest-keycloak-connect
+- keycloak-connect
+- Keycloak (Identity Provider)
+- axios (для Keycloak Admin API)
 
 **API Endpoints:**
-- `POST /auth/register` - Регистрация Client
-- `POST /auth/register/vendor` - Регистрация Vendor
-- `POST /auth/login` - Логин
-- `POST /auth/logout` - Logout
+
+- `POST /auth/register` - Регистрация Client (создает в Keycloak)
+- `POST /auth/login` - Логин через Keycloak Direct Access Grants
+- `GET /auth/profile` - Получить профиль текущего пользователя
+- `PATCH /auth/profile` - Обновить профиль
+
+**Keycloak:**
+
+- Realm: `memento-mori`
+- Clients: `memento-mori-api` (confidential), `memento-mori-client`, `memento-mori-vendor`, `memento-mori-admin`
+- Roles: `client`, `vendor`, `admin`
 
 **Database:**
-- User model (Prisma)
-- Role enum (CLIENT, VENDOR, ADMIN)
+
+- User model (Prisma) - синхронизируется с Keycloak
+- Пароли НЕ хранятся в базе (управляются Keycloak)
 
 ---
 
 ## Риски и митигация
 
 **Риски:**
-- Сложность интеграции JWT с фронтендом
-- Безопасность токенов
+
+- Сложность настройки Keycloak
+- Зависимость от внешнего сервиса (Keycloak)
+- Синхронизация данных между Keycloak и локальной БД
 
 **Митигация:**
+
+- Использование Docker для локальной разработки
+- Автоматизированный скрипт настройки Keycloak
+- Синхронизация пользователей при логине
 - Раннее определение API контракта
-- Использование проверенных библиотек
 - Security review
 
 ---
@@ -152,4 +175,3 @@
 ## Примечания
 
 Это критичный эпик, который блокирует все остальные. Рекомендуется начать с него и завершить как можно раньше.
-

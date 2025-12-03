@@ -1,11 +1,11 @@
 # P0-006: Environment Variables Documentation
 
-**Epic:** E-000 Phase 0 - Подготовка  
-**Приоритет:** 🔴 Must Have  
-**Story Points:** 1  
-**Исполнитель:** Tech Lead  
-**Срок:** Day 1  
-**Статус:** ⬜ Не начато
+**Epic:** E-000 Phase 0 - Подготовка
+**Приоритет:** 🔴 Must Have
+**Story Points:** 1
+**Исполнитель:** Tech Lead
+**Срок:** Day 1
+**Статус:** ✅ Выполнено
 
 ---
 
@@ -181,43 +181,45 @@ This document describes all environment variables used in the Memento Mori platf
 
 ### Required Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NODE_ENV` | Environment mode | `development`, `production`, `test` |
-| `PORT` | Server port | `3001` |
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:pass@host:5432/db` |
-| `JWT_SECRET` | JWT signing key (min 32 chars) | Random string |
-| `STRIPE_SECRET_KEY` | Stripe secret API key | `sk_test_xxx` |
-| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret | `whsec_xxx` |
+| Variable                | Description                    | Example                               |
+| ----------------------- | ------------------------------ | ------------------------------------- |
+| `NODE_ENV`              | Environment mode               | `development`, `production`, `test`   |
+| `PORT`                  | Server port                    | `3001`                                |
+| `DATABASE_URL`          | PostgreSQL connection string   | `postgresql://user:pass@host:5432/db` |
+| `JWT_SECRET`            | JWT signing key (min 32 chars) | Random string                         |
+| `STRIPE_SECRET_KEY`     | Stripe secret API key          | `sk_test_xxx`                         |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret  | `whsec_xxx`                           |
 
 ### Optional Variables
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `REDIS_URL` | Redis connection URL | `redis://localhost:6379` |
-| `JWT_EXPIRATION` | JWT token expiration | `24h` |
-| `LOG_LEVEL` | Logging level | `debug` |
-| `THROTTLE_TTL` | Rate limit window (seconds) | `60` |
-| `THROTTLE_LIMIT` | Max requests per window | `100` |
+| Variable         | Description                 | Default                  |
+| ---------------- | --------------------------- | ------------------------ |
+| `REDIS_URL`      | Redis connection URL        | `redis://localhost:6379` |
+| `JWT_EXPIRATION` | JWT token expiration        | `24h`                    |
+| `LOG_LEVEL`      | Logging level               | `debug`                  |
+| `THROTTLE_TTL`   | Rate limit window (seconds) | `60`                     |
+| `THROTTLE_LIMIT` | Max requests per window     | `100`                    |
 
 ## Frontend (apps/client, apps/vendor-portal, apps/admin-portal)
 
 ### Public Variables (exposed to browser)
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `NEXT_PUBLIC_API_URL` | Backend API URL | `http://localhost:3001` |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe public key | `pk_test_xxx` |
-| `NEXT_PUBLIC_APP_URL` | Current app URL | `http://localhost:3000` |
+| Variable                             | Description       | Example                 |
+| ------------------------------------ | ----------------- | ----------------------- |
+| `NEXT_PUBLIC_API_URL`                | Backend API URL   | `http://localhost:3001` |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe public key | `pk_test_xxx`           |
+| `NEXT_PUBLIC_APP_URL`                | Current app URL   | `http://localhost:3000` |
 
 ## Generating Secrets
 
 ### JWT Secret
+
 \`\`\`bash
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 \`\`\`
 
 ### Database Password
+
 \`\`\`bash
 openssl rand -base64 32
 \`\`\`
@@ -225,14 +227,17 @@ openssl rand -base64 32
 ## Environment-specific Setup
 
 ### Development
+
 - Use `.env` file locally
 - Docker services use `docker-compose.dev.yml` defaults
 
 ### Staging
+
 - Variables stored in Railway/Vercel
 - Use test API keys for Stripe
 
 ### Production
+
 - Variables stored in Railway/Vercel
 - Use live API keys for Stripe
 - Enable SSL for database
@@ -296,7 +301,7 @@ export function validate(config: Record<string, unknown>) {
   const validatedConfig = plainToInstance(EnvironmentVariables, config, {
     enableImplicitConversion: true,
   });
-  
+
   const errors = validateSync(validatedConfig, {
     skipMissingProperties: false,
   });
@@ -304,7 +309,7 @@ export function validate(config: Record<string, unknown>) {
   if (errors.length > 0) {
     throw new Error(errors.toString());
   }
-  
+
   return validatedConfig;
 }
 ```
@@ -327,4 +332,3 @@ export function validate(config: Record<string, unknown>) {
 - [ ] Документация ENVIRONMENT_VARIABLES.md написана
 - [ ] Валидация настроена
 - [ ] Команда может настроить окружение по документации
-

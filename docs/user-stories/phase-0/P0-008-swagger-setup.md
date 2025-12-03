@@ -1,11 +1,11 @@
 # P0-008: Swagger Setup
 
-**Epic:** E-000 Phase 0 - Подготовка  
-**Приоритет:** 🟡 High  
-**Story Points:** 2  
-**Исполнитель:** Backend Lead  
-**Срок:** Day 3  
-**Статус:** ⬜ Не начато
+**Epic:** E-000 Phase 0 - Подготовка
+**Приоритет:** 🟡 High
+**Story Points:** 2
+**Исполнитель:** Backend Lead
+**Срок:** Day 3
+**Статус:** ✅ Выполнено
 
 ---
 
@@ -38,10 +38,10 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const logger = new Logger('Bootstrap');
-  
+
   // Global prefix
   app.setGlobalPrefix('api');
-  
+
   // Validation
   app.useGlobalPipes(
     new ValidationPipe({
@@ -53,7 +53,7 @@ async function bootstrap() {
       },
     }),
   );
-  
+
   // CORS
   app.enableCors({
     origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000'],
@@ -61,26 +61,28 @@ async function bootstrap() {
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
-  
+
   // Swagger
   if (process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('Memento Mori API')
-      .setDescription(`
+      .setDescription(
+        `
         ## API Documentation for Memento Mori Platform
-        
+
         ### Authentication
         Most endpoints require JWT authentication. Include the token in the Authorization header:
         \`Authorization: Bearer <token>\`
-        
+
         ### Rate Limiting
         API requests are rate-limited to ${process.env.THROTTLE_LIMIT || 100} requests per ${process.env.THROTTLE_TTL || 60} seconds.
-        
+
         ### Environments
         - Development: http://localhost:3001
         - Staging: https://api-staging.mementomori.ru
         - Production: https://api.mementomori.ru
-      `)
+      `,
+      )
       .setVersion('1.0')
       .setContact('Memento Mori Team', 'https://mementomori.ru', 'support@mementomori.ru')
       .setLicense('Private', '')
@@ -107,9 +109,9 @@ async function bootstrap() {
       .addServer('https://api-staging.mementomori.ru', 'Staging')
       .addServer('https://api.mementomori.ru', 'Production')
       .build();
-      
+
     const document = SwaggerModule.createDocument(app, config);
-    
+
     // Custom options
     SwaggerModule.setup('api/docs', app, document, {
       swaggerOptions: {
@@ -125,10 +127,10 @@ async function bootstrap() {
         .swagger-ui .info .title { font-size: 2rem }
       `,
     });
-    
+
     logger.log('Swagger documentation available at /api/docs');
   }
-  
+
   const port = process.env.PORT || 3001;
   await app.listen(port);
   logger.log(`Application running on port ${port}`);
@@ -143,12 +145,7 @@ bootstrap();
 
 ```typescript
 import { applyDecorators } from '@nestjs/common';
-import {
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
 export function ApiEndpoint(options: {
   summary: string;
@@ -177,7 +174,7 @@ export function ApiEndpoint(options: {
   }
 
   if (options.responses) {
-    options.responses.forEach((response) => {
+    options.responses.forEach(response => {
       decorators.push(
         ApiResponse({
           status: response.status,
@@ -377,4 +374,3 @@ if (process.env.NODE_ENV !== 'production') {
 - [ ] Все DTOs документированы
 - [ ] Примеры добавлены
 - [ ] Тестирование через UI работает
-

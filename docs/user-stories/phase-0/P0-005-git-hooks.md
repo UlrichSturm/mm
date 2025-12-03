@@ -1,11 +1,11 @@
 # P0-005: Husky & Commitlint Setup
 
-**Epic:** E-000 Phase 0 - Подготовка  
-**Приоритет:** 🟡 High  
-**Story Points:** 2  
-**Исполнитель:** Tech Lead  
-**Срок:** Day 2  
-**Статус:** ⬜ Не начато
+**Epic:** E-000 Phase 0 - Подготовка
+**Приоритет:** 🟡 High
+**Story Points:** 2
+**Исполнитель:** Tech Lead
+**Срок:** Day 2
+**Статус:** ✅ Выполнено
 
 ---
 
@@ -78,25 +78,16 @@ npm run test
 ```javascript
 module.exports = {
   // TypeScript & JavaScript
-  '*.{ts,tsx,js,jsx}': [
-    'eslint --fix',
-    'prettier --write',
-  ],
-  
+  '*.{ts,tsx,js,jsx}': ['eslint --fix', 'prettier --write'],
+
   // JSON, YAML, Markdown
-  '*.{json,yml,yaml,md}': [
-    'prettier --write',
-  ],
-  
+  '*.{json,yml,yaml,md}': ['prettier --write'],
+
   // CSS, SCSS
-  '*.{css,scss}': [
-    'prettier --write',
-  ],
-  
+  '*.{css,scss}': ['prettier --write'],
+
   // Prisma
-  '*.prisma': [
-    'npx prisma format',
-  ],
+  '*.prisma': ['npx prisma format'],
 };
 ```
 
@@ -113,51 +104,41 @@ module.exports = {
       2,
       'always',
       [
-        'feat',     // New feature
-        'fix',      // Bug fix
-        'docs',     // Documentation only
-        'style',    // Code style (formatting, semicolons, etc)
+        'feat', // New feature
+        'fix', // Bug fix
+        'docs', // Documentation only
+        'style', // Code style (formatting, semicolons, etc)
         'refactor', // Code refactoring
-        'perf',     // Performance improvements
-        'test',     // Adding or updating tests
-        'build',    // Build system or dependencies
-        'ci',       // CI/CD configuration
-        'chore',    // Other changes (maintenance)
-        'revert',   // Revert previous commit
-        'wip',      // Work in progress
+        'perf', // Performance improvements
+        'test', // Adding or updating tests
+        'build', // Build system or dependencies
+        'ci', // CI/CD configuration
+        'chore', // Other changes (maintenance)
+        'revert', // Revert previous commit
+        'wip', // Work in progress
       ],
     ],
     'type-case': [2, 'always', 'lower-case'],
     'type-empty': [2, 'never'],
-    
+
     // Scope
     'scope-enum': [
       1,
       'always',
-      [
-        'server',
-        'client',
-        'vendor',
-        'admin',
-        'shared',
-        'docs',
-        'ci',
-        'docker',
-        'deps',
-      ],
+      ['server', 'client', 'vendor', 'admin', 'shared', 'docs', 'ci', 'docker', 'deps'],
     ],
     'scope-case': [2, 'always', 'lower-case'],
-    
+
     // Subject
     'subject-case': [2, 'always', 'lower-case'],
     'subject-empty': [2, 'never'],
     'subject-max-length': [2, 'always', 72],
     'subject-full-stop': [2, 'never', '.'],
-    
+
     // Body
     'body-max-line-length': [2, 'always', 100],
     'body-leading-blank': [2, 'always'],
-    
+
     // Footer
     'footer-leading-blank': [2, 'always'],
     'footer-max-line-length': [2, 'always', 100],
@@ -237,7 +218,8 @@ module.exports = {
         description: 'Are there any breaking changes?',
       },
       breakingBody: {
-        description: 'A BREAKING CHANGE commit requires a body. Please describe the breaking changes',
+        description:
+          'A BREAKING CHANGE commit requires a body. Please describe the breaking changes',
       },
       breaking: {
         description: 'Describe the breaking changes',
@@ -246,7 +228,8 @@ module.exports = {
         description: 'Does this change affect any open issues?',
       },
       issuesBody: {
-        description: 'If issues are closed, the commit requires a body. Please describe the changes',
+        description:
+          'If issues are closed, the commit requires a body. Please describe the changes',
       },
       issues: {
         description: 'Add issue references (e.g. "fix #123", "closes #456")',
@@ -334,4 +317,3 @@ chore: clean up unused imports
 - [ ] Lint-staged работает
 - [ ] Commitlint работает
 - [ ] Команда обучена правилам коммитов
-

@@ -1,117 +1,95 @@
-# US-006: JWT Guard защита endpoints
+# US-006: Keycloak Guard защита endpoints
 
 **Epic:** E-001 Authentication & Authorization  
 **Portal:** Backend  
 **Приоритет:** 🔴 Must Have  
 **Story Points:** 2  
-**Статус:** ⬜ Не начато
+**Статус:** ✅ Выполнено
 
 ---
 
 ## User Story
 
-**Как система**, я должна защищать endpoints от неавторизованного доступа
+**Как система**, я должна защищать endpoints от неавторизованного доступа используя Keycloak токены
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] JwtAuthGuard проверяет наличие и валидность JWT токена
+- [ ] AuthGuard из nest-keycloak-connect проверяет наличие и валидность Keycloak токена
 - [ ] Токен передается в Authorization header: `Bearer <token>`
 - [ ] При валидном токене user добавляется в request
 - [ ] 401 Unauthorized для невалидных/отсутствующих токенов
-- [ ] JwtStrategy извлекает payload из токена
-- [ ] @UseGuards(JwtAuthGuard) декоратор для защиты endpoints
+- [ ] Keycloak валидирует токен используя публичный ключ realm
+- [ ] @UseGuards(AuthGuard) декоратор для защиты endpoints
+- [ ] @Public() декоратор для публичных endpoints
 
 ---
 
 ## Implementation
 
-### JWT Strategy
+### Keycloak Module Configuration
 
 ```typescript
-// src/auth/strategies/jwt.strategy.ts
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../../prisma/prisma.service';
+// src/auth/keycloak.config.ts
+import { KeycloakConnectOptions } from 'nest-keycloak-connect';
 
-@Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(
-    private configService: ConfigService,
-    private prisma: PrismaService,
-  ) {
-    super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET'),
-    });
-  }
-
-  async validate(payload: { sub: string; email: string; role: string }) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
-    });
-
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
-    return {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    };
-  }
-}
+export const keycloakConfig: KeycloakConnectOptions = {
+  authServerUrl: process.env.KEYCLOAK_URL || 'http://localhost:8080',
+  realm: process.env.KEYCLOAK_REALM || 'memento-mori',
+  clientId: process.env.KEYCLOAK_CLIENT_ID || 'memento-mori-api',
+  secret: process.env.KEYCLOAK_CLIENT_SECRET,
+};
 ```
 
-### JWT Auth Guard
+### Auth Module Setup
 
 ```typescript
-// src/auth/guards/jwt-auth.guard.ts
-import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+// src/auth/auth.module.ts
+import { Module, Global } from '@nestjs/common';
+import { KeycloakConnectModule, AuthGuard, RoleGuard } from 'nest-keycloak-connect';
+import { keycloakConfig } from './keycloak.config';
 
-@Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {
-  handleRequest(err: any, user: any, info: any, context: ExecutionContext) {
-    if (err || !user) {
-      throw err || new UnauthorizedException('Invalid or missing token');
-    }
-    return user;
-  }
-}
-```
-
-### Current User Decorator
-
-```typescript
-// src/auth/decorators/current-user.decorator.ts
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-
-export const CurrentUser = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext) => {
-    const request = ctx.switchToHttp().getRequest();
-    return request.user;
-  },
-);
+@Global()
+@Module({
+  imports: [KeycloakConnectModule.register(keycloakConfig)],
+  providers: [
+    {
+      provide: AuthGuard,
+      useClass: AuthGuard,
+    },
+    {
+      provide: RoleGuard,
+      useClass: RoleGuard,
+    },
+  ],
+  exports: [KeycloakConnectModule],
+})
+export class AuthModule {}
 ```
 
 ### Usage Example
 
 ```typescript
+import { Controller, Get } from '@nestjs/common';
+import { AuthGuard, Roles, Resource, Public } from 'nest-keycloak-connect';
+
 @Controller('profile')
+@Resource('profile')
 export class ProfileController {
-  
   @Get()
-  @UseGuards(JwtAuthGuard)
-  getProfile(@CurrentUser() user: User) {
-    return user;
+  @Roles({ roles: ['client', 'vendor', 'admin'] })
+  @UseGuards(AuthGuard)
+  getProfile(@Request() req) {
+    // req.user содержит данные из Keycloak токена
+    return req.user;
+  }
+
+  @Get('public')
+  @Public()
+  getPublicData() {
+    // Публичный endpoint, не требует авторизации
+    return { message: 'Public data' };
   }
 }
 ```
@@ -132,38 +110,44 @@ export class ProfileController {
 
 ## Technical Notes
 
-- JWT_SECRET должен быть в .env (минимум 32 символа)
-- Token expiration: 24h для MVP
-- Payload структура: `{ sub: userId, email, role }`
-- `@CurrentUser()` декоратор для удобного доступа к user
+- Keycloak автоматически валидирует токены используя публичный ключ realm
+- Token expiration управляется в Keycloak (обычно 5 минут для access token, 30 минут для refresh token)
+- Payload структура из Keycloak: `{ sub: userId, email, preferred_username, realm_access: { roles: [...] } }`
+- `req.user` содержит данные из Keycloak токена
+- `@Public()` декоратор для публичных endpoints
+- `@Resource()` декоратор для указания ресурса
+- `@Roles()` декоратор для указания требуемых ролей
 
 ---
 
 ## Environment Variables
 
 ```env
-JWT_SECRET=your-super-secret-key-minimum-32-characters
-JWT_EXPIRATION=24h
+KEYCLOAK_URL=http://localhost:8080
+KEYCLOAK_REALM=memento-mori
+KEYCLOAK_CLIENT_ID=memento-mori-api
+KEYCLOAK_CLIENT_SECRET=your-client-secret
 ```
 
 ---
 
 ## Dependencies
 
-- `@nestjs/passport`
-- `@nestjs/jwt`
-- `passport-jwt`
+- `nest-keycloak-connect`
+- `keycloak-connect`
 
 ---
 
 ## Test Cases
 
-1. ✅ Запрос с валидным токеном - доступ разрешен
+1. ✅ Запрос с валидным Keycloak токеном - доступ разрешен
 2. ✅ Запрос без токена - 401
 3. ✅ Запрос с невалидным токеном - 401
 4. ✅ Запрос с expired токеном - 401
-5. ✅ User доступен через @CurrentUser()
-6. ✅ User содержит правильные данные из токена
+5. ✅ User доступен через req.user
+6. ✅ User содержит правильные данные из Keycloak токена
+7. ✅ Публичные endpoints доступны без токена (@Public())
+8. ✅ Роли проверяются корректно (@Roles())
 
 ---
 
@@ -173,4 +157,3 @@ JWT_EXPIRATION=24h
 - [ ] Unit тесты написаны (покрытие > 80%)
 - [ ] Документация обновлена
 - [ ] Code review пройден
-

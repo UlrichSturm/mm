@@ -1,11 +1,11 @@
 # P0-009: Seed Data
 
-**Epic:** E-000 Phase 0 - Подготовка  
-**Приоритет:** 🟡 High  
-**Story Points:** 2  
-**Исполнитель:** Backend  
-**Срок:** Day 4  
-**Статус:** ⬜ Не начато
+**Epic:** E-000 Phase 0 - Подготовка
+**Приоритет:** 🟡 High
+**Story Points:** 2
+**Исполнитель:** Backend
+**Срок:** Day 4
+**Статус:** ✅ Выполнено
 
 ---
 
@@ -47,14 +47,14 @@ async function main() {
 
 async function cleanDatabase() {
   console.log('🧹 Cleaning database...');
-  
+
   await prisma.payment.deleteMany();
   await prisma.order.deleteMany();
   await prisma.service.deleteMany();
   await prisma.vendorProfile.deleteMany();
   await prisma.category.deleteMany();
   await prisma.user.deleteMany();
-  
+
   console.log('   Database cleaned');
 }
 
@@ -244,7 +244,8 @@ async function seedServices() {
       services: [
         {
           name: 'Организация похорон под ключ',
-          description: 'Полный комплекс услуг: гроб, венок, транспорт, оформление документов, организация поминок',
+          description:
+            'Полный комплекс услуг: гроб, венок, транспорт, оформление документов, организация поминок',
           price: 45000,
         },
         {
@@ -304,8 +305,8 @@ async function seedServices() {
   ];
 
   for (const vendorServices of servicesData) {
-    const vendor = vendors.find((v) => v.user.email === vendorServices.vendorEmail);
-    const category = categories.find((c) => c.slug === vendorServices.categorySlug);
+    const vendor = vendors.find(v => v.user.email === vendorServices.vendorEmail);
+    const category = categories.find(c => c.slug === vendorServices.categorySlug);
 
     if (!vendor || !category) continue;
 
@@ -386,7 +387,7 @@ async function seedOrders() {
 }
 
 main()
-  .catch((e) => {
+  .catch(e => {
     console.error('❌ Seed failed:', e);
     process.exit(1);
   })
@@ -417,26 +418,30 @@ main()
 ## Development Environment
 
 ### Admin
+
 - Email: `admin@mementomori.ru`
 - Password: `password123`
 
 ### Clients
-| Email | Password | Name |
-|-------|----------|------|
-| client1@test.com | password123 | Иван Петров |
-| client2@test.com | password123 | Мария Иванова |
+
+| Email            | Password    | Name            |
+| ---------------- | ----------- | --------------- |
+| client1@test.com | password123 | Иван Петров     |
+| client2@test.com | password123 | Мария Иванова   |
 | client3@test.com | password123 | Алексей Сидоров |
 
 ### Vendors (Approved)
-| Email | Password | Business |
-|-------|----------|----------|
-| vendor1@test.com | password123 | Ритуальное агентство "Память" |
+
+| Email            | Password    | Business                        |
+| ---------------- | ----------- | ------------------------------- |
+| vendor1@test.com | password123 | Ритуальное агентство "Память"   |
 | vendor2@test.com | password123 | Юридическая компания "Наследие" |
-| vendor3@test.com | password123 | Транспортная служба "Путь" |
+| vendor3@test.com | password123 | Транспортная служба "Путь"      |
 
 ### Vendors (Pending)
-| Email | Password | Business |
-|-------|----------|----------|
+
+| Email            | Password    | Business                   |
+| ---------------- | ----------- | -------------------------- |
 | vendor4@test.com | password123 | Цветочный салон "Вечность" |
 
 ## Running Seed
@@ -474,4 +479,3 @@ npm run db:reset
 - [ ] Test credentials документированы
 - [ ] Данные соответствуют схеме
 - [ ] Команда может использовать seed
-
