@@ -64,7 +64,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install app dependencies
         run: |
           cd apps/server && npm ci
           cd ../client && npm ci
@@ -104,7 +107,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install server dependencies
         run: cd apps/server && npm ci
 
       - name: Run tests
@@ -132,7 +138,10 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
-      - name: Install dependencies
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install app dependencies
         run: |
           cd apps/server && npm ci
           cd ../client && npm ci
@@ -181,6 +190,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install root dependencies
+        run: npm ci
 
       - name: Run npm audit
         run: |
