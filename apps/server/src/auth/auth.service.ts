@@ -83,21 +83,46 @@ export class AuthService {
       billingCountry?: string;
     },
   ) {
+    // Build update data object, only including fields that are explicitly provided
+    // This prevents Prisma from setting fields to NULL when undefined is passed
+    const updateData: Record<string, unknown> = {};
+    if (data.firstName !== undefined) {
+      updateData.firstName = data.firstName;
+    }
+    if (data.lastName !== undefined) {
+      updateData.lastName = data.lastName;
+    }
+    if (data.phone !== undefined) {
+      updateData.phone = data.phone;
+    }
+    if (data.deliveryAddress !== undefined) {
+      updateData.deliveryAddress = data.deliveryAddress;
+    }
+    if (data.deliveryPostalCode !== undefined) {
+      updateData.deliveryPostalCode = data.deliveryPostalCode;
+    }
+    if (data.deliveryCity !== undefined) {
+      updateData.deliveryCity = data.deliveryCity;
+    }
+    if (data.deliveryCountry !== undefined) {
+      updateData.deliveryCountry = data.deliveryCountry;
+    }
+    if (data.billingAddress !== undefined) {
+      updateData.billingAddress = data.billingAddress;
+    }
+    if (data.billingPostalCode !== undefined) {
+      updateData.billingPostalCode = data.billingPostalCode;
+    }
+    if (data.billingCity !== undefined) {
+      updateData.billingCity = data.billingCity;
+    }
+    if (data.billingCountry !== undefined) {
+      updateData.billingCountry = data.billingCountry;
+    }
+
     const user = await this.prisma.user.update({
       where: { id: userId },
-      data: {
-        firstName: data.firstName,
-        lastName: data.lastName,
-        phone: data.phone,
-        deliveryAddress: data.deliveryAddress,
-        deliveryPostalCode: data.deliveryPostalCode,
-        deliveryCity: data.deliveryCity,
-        deliveryCountry: data.deliveryCountry,
-        billingAddress: data.billingAddress,
-        billingPostalCode: data.billingPostalCode,
-        billingCity: data.billingCity,
-        billingCountry: data.billingCountry,
-      },
+      data: updateData,
       select: {
         id: true,
         email: true,

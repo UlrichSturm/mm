@@ -22,7 +22,6 @@ model User {
   firstName String?  @map("first_name")
   lastName  String?  @map("last_name")
   phone     String?
-  avatar    String?
 
   // Delivery Address
   deliveryAddress    String? @map("delivery_address")
