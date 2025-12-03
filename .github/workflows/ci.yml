@@ -67,16 +67,16 @@ jobs:
         run: npm run db:generate
 
       - name: Type check (server)
-        run: npm run -w apps/server -- tsc --noEmit
+        run: cd apps/server && npx tsc --noEmit
 
       - name: Type check (client)
-        run: npm run -w apps/client -- tsc --noEmit
+        run: cd apps/client && npx tsc --noEmit
 
       - name: Type check (vendor-portal)
-        run: npm run -w apps/vendor-portal -- tsc --noEmit
+        run: cd apps/vendor-portal && npx tsc --noEmit
 
       - name: Type check (admin-portal)
-        run: npm run -w apps/admin-portal -- tsc --noEmit
+        run: cd apps/admin-portal && npx tsc --noEmit
 
   # ===== UNIT TESTS =====
   test:

@@ -46,11 +46,6 @@ export interface LawyerNotaryFilters {
   postalCode?: string;
 }
 
-interface ErrorResponse {
-  message?: string;
-  code?: string;
-}
-
 class LawyerNotaryApiClient {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<T> {
     return apiRequest<T>(endpoint, options);
