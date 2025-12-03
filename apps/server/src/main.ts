@@ -13,6 +13,7 @@ async function bootstrap() {
   app.use(
     helmet({
       contentSecurityPolicy: process.env.NODE_ENV === 'production',
+      hsts: false, // Disable HSTS in development to allow HTTP (browser tries HTTPS otherwise)
     }),
   );
 
