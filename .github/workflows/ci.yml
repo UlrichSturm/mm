@@ -96,7 +96,7 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm run test -- --coverage --passWithNoTests
+        run: npm run -w apps/server test -- --coverage --passWithNoTests
 
       - name: Upload coverage
         uses: codecov/codecov-action@v4

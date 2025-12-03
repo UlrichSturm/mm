@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { initKeycloak, keycloak, isAuthenticated, getUserInfo } from '@/lib/keycloak';
+import { initKeycloak, keycloak, getUserInfo } from '@/lib/keycloak';
 
 interface KeycloakContextType {
   isAuthenticated: boolean;
@@ -37,13 +37,13 @@ export function KeycloakProvider({ children }: KeycloakProviderProps) {
         setUser(getUserInfo());
         setIsLoading(false);
       },
-      (error) => {
+      error => {
         console.error('Keycloak initialization error:', error);
         setIsAuthenticatedState(false);
         setUser(null);
         setIsLoading(false);
       },
-    ).then((authenticated) => {
+    ).then(authenticated => {
       if (!authenticated) {
         setIsLoading(false);
       }
@@ -96,4 +96,3 @@ export function KeycloakProvider({ children }: KeycloakProviderProps) {
     </KeycloakContext.Provider>
   );
 }
-
