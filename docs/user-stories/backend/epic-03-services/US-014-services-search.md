@@ -1,9 +1,9 @@
 # US-014: Поиск услуг
 
-**Epic:** E-003 Services Catalog  
-**Portal:** Backend  
-**Приоритет:** 🔴 Must Have  
-**Story Points:** 2  
+**Epic:** E-003 Services Catalog
+**Portal:** Backend
+**Приоритет:** 🔴 Must Have
+**Story Points:** 2
 **Статус:** ⬜ Не начато
 
 ---
@@ -79,7 +79,9 @@ GET /services?search=похороны&page=1&limit=12
 
 - Использовать Prisma `contains` с `mode: 'insensitive'`
 - Поиск по OR (name OR description)
-- Валидировать минимальную длину запроса
+- Валидировать минимальную длину запроса (2 символа)
+- Пустой search игнорируется (не применяется фильтр)
+- HTTP 400 Bad Request если search < 2 символов
 - В будущем можно добавить full-text search
 
 ---
@@ -97,15 +99,15 @@ async getServices(
   if (search && search.length < 2) {
     throw new BadRequestException('Search query must be at least 2 characters');
   }
-  
+
   const take = Math.min(limit, 50);
   const skip = (page - 1) * take;
-  
+
   const where: Prisma.ServiceWhereInput = {
     status: 'ACTIVE',
     vendor: { status: 'APPROVED' },
   };
-  
+
   // Add search filter
   if (search) {
     where.OR = [
@@ -113,7 +115,7 @@ async getServices(
       { description: { contains: search, mode: 'insensitive' } },
     ];
   }
-  
+
   const [data, total] = await Promise.all([
     this.prisma.service.findMany({
       where,
@@ -127,13 +129,13 @@ async getServices(
     }),
     this.prisma.service.count({ where }),
   ]);
-  
+
   return {
     data,
-    meta: { 
-      total, 
-      page, 
-      limit: take, 
+    meta: {
+      total,
+      page,
+      limit: take,
       totalPages: Math.ceil(total / take),
       searchQuery: search || null,
     },

@@ -6,10 +6,12 @@ import {
   IsUUID,
   IsArray,
   IsInt,
+  IsUrl,
   Min,
   MinLength,
   MaxLength,
   IsEnum,
+  ArrayMaxSize,
 } from 'class-validator';
 import { ServiceStatus } from '@prisma/client';
 
@@ -64,13 +66,15 @@ export class UpdateServiceDto {
   duration?: number;
 
   @ApiPropertyOptional({
-    description: 'Image URLs',
+    description: 'Image URLs (max 5 images)',
     example: ['https://example.com/image1.jpg'],
     type: [String],
+    maxItems: 5,
   })
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
+  @ArrayMaxSize(5, { message: 'Maximum 5 images allowed' })
+  @IsUrl({}, { each: true, message: 'Each image must be a valid URL' })
   images?: string[];
 
   @ApiPropertyOptional({

@@ -42,13 +42,23 @@ export class ServicesController {
   @Public()
   @Unprotected()
   @ApiOperation({ summary: 'Get all services (public)' })
-  @ApiQuery({ name: 'search', required: false, description: 'Search by name or description' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Search by name or description (min 2 characters)',
+  })
   @ApiQuery({ name: 'categoryId', required: false, description: 'Filter by category' })
   @ApiQuery({ name: 'vendorId', required: false, description: 'Filter by vendor' })
   @ApiQuery({ name: 'minPrice', type: Number, required: false })
   @ApiQuery({ name: 'maxPrice', type: Number, required: false })
   @ApiQuery({ name: 'page', type: Number, required: false, example: 1 })
-  @ApiQuery({ name: 'limit', type: Number, required: false, example: 10 })
+  @ApiQuery({ name: 'limit', type: Number, required: false, example: 10, maximum: 10 })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    description: 'Sort by: createdAt_desc, createdAt_asc, price_asc, price_desc, name_asc, name_desc, rating_asc, rating_desc',
+    example: 'createdAt_desc',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'List of services',
@@ -62,6 +72,7 @@ export class ServicesController {
     @Query('maxPrice') maxPrice?: number,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
+    @Query('sortBy') sortBy?: string,
   ): Promise<ServiceListResponseDto> {
     const filters: ServiceFilters = {
       search,
@@ -71,6 +82,7 @@ export class ServicesController {
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
       page: page ? Number(page) : 1,
       limit: limit ? Number(limit) : 10,
+      sortBy: sortBy || 'createdAt_desc',
     };
     return this.servicesService.findAll(filters);
   }
@@ -86,8 +98,13 @@ export class ServicesController {
     type: ServiceResponseDto,
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Service not found' })
-  async findOne(@Param('id', ParseUUIDPipe) id: string): Promise<ServiceResponseDto> {
-    return this.servicesService.findOne(id);
+  async findOne(
+    @Request() req: any,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ServiceResponseDto> {
+    // Pass userId if authenticated to allow owner to see their own services
+    const userId = req.user?.sub;
+    return this.servicesService.findOne(id, userId);
   }
 
   // ============================================
