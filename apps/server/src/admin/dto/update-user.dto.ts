@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsOptional, IsString, IsBoolean, IsEnum } from 'class-validator';
 import { Role } from '@prisma/client';
 
@@ -28,4 +28,3 @@ export class UpdateUserDto {
   @IsBoolean()
   isBlocked?: boolean;
 }
-
