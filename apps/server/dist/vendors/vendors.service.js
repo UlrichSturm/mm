@@ -8,19 +8,23 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var VendorsService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VendorsService = exports.VendorStatus = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const email_service_1 = require("../email/email.service");
 var VendorStatus;
 (function (VendorStatus) {
     VendorStatus["PENDING"] = "PENDING";
     VendorStatus["APPROVED"] = "APPROVED";
     VendorStatus["REJECTED"] = "REJECTED";
 })(VendorStatus || (exports.VendorStatus = VendorStatus = {}));
-let VendorsService = class VendorsService {
-    constructor(prisma) {
+let VendorsService = VendorsService_1 = class VendorsService {
+    constructor(prisma, emailService) {
         this.prisma = prisma;
+        this.emailService = emailService;
+        this.logger = new common_1.Logger(VendorsService_1.name);
     }
     async findAll(status) {
         const where = status ? { status: status } : {};
@@ -82,11 +86,34 @@ let VendorsService = class VendorsService {
         return this.mapToInterface(updated);
     }
     async updateStatus(id, status) {
+        const vendor = await this.prisma.vendorProfile.findUnique({
+            where: { id },
+            include: { user: true },
+        });
+        if (!vendor) {
+            throw new common_1.NotFoundException(`Vendor ${id} not found`);
+        }
         const updated = await this.prisma.vendorProfile.update({
             where: { id },
             data: { status: status },
             include: { user: true },
         });
+        if (vendor.user.email && vendor.user.firstName) {
+            try {
+                if (status === VendorStatus.APPROVED) {
+                    await this.emailService.sendVendorApprovalEmail(vendor.user.email, {
+                        firstName: vendor.user.firstName || '',
+                        businessName: vendor.businessName,
+                    });
+                }
+                else if (status === VendorStatus.REJECTED) {
+                    await this.emailService.sendVendorRejectionEmail(vendor.user.email, vendor.user.firstName || '', vendor.businessName);
+                }
+            }
+            catch (error) {
+                this.logger.error(`Failed to send vendor status email: ${error.message}`);
+            }
+        }
         return this.mapToInterface(updated);
     }
     async delete(id) {
@@ -111,8 +138,9 @@ let VendorsService = class VendorsService {
     }
 };
 exports.VendorsService = VendorsService;
-exports.VendorsService = VendorsService = __decorate([
+exports.VendorsService = VendorsService = VendorsService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        email_service_1.EmailService])
 ], VendorsService);
 //# sourceMappingURL=vendors.service.js.map

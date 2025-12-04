@@ -1,4 +1,5 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { OrderStatus, Role } from '@prisma/client';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto, UpdateOrderStatusDto } from './dto/update-order.dto';
@@ -11,8 +12,9 @@ export interface OrderFilters {
 }
 export declare class OrdersService {
     private readonly prisma;
+    private readonly emailService;
     private readonly logger;
-    constructor(prisma: PrismaService);
+    constructor(prisma: PrismaService, emailService: EmailService);
     private generateOrderNumber;
     create(clientId: string, dto: CreateOrderDto): Promise<{
         id: any;

@@ -37,6 +37,20 @@ let PaymentsController = class PaymentsController {
             limit: limit ? Number(limit) : 10,
         });
     }
+    async confirmPayment(req, dto) {
+        const paymentIntent = await this.stripeService.getPaymentIntent(dto.paymentIntentId);
+        if (paymentIntent.status !== 'succeeded') {
+            throw new common_1.BadRequestException('Payment not successful');
+        }
+        const payment = await this.paymentsService.findPaymentByIntentId(dto.paymentIntentId);
+        if (!payment) {
+            throw new common_1.NotFoundException('Payment not found');
+        }
+        if (payment.order.clientId !== req.user.sub) {
+            throw new common_1.ForbiddenException('You do not have access to this payment');
+        }
+        return this.paymentsService.confirmPayment(dto.paymentIntentId);
+    }
     async handleWebhook(req, signature) {
         const rawBody = req.rawBody;
         if (!rawBody) {
@@ -121,6 +135,25 @@ __decorate([
     __metadata("design:paramtypes", [Object, String, Number, Number]),
     __metadata("design:returntype", Promise)
 ], PaymentsController.prototype, "getMyPayments", null);
+__decorate([
+    (0, common_1.Post)('confirm'),
+    (0, nest_keycloak_connect_1.Roles)({ roles: ['client'] }),
+    (0, swagger_1.ApiBearerAuth)('JWT-auth'),
+    (0, swagger_1.ApiOperation)({ summary: 'Confirm payment after successful Stripe payment' }),
+    (0, swagger_1.ApiResponse)({
+        status: common_1.HttpStatus.OK,
+        description: 'Payment confirmed successfully',
+        type: payment_response_dto_1.PaymentResponseDto,
+    }),
+    (0, swagger_1.ApiResponse)({ status: common_1.HttpStatus.BAD_REQUEST, description: 'Payment not successful' }),
+    (0, swagger_1.ApiResponse)({ status: common_1.HttpStatus.NOT_FOUND, description: 'Payment not found' }),
+    (0, swagger_1.ApiResponse)({ status: common_1.HttpStatus.FORBIDDEN, description: 'Not authorized' }),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, create_payment_dto_1.ConfirmPaymentDto]),
+    __metadata("design:returntype", Promise)
+], PaymentsController.prototype, "confirmPayment", null);
 __decorate([
     (0, common_1.Post)('webhook'),
     (0, nest_keycloak_connect_1.Public)(),

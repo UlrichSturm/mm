@@ -261,6 +261,144 @@ let AdminService = AdminService_1 = class AdminService {
         });
         return categoryStats.sort((a, b) => b.revenue - a.revenue).slice(0, 5);
     }
+    async getServicesForModeration(status, page = 1, limit = 10) {
+        const skip = (page - 1) * limit;
+        const where = {};
+        if (status) {
+            where.status = status;
+        }
+        const [services, total] = await Promise.all([
+            this.prisma.service.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    vendor: {
+                        select: {
+                            id: true,
+                            businessName: true,
+                            contactEmail: true,
+                        },
+                    },
+                    category: {
+                        select: {
+                            id: true,
+                            name: true,
+                            slug: true,
+                        },
+                    },
+                },
+            }),
+            this.prisma.service.count({ where }),
+        ]);
+        return {
+            data: services.map(service => ({
+                id: service.id,
+                name: service.name,
+                description: service.description,
+                price: Number(service.price),
+                status: service.status,
+                vendor: service.vendor,
+                category: service.category,
+                createdAt: service.createdAt,
+                updatedAt: service.updatedAt,
+            })),
+            meta: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+    }
+    async getUsers(role, page = 1, limit = 10) {
+        const skip = (page - 1) * limit;
+        const where = {};
+        if (role) {
+            where.role = role;
+        }
+        const [users, total] = await Promise.all([
+            this.prisma.user.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+                select: {
+                    id: true,
+                    email: true,
+                    firstName: true,
+                    lastName: true,
+                    phone: true,
+                    role: true,
+                    isBlocked: true,
+                    createdAt: true,
+                    updatedAt: true,
+                },
+            }),
+            this.prisma.user.count({ where }),
+        ]);
+        return {
+            data: users,
+            meta: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+    }
+    async updateUser(id, dto) {
+        const user = await this.prisma.user.findUnique({
+            where: { id },
+        });
+        if (!user) {
+            throw new common_1.NotFoundException(`User ${id} not found`);
+        }
+        const updated = await this.prisma.user.update({
+            where: { id },
+            data: {
+                ...(dto.firstName !== undefined && { firstName: dto.firstName }),
+                ...(dto.lastName !== undefined && { lastName: dto.lastName }),
+                ...(dto.phone !== undefined && { phone: dto.phone }),
+                ...(dto.role !== undefined && { role: dto.role }),
+                ...(dto.isBlocked !== undefined && { isBlocked: dto.isBlocked }),
+            },
+            select: {
+                id: true,
+                email: true,
+                firstName: true,
+                lastName: true,
+                phone: true,
+                role: true,
+                isBlocked: true,
+                createdAt: true,
+                updatedAt: true,
+            },
+        });
+        this.logger.log(`User ${id} updated by admin`);
+        return updated;
+    }
+    async getLogs(level, module, page = 1, limit = 50) {
+        this.logger.warn('Logs endpoint called - logs should be retrieved from log aggregation service in production');
+        return {
+            data: [
+                {
+                    timestamp: new Date(),
+                    level: level || 'log',
+                    module: module || 'admin',
+                    message: 'Logs endpoint - implement log aggregation service for production',
+                },
+            ],
+            meta: {
+                page,
+                limit,
+                total: 1,
+                totalPages: 1,
+                note: 'Logs should be retrieved from log aggregation service (ELK, Datadog, etc.) in production',
+            },
+        };
+    }
 };
 exports.AdminService = AdminService;
 exports.AdminService = AdminService = AdminService_1 = __decorate([

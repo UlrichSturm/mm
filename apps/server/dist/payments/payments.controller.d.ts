@@ -2,7 +2,7 @@ import { RawBodyRequest } from '@nestjs/common';
 import { PaymentStatus } from '@prisma/client';
 import { PaymentsService } from './payments.service';
 import { StripeService } from '../stripe/stripe.service';
-import { CreatePaymentIntentDto } from './dto/create-payment.dto';
+import { CreatePaymentIntentDto, ConfirmPaymentDto } from './dto/create-payment.dto';
 import { PaymentIntentResponseDto, PaymentResponseDto, PaymentListResponseDto } from './dto/payment-response.dto';
 export declare class PaymentsController {
     private readonly paymentsService;
@@ -10,6 +10,7 @@ export declare class PaymentsController {
     constructor(paymentsService: PaymentsService, stripeService: StripeService);
     createPaymentIntent(req: any, dto: CreatePaymentIntentDto): Promise<PaymentIntentResponseDto>;
     getMyPayments(req: any, status?: PaymentStatus, page?: number, limit?: number): Promise<PaymentListResponseDto>;
+    confirmPayment(req: any, dto: ConfirmPaymentDto): Promise<PaymentResponseDto>;
     handleWebhook(req: RawBodyRequest<Request>, signature: string): Promise<{
         received: boolean;
         error: string;

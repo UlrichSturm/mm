@@ -12,6 +12,9 @@ import {
   Headers,
   RawBodyRequest,
   Req,
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -27,7 +30,7 @@ import { Roles, Resource, Public, Unprotected } from 'nest-keycloak-connect';
 import { PaymentsService } from './payments.service';
 import { Role } from '../common/enums/role.enum';
 import { StripeService } from '../stripe/stripe.service';
-import { CreatePaymentIntentDto } from './dto/create-payment.dto';
+import { CreatePaymentIntentDto, ConfirmPaymentDto } from './dto/create-payment.dto';
 import {
   PaymentIntentResponseDto,
   PaymentResponseDto,
@@ -89,6 +92,44 @@ export class PaymentsController {
       page: page ? Number(page) : 1,
       limit: limit ? Number(limit) : 10,
     });
+  }
+
+  @Post('confirm')
+  @Roles({ roles: ['client'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Confirm payment after successful Stripe payment' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Payment confirmed successfully',
+    type: PaymentResponseDto,
+  })
+  @ApiResponse({ status: HttpStatus.BAD_REQUEST, description: 'Payment not successful' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Payment not found' })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Not authorized' })
+  async confirmPayment(
+    @Request() req: any,
+    @Body() dto: ConfirmPaymentDto,
+  ): Promise<PaymentResponseDto> {
+    // Verify payment intent with Stripe
+    const paymentIntent = await this.stripeService.getPaymentIntent(dto.paymentIntentId);
+
+    if (paymentIntent.status !== 'succeeded') {
+      throw new BadRequestException('Payment not successful');
+    }
+
+    // Find payment by payment intent ID
+    const payment = await this.paymentsService.findPaymentByIntentId(dto.paymentIntentId);
+    if (!payment) {
+      throw new NotFoundException('Payment not found');
+    }
+
+    // Check if payment belongs to the user
+    if (payment.order.clientId !== req.user.sub) {
+      throw new ForbiddenException('You do not have access to this payment');
+    }
+
+    // Confirm payment (idempotent - will check status)
+    return this.paymentsService.confirmPayment(dto.paymentIntentId);
   }
 
   // ============================================

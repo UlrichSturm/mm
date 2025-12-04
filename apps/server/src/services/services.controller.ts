@@ -1,32 +1,32 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
   Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
   Query,
   Request,
-  ParseUUIDPipe,
-  HttpStatus,
-  HttpCode,
 } from '@nestjs/common';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
   ApiBearerAuth,
-  ApiQuery,
+  ApiOperation,
   ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { ServiceStatus } from '@prisma/client';
-import { Roles, Resource, Public, Unprotected } from 'nest-keycloak-connect';
-import { ServicesService, ServiceFilters } from './services.service';
+import { Public, Resource, Roles, Unprotected } from 'nest-keycloak-connect';
 import { Role } from '../common/enums/role.enum';
 import { CreateServiceDto } from './dto/create-service.dto';
+import { ServiceListResponseDto, ServiceResponseDto } from './dto/service-response.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
-import { ServiceResponseDto, ServiceListResponseDto } from './dto/service-response.dto';
+import { ServiceFilters, ServicesService } from './services.service';
 
 @ApiTags('services')
 @Controller('services')
@@ -52,11 +52,18 @@ export class ServicesController {
   @ApiQuery({ name: 'minPrice', type: Number, required: false })
   @ApiQuery({ name: 'maxPrice', type: Number, required: false })
   @ApiQuery({ name: 'page', type: Number, required: false, example: 1 })
-  @ApiQuery({ name: 'limit', type: Number, required: false, example: 10, maximum: 10 })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    required: false,
+    example: 10,
+    description: 'Max 10 items per page',
+  })
   @ApiQuery({
     name: 'sortBy',
     required: false,
-    description: 'Sort by: createdAt_desc, createdAt_asc, price_asc, price_desc, name_asc, name_desc, rating_asc, rating_desc',
+    description:
+      'Sort by: createdAt_desc, createdAt_asc, price_asc, price_desc, name_asc, name_desc, rating_asc, rating_desc',
     example: 'createdAt_desc',
   })
   @ApiResponse({
@@ -224,9 +231,15 @@ export class ServicesController {
    * Helper to convert Keycloak roles to our Role enum
    */
   private getRoleFromKeycloakRoles(roles: string[]): Role {
-    if (roles?.includes('admin')) {return Role.ADMIN;}
-    if (roles?.includes('vendor')) {return Role.VENDOR;}
-    if (roles?.includes('lawyer_notary')) {return Role.LAWYER_NOTARY;}
+    if (roles?.includes('admin')) {
+      return Role.ADMIN;
+    }
+    if (roles?.includes('vendor')) {
+      return Role.VENDOR;
+    }
+    if (roles?.includes('lawyer_notary')) {
+      return Role.LAWYER_NOTARY;
+    }
     return Role.CLIENT;
   }
 }

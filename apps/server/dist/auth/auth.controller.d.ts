@@ -1,4 +1,6 @@
 import { AuthService } from './auth.service';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 interface AuthenticatedRequest {
     user: {
         sub: string;
@@ -20,16 +22,18 @@ export declare class AuthController {
         firstName: string | null;
         lastName: string | null;
         phone: string | null;
-        avatar: string | null;
+        deliveryAddress: string | null;
+        deliveryPostalCode: string | null;
+        deliveryCity: string | null;
+        deliveryCountry: string | null;
+        billingAddress: string | null;
+        billingPostalCode: string | null;
+        billingCity: string | null;
+        billingCountry: string | null;
         role: import(".prisma/client").$Enums.Role;
         isBlocked: boolean;
     }>;
-    updateProfile(req: AuthenticatedRequest, body: {
-        firstName?: string;
-        lastName?: string;
-        phone?: string;
-        avatar?: string;
-    }): Promise<{
+    updateProfile(req: AuthenticatedRequest, body: UpdateProfileDto): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
@@ -37,8 +41,18 @@ export declare class AuthController {
         firstName: string;
         lastName: string;
         phone: string;
-        avatar: string;
+        deliveryAddress: string;
+        deliveryPostalCode: string;
+        deliveryCity: string;
+        deliveryCountry: string;
+        billingAddress: string;
+        billingPostalCode: string;
+        billingCity: string;
+        billingCountry: string;
         role: import(".prisma/client").$Enums.Role;
+    }>;
+    changePassword(req: AuthenticatedRequest, body: ChangePasswordDto): Promise<{
+        message: string;
     }>;
     login(body: {
         username: string;
@@ -64,7 +78,14 @@ export declare class AuthController {
         firstName: string | null;
         lastName: string | null;
         phone: string | null;
-        avatar: string | null;
+        deliveryAddress: string | null;
+        deliveryPostalCode: string | null;
+        deliveryCity: string | null;
+        deliveryCountry: string | null;
+        billingAddress: string | null;
+        billingPostalCode: string | null;
+        billingCity: string | null;
+        billingCountry: string | null;
         role: import(".prisma/client").$Enums.Role;
         isBlocked: boolean;
     }>;

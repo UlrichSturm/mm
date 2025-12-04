@@ -13,6 +13,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrdersService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma/prisma.service");
+const email_service_1 = require("../email/email.service");
 const client_1 = require("@prisma/client");
 const library_1 = require("@prisma/client/runtime/library");
 const TAX_RATE = 0.19;
@@ -25,8 +26,9 @@ const STATUS_TRANSITIONS = {
     [client_1.OrderStatus.REFUNDED]: [],
 };
 let OrdersService = OrdersService_1 = class OrdersService {
-    constructor(prisma) {
+    constructor(prisma, emailService) {
         this.prisma = prisma;
+        this.emailService = emailService;
         this.logger = new common_1.Logger(OrdersService_1.name);
     }
     generateOrderNumber() {
@@ -108,6 +110,28 @@ let OrdersService = OrdersService_1 = class OrdersService {
             },
         });
         this.logger.log(`Order ${order.orderNumber} created successfully`);
+        if (order.client.email && order.client.firstName) {
+            try {
+                await this.emailService.sendOrderConfirmation(order.client.email, {
+                    firstName: order.client.firstName,
+                    orderNumber: order.orderNumber,
+                    orderDate: order.createdAt.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                    }),
+                    items: order.items.map(item => ({
+                        name: item.serviceName,
+                        quantity: item.quantity,
+                        price: `€${Number(item.totalPrice).toFixed(2)}`,
+                    })),
+                    totalPrice: `€${Number(order.totalPrice).toFixed(2)}`,
+                });
+            }
+            catch (error) {
+                this.logger.error(`Failed to send order confirmation email: ${error.message}`);
+            }
+        }
         return this.formatOrderResponse(order);
     }
     async findAll(filters) {
@@ -362,6 +386,14 @@ let OrdersService = OrdersService_1 = class OrdersService {
             },
         });
         this.logger.log(`Order ${order.orderNumber} status changed: ${order.status} → ${dto.status}`);
+        if (updated.client.email && updated.client.firstName) {
+            try {
+                await this.emailService.sendOrderStatusUpdate(updated.client.email, updated.client.firstName, updated.orderNumber, dto.status, dto.reason);
+            }
+            catch (error) {
+                this.logger.error(`Failed to send order status email: ${error.message}`);
+            }
+        }
         return this.formatOrderResponse(updated);
     }
     async cancel(id, userId, reason) {
@@ -431,6 +463,7 @@ let OrdersService = OrdersService_1 = class OrdersService {
 exports.OrdersService = OrdersService;
 exports.OrdersService = OrdersService = OrdersService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        email_service_1.EmailService])
 ], OrdersService);
 //# sourceMappingURL=orders.service.js.map

@@ -1,7 +1,9 @@
 import { PrismaService } from '../prisma/prisma.service';
 import { StripeService } from '../stripe/stripe.service';
+import { EmailService } from '../email/email.service';
 import { PaymentStatus, Role } from '@prisma/client';
 import { CreatePaymentIntentDto } from './dto/create-payment.dto';
+import { Decimal } from '@prisma/client/runtime/library';
 import Stripe from 'stripe';
 export interface PaymentFilters {
     status?: PaymentStatus;
@@ -12,8 +14,9 @@ export interface PaymentFilters {
 export declare class PaymentsService {
     private readonly prisma;
     private readonly stripeService;
+    private readonly emailService;
     private readonly logger;
-    constructor(prisma: PrismaService, stripeService: StripeService);
+    constructor(prisma: PrismaService, stripeService: StripeService, emailService: EmailService);
     createPaymentIntent(userId: string, dto: CreatePaymentIntentDto): Promise<{
         paymentIntentId: string;
         clientSecret: string;
@@ -105,6 +108,39 @@ export declare class PaymentsService {
             total: number;
             totalPages: number;
         };
+    }>;
+    findPaymentByIntentId(paymentIntentId: string): Promise<{
+        order: {
+            id: string;
+            status: import(".prisma/client").$Enums.OrderStatus;
+            createdAt: Date;
+            updatedAt: Date;
+            orderNumber: string;
+            totalPrice: Decimal;
+            clientId: string;
+            currency: string;
+            notes: string | null;
+            scheduledDate: Date | null;
+            subtotal: Decimal;
+            tax: Decimal;
+            completedAt: Date | null;
+            cancelledAt: Date | null;
+        };
+    } & {
+        id: string;
+        status: import(".prisma/client").$Enums.PaymentStatus;
+        createdAt: Date;
+        updatedAt: Date;
+        amount: Decimal;
+        currency: string;
+        orderId: string;
+        stripePaymentIntentId: string | null;
+        stripeChargeId: string | null;
+        platformFee: Decimal;
+        stripeFee: Decimal;
+        vendorPayout: Decimal;
+        paidAt: Date | null;
+        refundedAt: Date | null;
     }>;
     private formatPaymentResponse;
 }
