@@ -55,6 +55,8 @@ services:
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       KC_HOSTNAME_STRICT_HTTPS: false
       KC_HTTP_ENABLED: true
+      KC_HTTP_RELATIVE_PATH: /
+      PROXY_ADDRESS_FORWARDING: true
     command: start-dev
     depends_on:
       postgres:
@@ -85,6 +87,11 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
       STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      # Mailgun API (replaces SMTP)
+      MAILGUN_API_KEY: ${MAILGUN_API_KEY}
+      MAILGUN_DOMAIN: ${MAILGUN_DOMAIN:-sandboxe001d498458247eb9510fd6af0bdd3d7.mailgun.org}
+      EMAIL_FROM: ${EMAIL_FROM:-Memento Mori <noreply@mementomori.de>}
+      APP_URL: ${APP_URL:-http://localhost:3000}
     depends_on:
       postgres:
         condition: service_healthy

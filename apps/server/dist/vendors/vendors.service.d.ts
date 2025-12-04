@@ -1,4 +1,5 @@
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 export declare enum VendorStatus {
     PENDING = "PENDING",
     APPROVED = "APPROVED",
@@ -19,7 +20,9 @@ export interface VendorProfile {
 }
 export declare class VendorsService {
     private prisma;
-    constructor(prisma: PrismaService);
+    private emailService;
+    private readonly logger;
+    constructor(prisma: PrismaService, emailService: EmailService);
     findAll(status?: VendorStatus): Promise<VendorProfile[]>;
     findOne(id: string): Promise<VendorProfile | null>;
     findByUserId(userId: string): Promise<VendorProfile | null>;

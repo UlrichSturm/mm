@@ -6,6 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 import { OrderStatus, Role, ServiceStatus } from '@prisma/client';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto, UpdateOrderStatusDto } from './dto/update-order.dto';
@@ -36,7 +37,10 @@ export interface OrderFilters {
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   /**
    * Generate unique order number
@@ -135,6 +139,30 @@ export class OrdersService {
     });
 
     this.logger.log(`Order ${order.orderNumber} created successfully`);
+
+    // Send order confirmation email to client
+    if (order.client.email && order.client.firstName) {
+      try {
+        await this.emailService.sendOrderConfirmation(order.client.email, {
+          firstName: order.client.firstName,
+          orderNumber: order.orderNumber,
+          orderDate: order.createdAt.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+          items: order.items.map(item => ({
+            name: item.serviceName,
+            quantity: item.quantity,
+            price: `€${Number(item.totalPrice).toFixed(2)}`,
+          })),
+          totalPrice: `€${Number(order.totalPrice).toFixed(2)}`,
+        });
+      } catch (error) {
+        this.logger.error(`Failed to send order confirmation email: ${(error as Error).message}`);
+      }
+    }
+
     return this.formatOrderResponse(order);
   }
 
@@ -447,7 +475,20 @@ export class OrdersService {
 
     this.logger.log(`Order ${order.orderNumber} status changed: ${order.status} → ${dto.status}`);
 
-    // TODO: Send email notification about status change
+    // Send email notification about status change
+    if (updated.client.email && updated.client.firstName) {
+      try {
+        await this.emailService.sendOrderStatusUpdate(
+          updated.client.email,
+          updated.client.firstName,
+          updated.orderNumber,
+          dto.status,
+          dto.reason,
+        );
+      } catch (error) {
+        this.logger.error(`Failed to send order status email: ${(error as Error).message}`);
+      }
+    }
 
     return this.formatOrderResponse(updated);
   }

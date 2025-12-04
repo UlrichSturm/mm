@@ -36,6 +36,7 @@ async function bootstrap() {
   // CORS configuration
   const allowedOrigins = process.env.CORS_ORIGIN?.split(',') || [
     'http://localhost:3000', // Client App
+    'http://localhost:3001', // API Server (Swagger UI)
     'http://localhost:3002', // Vendor Portal
     'http://localhost:3003', // Admin Portal
   ];

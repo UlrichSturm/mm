@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { StripeService } from '../stripe/stripe.service';
+import { EmailService } from '../email/email.service';
 import { PaymentStatus, OrderStatus, Role } from '@prisma/client';
 import { CreatePaymentIntentDto } from './dto/create-payment.dto';
 import { Decimal } from '@prisma/client/runtime/library';
@@ -32,6 +33,7 @@ export class PaymentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly stripeService: StripeService,
+    private readonly emailService: EmailService,
   ) {}
 
   /**
@@ -90,30 +92,41 @@ export class PaymentsService {
     const vendorPayout = totalAmount - platformFee - stripeFee;
 
     // Create or update payment record
-    if (order.payment) {
-      await this.prisma.payment.update({
-        where: { id: order.payment.id },
-        data: {
-          stripePaymentIntentId: paymentIntent.id,
-          amount: new Decimal(totalAmount),
-          platformFee: new Decimal(platformFee),
-          stripeFee: new Decimal(stripeFee),
-          vendorPayout: new Decimal(vendorPayout),
-          status: PaymentStatus.PROCESSING,
-        },
-      });
-    } else {
-      await this.prisma.payment.create({
-        data: {
-          orderId: order.id,
-          stripePaymentIntentId: paymentIntent.id,
-          amount: new Decimal(totalAmount),
-          platformFee: new Decimal(platformFee),
-          stripeFee: new Decimal(stripeFee),
-          vendorPayout: new Decimal(vendorPayout),
-          status: PaymentStatus.PROCESSING,
-        },
-      });
+    try {
+      if (order.payment) {
+        await this.prisma.payment.update({
+          where: { id: order.payment.id },
+          data: {
+            stripePaymentIntentId: paymentIntent.id,
+            amount: new Decimal(totalAmount),
+            platformFee: new Decimal(platformFee),
+            stripeFee: new Decimal(stripeFee),
+            vendorPayout: new Decimal(vendorPayout),
+            status: PaymentStatus.PROCESSING,
+          },
+        });
+      } else {
+        await this.prisma.payment.create({
+          data: {
+            orderId: order.id,
+            stripePaymentIntentId: paymentIntent.id,
+            amount: new Decimal(totalAmount),
+            platformFee: new Decimal(platformFee),
+            stripeFee: new Decimal(stripeFee),
+            vendorPayout: new Decimal(vendorPayout),
+            status: PaymentStatus.PROCESSING,
+          },
+        });
+      }
+    } catch (error) {
+      this.logger.error(`Failed to save payment record: ${(error as Error).message}`);
+      // Try to cancel the payment intent if payment record creation fails
+      try {
+        await this.stripeService.cancelPaymentIntent(paymentIntent.id);
+      } catch (cancelError) {
+        this.logger.error(`Failed to cancel PaymentIntent after error: ${(cancelError as Error).message}`);
+      }
+      throw new BadRequestException('Failed to create payment record. Please try again.');
     }
 
     return {
@@ -126,6 +139,7 @@ export class PaymentsService {
 
   /**
    * Handle successful payment (called after Stripe confirms)
+   * Idempotent: can be called multiple times safely
    */
   async confirmPayment(paymentIntentId: string) {
     this.logger.log(`Confirming payment for PaymentIntent ${paymentIntentId}`);
@@ -141,6 +155,12 @@ export class PaymentsService {
       throw new NotFoundException(`Payment with PaymentIntent ${paymentIntentId} not found`);
     }
 
+    // Idempotency check: if already completed, return existing payment
+    if (payment.status === PaymentStatus.COMPLETED) {
+      this.logger.log(`Payment ${payment.id} already confirmed, returning existing payment`);
+      return this.formatPaymentResponse(payment);
+    }
+
     // Update payment status
     const updatedPayment = await this.prisma.payment.update({
       where: { id: payment.id },
@@ -153,25 +173,67 @@ export class PaymentsService {
       },
     });
 
-    // Update order status to CONFIRMED
-    await this.prisma.order.update({
-      where: { id: payment.orderId },
-      data: {
-        status: OrderStatus.CONFIRMED,
-      },
-    });
+    // Update order status to CONFIRMED (only if not already confirmed)
+    if (payment.order.status !== OrderStatus.CONFIRMED) {
+      await this.prisma.order.update({
+        where: { id: payment.orderId },
+        data: {
+          status: OrderStatus.CONFIRMED,
+        },
+      });
+    }
 
     this.logger.log(
       `Payment ${payment.id} confirmed, order ${payment.order.orderNumber} status updated to CONFIRMED`,
     );
 
-    // TODO: Send email notification about successful payment
+    // Send email notification about successful payment
+    try {
+      const order = await this.prisma.order.findUnique({
+        where: { id: payment.orderId },
+        include: {
+          client: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+            },
+          },
+          items: {
+            include: {
+              service: true,
+            },
+          },
+        },
+      });
+
+      if (order && order.client.email && order.client.firstName) {
+        await this.emailService.sendOrderConfirmation(order.client.email, {
+          firstName: order.client.firstName,
+          orderNumber: order.orderNumber,
+          orderDate: order.createdAt.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+          items: order.items.map(item => ({
+            name: item.serviceName,
+            quantity: item.quantity,
+            price: `€${Number(item.totalPrice).toFixed(2)}`,
+          })),
+          totalPrice: `€${Number(order.totalPrice).toFixed(2)}`,
+        });
+      }
+    } catch (error) {
+      this.logger.error(`Failed to send payment confirmation email: ${(error as Error).message}`);
+    }
 
     return this.formatPaymentResponse(updatedPayment);
   }
 
   /**
    * Handle failed payment
+   * Idempotent: can be called multiple times safely
    */
   async handlePaymentFailed(paymentIntentId: string) {
     this.logger.log(`Handling failed payment for PaymentIntent ${paymentIntentId}`);
@@ -185,6 +247,12 @@ export class PaymentsService {
       return;
     }
 
+    // Idempotency check: if already failed, skip update
+    if (payment.status === PaymentStatus.FAILED) {
+      this.logger.log(`Payment ${payment.id} already marked as FAILED`);
+      return;
+    }
+
     await this.prisma.payment.update({
       where: { id: payment.id },
       data: {
@@ -194,53 +262,102 @@ export class PaymentsService {
 
     this.logger.log(`Payment ${payment.id} marked as FAILED`);
 
-    // TODO: Send email notification about failed payment
+    // Send email notification about failed payment
+    try {
+      const order = await this.prisma.order.findUnique({
+        where: { id: payment.orderId },
+        include: {
+          client: true,
+        },
+      });
+
+      if (order && order.client.email && order.client.firstName) {
+        await this.emailService.sendOrderStatusUpdate(
+          order.client.email,
+          order.client.firstName,
+          order.orderNumber,
+          'PAYMENT_FAILED',
+          'Your payment could not be processed. Please try again or contact support.',
+        );
+      }
+    } catch (error) {
+      this.logger.error(`Failed to send payment failed email: ${(error as Error).message}`);
+    }
   }
 
   /**
    * Handle Stripe webhook events
+   * Idempotent: duplicate events are handled safely
    */
   async handleWebhook(event: Stripe.Event) {
-    this.logger.log(`Processing webhook event: ${event.type}`);
+    this.logger.log(`Processing webhook event: ${event.type} (id: ${event.id})`);
 
-    switch (event.type) {
-      case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        await this.confirmPayment(paymentIntent.id);
-        break;
-      }
-
-      case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
-        await this.handlePaymentFailed(paymentIntent.id);
-        break;
-      }
-
-      case 'charge.refunded': {
-        const charge = event.data.object as Stripe.Charge;
-        if (charge.payment_intent) {
-          await this.handleRefund(charge.payment_intent as string);
+    try {
+      switch (event.type) {
+        case 'payment_intent.succeeded': {
+          const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          this.logger.log(`Payment intent succeeded: ${paymentIntent.id}`);
+          await this.confirmPayment(paymentIntent.id);
+          break;
         }
-        break;
-      }
 
-      default:
-        this.logger.log(`Unhandled event type: ${event.type}`);
+        case 'payment_intent.payment_failed': {
+          const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          this.logger.warn(`Payment intent failed: ${paymentIntent.id}`);
+          await this.handlePaymentFailed(paymentIntent.id);
+          break;
+        }
+
+        case 'payment_intent.canceled': {
+          const paymentIntent = event.data.object as Stripe.PaymentIntent;
+          this.logger.log(`Payment intent canceled: ${paymentIntent.id}`);
+          await this.handlePaymentFailed(paymentIntent.id);
+          break;
+        }
+
+        case 'charge.refunded': {
+          const charge = event.data.object as Stripe.Charge;
+          if (charge.payment_intent) {
+            this.logger.log(`Charge refunded: ${charge.id} for PaymentIntent: ${charge.payment_intent}`);
+            await this.handleRefund(charge.payment_intent as string);
+          }
+          break;
+        }
+
+        default:
+          this.logger.log(`Unhandled event type: ${event.type} (id: ${event.id})`);
+      }
+    } catch (error) {
+      this.logger.error(
+        `Error processing webhook event ${event.type} (id: ${event.id}): ${(error as Error).message}`,
+      );
+      // Don't throw - webhook should return 200 even on errors to prevent retries
+      // Stripe will retry on 5xx errors, but we want to handle errors gracefully
     }
   }
 
   /**
    * Handle refund
+   * Idempotent: can be called multiple times safely
    */
   async handleRefund(paymentIntentId: string) {
     this.logger.log(`Handling refund for PaymentIntent ${paymentIntentId}`);
 
     const payment = await this.prisma.payment.findUnique({
       where: { stripePaymentIntentId: paymentIntentId },
+      include: {
+        order: true,
+      },
     });
 
     if (!payment) {
       this.logger.warn(`Payment with PaymentIntent ${paymentIntentId} not found`);
+      return;
+    }
+
+    // Idempotency check: if already refunded, skip update
+    if (payment.status === PaymentStatus.REFUNDED) {
+      this.logger.log(`Payment ${payment.id} already refunded`);
       return;
     }
 
@@ -252,17 +369,45 @@ export class PaymentsService {
       },
     });
 
-    // Update order status
-    await this.prisma.order.update({
-      where: { id: payment.orderId },
-      data: {
-        status: OrderStatus.REFUNDED,
-      },
-    });
+    // Update order status (only if not already refunded)
+    if (payment.order.status !== OrderStatus.REFUNDED) {
+      await this.prisma.order.update({
+        where: { id: payment.orderId },
+        data: {
+          status: OrderStatus.REFUNDED,
+        },
+      });
+    }
 
-    this.logger.log(`Payment ${payment.id} refunded`);
+    this.logger.log(`Payment ${payment.id} refunded, order ${payment.order.orderNumber} status updated to REFUNDED`);
 
-    // TODO: Send email notification about refund
+    // Send email notification about refund
+    try {
+      const order = await this.prisma.order.findUnique({
+        where: { id: payment.orderId },
+        include: {
+          client: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+            },
+          },
+        },
+      });
+
+      if (order && order.client.email && order.client.firstName) {
+        await this.emailService.sendOrderStatusUpdate(
+          order.client.email,
+          order.client.firstName,
+          order.orderNumber,
+          'REFUNDED',
+          'Your payment has been refunded. The refund will be processed to your original payment method.',
+        );
+      }
+    } catch (error) {
+      this.logger.error(`Failed to send refund email: ${(error as Error).message}`);
+    }
   }
 
   /**
@@ -393,6 +538,18 @@ export class PaymentsService {
    */
   async getMyPayments(clientId: string, filters: Omit<PaymentFilters, 'clientId'>) {
     return this.findAll({ ...filters, clientId });
+  }
+
+  /**
+   * Find payment by Stripe Payment Intent ID
+   */
+  async findPaymentByIntentId(paymentIntentId: string) {
+    return this.prisma.payment.findUnique({
+      where: { stripePaymentIntentId: paymentIntentId },
+      include: {
+        order: true,
+      },
+    });
   }
 
   /**

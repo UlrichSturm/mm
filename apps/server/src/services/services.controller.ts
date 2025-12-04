@@ -1,32 +1,32 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
   Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
   Query,
   Request,
-  ParseUUIDPipe,
-  HttpStatus,
-  HttpCode,
 } from '@nestjs/common';
 import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
   ApiBearerAuth,
-  ApiQuery,
+  ApiOperation,
   ApiParam,
+  ApiQuery,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
 import { ServiceStatus } from '@prisma/client';
-import { Roles, Resource, Public, Unprotected } from 'nest-keycloak-connect';
-import { ServicesService, ServiceFilters } from './services.service';
+import { Public, Resource, Roles, Unprotected } from 'nest-keycloak-connect';
 import { Role } from '../common/enums/role.enum';
 import { CreateServiceDto } from './dto/create-service.dto';
+import { ServiceListResponseDto, ServiceResponseDto } from './dto/service-response.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
-import { ServiceResponseDto, ServiceListResponseDto } from './dto/service-response.dto';
+import { ServiceFilters, ServicesService } from './services.service';
 
 @ApiTags('services')
 @Controller('services')
@@ -42,13 +42,30 @@ export class ServicesController {
   @Public()
   @Unprotected()
   @ApiOperation({ summary: 'Get all services (public)' })
-  @ApiQuery({ name: 'search', required: false, description: 'Search by name or description' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    description: 'Search by name or description (min 2 characters)',
+  })
   @ApiQuery({ name: 'categoryId', required: false, description: 'Filter by category' })
   @ApiQuery({ name: 'vendorId', required: false, description: 'Filter by vendor' })
   @ApiQuery({ name: 'minPrice', type: Number, required: false })
   @ApiQuery({ name: 'maxPrice', type: Number, required: false })
   @ApiQuery({ name: 'page', type: Number, required: false, example: 1 })
-  @ApiQuery({ name: 'limit', type: Number, required: false, example: 10 })
+  @ApiQuery({
+    name: 'limit',
+    type: Number,
+    required: false,
+    example: 10,
+    description: 'Max 10 items per page',
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    description:
+      'Sort by: createdAt_desc, createdAt_asc, price_asc, price_desc, name_asc, name_desc, rating_asc, rating_desc',
+    example: 'createdAt_desc',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'List of services',
@@ -62,6 +79,7 @@ export class ServicesController {
     @Query('maxPrice') maxPrice?: number,
     @Query('page') page?: number,
     @Query('limit') limit?: number,
+    @Query('sortBy') sortBy?: string,
   ): Promise<ServiceListResponseDto> {
     const filters: ServiceFilters = {
       search,
@@ -71,6 +89,7 @@ export class ServicesController {
       maxPrice: maxPrice ? Number(maxPrice) : undefined,
       page: page ? Number(page) : 1,
       limit: limit ? Number(limit) : 10,
+      sortBy: sortBy || 'createdAt_desc',
     };
     return this.servicesService.findAll(filters);
   }
@@ -86,8 +105,13 @@ export class ServicesController {
     type: ServiceResponseDto,
   })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Service not found' })
-  async findOne(@Param('id', ParseUUIDPipe) id: string): Promise<ServiceResponseDto> {
-    return this.servicesService.findOne(id);
+  async findOne(
+    @Request() req: any,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<ServiceResponseDto> {
+    // Pass userId if authenticated to allow owner to see their own services
+    const userId = req.user?.sub;
+    return this.servicesService.findOne(id, userId);
   }
 
   // ============================================
@@ -207,9 +231,15 @@ export class ServicesController {
    * Helper to convert Keycloak roles to our Role enum
    */
   private getRoleFromKeycloakRoles(roles: string[]): Role {
-    if (roles?.includes('admin')) {return Role.ADMIN;}
-    if (roles?.includes('vendor')) {return Role.VENDOR;}
-    if (roles?.includes('lawyer_notary')) {return Role.LAWYER_NOTARY;}
+    if (roles?.includes('admin')) {
+      return Role.ADMIN;
+    }
+    if (roles?.includes('vendor')) {
+      return Role.VENDOR;
+    }
+    if (roles?.includes('lawyer_notary')) {
+      return Role.LAWYER_NOTARY;
+    }
     return Role.CLIENT;
   }
 }

@@ -12,12 +12,13 @@ const payments_controller_1 = require("./payments.controller");
 const payments_service_1 = require("./payments.service");
 const prisma_module_1 = require("../prisma/prisma.module");
 const stripe_module_1 = require("../stripe/stripe.module");
+const email_module_1 = require("../email/email.module");
 let PaymentsModule = class PaymentsModule {
 };
 exports.PaymentsModule = PaymentsModule;
 exports.PaymentsModule = PaymentsModule = __decorate([
     (0, common_1.Module)({
-        imports: [prisma_module_1.PrismaModule, stripe_module_1.StripeModule],
+        imports: [prisma_module_1.PrismaModule, stripe_module_1.StripeModule, email_module_1.EmailModule],
         controllers: [payments_controller_1.PaymentsController],
         providers: [payments_service_1.PaymentsService],
         exports: [payments_service_1.PaymentsService],

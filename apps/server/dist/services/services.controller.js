@@ -17,16 +17,16 @@ const common_1 = require("@nestjs/common");
 const swagger_1 = require("@nestjs/swagger");
 const client_1 = require("@prisma/client");
 const nest_keycloak_connect_1 = require("nest-keycloak-connect");
-const services_service_1 = require("./services.service");
 const role_enum_1 = require("../common/enums/role.enum");
 const create_service_dto_1 = require("./dto/create-service.dto");
-const update_service_dto_1 = require("./dto/update-service.dto");
 const service_response_dto_1 = require("./dto/service-response.dto");
+const update_service_dto_1 = require("./dto/update-service.dto");
+const services_service_1 = require("./services.service");
 let ServicesController = class ServicesController {
     constructor(servicesService) {
         this.servicesService = servicesService;
     }
-    async findAll(search, categoryId, vendorId, minPrice, maxPrice, page, limit) {
+    async findAll(search, categoryId, vendorId, minPrice, maxPrice, page, limit, sortBy) {
         const filters = {
             search,
             categoryId,
@@ -35,11 +35,13 @@ let ServicesController = class ServicesController {
             maxPrice: maxPrice ? Number(maxPrice) : undefined,
             page: page ? Number(page) : 1,
             limit: limit ? Number(limit) : 10,
+            sortBy: sortBy || 'createdAt_desc',
         };
         return this.servicesService.findAll(filters);
     }
-    async findOne(id) {
-        return this.servicesService.findOne(id);
+    async findOne(req, id) {
+        const userId = req.user?.sub;
+        return this.servicesService.findOne(id, userId);
     }
     async create(req, createServiceDto) {
         return this.servicesService.create(req.user.sub, createServiceDto);
@@ -83,13 +85,29 @@ __decorate([
     (0, nest_keycloak_connect_1.Public)(),
     (0, nest_keycloak_connect_1.Unprotected)(),
     (0, swagger_1.ApiOperation)({ summary: 'Get all services (public)' }),
-    (0, swagger_1.ApiQuery)({ name: 'search', required: false, description: 'Search by name or description' }),
+    (0, swagger_1.ApiQuery)({
+        name: 'search',
+        required: false,
+        description: 'Search by name or description (min 2 characters)',
+    }),
     (0, swagger_1.ApiQuery)({ name: 'categoryId', required: false, description: 'Filter by category' }),
     (0, swagger_1.ApiQuery)({ name: 'vendorId', required: false, description: 'Filter by vendor' }),
     (0, swagger_1.ApiQuery)({ name: 'minPrice', type: Number, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'maxPrice', type: Number, required: false }),
     (0, swagger_1.ApiQuery)({ name: 'page', type: Number, required: false, example: 1 }),
-    (0, swagger_1.ApiQuery)({ name: 'limit', type: Number, required: false, example: 10 }),
+    (0, swagger_1.ApiQuery)({
+        name: 'limit',
+        type: Number,
+        required: false,
+        example: 10,
+        description: 'Max 10 items per page',
+    }),
+    (0, swagger_1.ApiQuery)({
+        name: 'sortBy',
+        required: false,
+        description: 'Sort by: createdAt_desc, createdAt_asc, price_asc, price_desc, name_asc, name_desc, rating_asc, rating_desc',
+        example: 'createdAt_desc',
+    }),
     (0, swagger_1.ApiResponse)({
         status: common_1.HttpStatus.OK,
         description: 'List of services',
@@ -102,8 +120,9 @@ __decorate([
     __param(4, (0, common_1.Query)('maxPrice')),
     __param(5, (0, common_1.Query)('page')),
     __param(6, (0, common_1.Query)('limit')),
+    __param(7, (0, common_1.Query)('sortBy')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String, Number, Number, Number, Number]),
+    __metadata("design:paramtypes", [String, String, String, Number, Number, Number, Number, String]),
     __metadata("design:returntype", Promise)
 ], ServicesController.prototype, "findAll", null);
 __decorate([
@@ -118,9 +137,10 @@ __decorate([
         type: service_response_dto_1.ServiceResponseDto,
     }),
     (0, swagger_1.ApiResponse)({ status: common_1.HttpStatus.NOT_FOUND, description: 'Service not found' }),
-    __param(0, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
+    __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Param)('id', common_1.ParseUUIDPipe)),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [Object, String]),
     __metadata("design:returntype", Promise)
 ], ServicesController.prototype, "findOne", null);
 __decorate([

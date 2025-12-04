@@ -72,13 +72,15 @@ __decorate([
 ], UpdateServiceDto.prototype, "duration", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: 'Image URLs',
+        description: 'Image URLs (max 5 images)',
         example: ['https://example.com/image1.jpg'],
         type: [String],
+        maxItems: 5,
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.IsString)({ each: true }),
+    (0, class_validator_1.ArrayMaxSize)(5, { message: 'Maximum 5 images allowed' }),
+    (0, class_validator_1.IsUrl)({}, { each: true, message: 'Each image must be a valid URL' }),
     __metadata("design:type", Array)
 ], UpdateServiceDto.prototype, "images", void 0);
 __decorate([

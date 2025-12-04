@@ -1,4 +1,3 @@
-import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 export interface SendEmailOptions {
     to: string;
@@ -33,11 +32,15 @@ export interface PasswordResetContext {
     expiresIn: string;
 }
 export declare class EmailService {
-    private readonly mailerService;
     private readonly configService;
     private readonly logger;
     private readonly appUrl;
-    constructor(mailerService: MailerService, configService: ConfigService);
+    private readonly mailgunDomain;
+    private readonly mailgunApiKey;
+    private readonly templatesDir;
+    private readonly mailgunApiUrl;
+    constructor(configService: ConfigService);
+    private renderTemplate;
     sendEmail(options: SendEmailOptions): Promise<void>;
     sendWelcomeEmail(to: string, firstName: string): Promise<void>;
     sendOrderConfirmation(to: string, context: Omit<OrderConfirmationContext, 'appUrl'>): Promise<void>;

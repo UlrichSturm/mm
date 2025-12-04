@@ -1,14 +1,16 @@
-import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
+import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 export declare class AuthService {
     private readonly prisma;
     private readonly configService;
+    private readonly emailService;
     private readonly logger;
     private readonly keycloakUrl;
     private readonly keycloakRealm;
     private readonly keycloakAdminUser;
     private readonly keycloakAdminPassword;
-    constructor(prisma: PrismaService, configService: ConfigService);
+    constructor(prisma: PrismaService, configService: ConfigService, emailService: EmailService);
     getProfile(userId: string): Promise<{
         id: string;
         createdAt: Date;
@@ -17,14 +19,28 @@ export declare class AuthService {
         firstName: string;
         lastName: string;
         phone: string;
-        avatar: string;
+        deliveryAddress: string;
+        deliveryPostalCode: string;
+        deliveryCity: string;
+        deliveryCountry: string;
+        billingAddress: string;
+        billingPostalCode: string;
+        billingCity: string;
+        billingCountry: string;
         role: import(".prisma/client").$Enums.Role;
     }>;
     updateProfile(userId: string, data: {
         firstName?: string;
         lastName?: string;
         phone?: string;
-        avatar?: string;
+        deliveryAddress?: string;
+        deliveryPostalCode?: string;
+        deliveryCity?: string;
+        deliveryCountry?: string;
+        billingAddress?: string;
+        billingPostalCode?: string;
+        billingCity?: string;
+        billingCountry?: string;
     }): Promise<{
         id: string;
         createdAt: Date;
@@ -33,8 +49,18 @@ export declare class AuthService {
         firstName: string;
         lastName: string;
         phone: string;
-        avatar: string;
+        deliveryAddress: string;
+        deliveryPostalCode: string;
+        deliveryCity: string;
+        deliveryCountry: string;
+        billingAddress: string;
+        billingPostalCode: string;
+        billingCity: string;
+        billingCountry: string;
         role: import(".prisma/client").$Enums.Role;
+    }>;
+    changePassword(userId: string, currentPassword: string, newPassword: string): Promise<{
+        message: string;
     }>;
     syncUserFromKeycloak(keycloakUser: {
         sub: string;
@@ -51,7 +77,14 @@ export declare class AuthService {
         firstName: string | null;
         lastName: string | null;
         phone: string | null;
-        avatar: string | null;
+        deliveryAddress: string | null;
+        deliveryPostalCode: string | null;
+        deliveryCity: string | null;
+        deliveryCountry: string | null;
+        billingAddress: string | null;
+        billingPostalCode: string | null;
+        billingCity: string | null;
+        billingCountry: string | null;
         role: import(".prisma/client").$Enums.Role;
         isBlocked: boolean;
     }>;
@@ -64,7 +97,14 @@ export declare class AuthService {
         firstName: string | null;
         lastName: string | null;
         phone: string | null;
-        avatar: string | null;
+        deliveryAddress: string | null;
+        deliveryPostalCode: string | null;
+        deliveryCity: string | null;
+        deliveryCountry: string | null;
+        billingAddress: string | null;
+        billingPostalCode: string | null;
+        billingCity: string | null;
+        billingCountry: string | null;
         role: import(".prisma/client").$Enums.Role;
         isBlocked: boolean;
     }>;
@@ -77,7 +117,14 @@ export declare class AuthService {
         firstName: string | null;
         lastName: string | null;
         phone: string | null;
-        avatar: string | null;
+        deliveryAddress: string | null;
+        deliveryPostalCode: string | null;
+        deliveryCity: string | null;
+        deliveryCountry: string | null;
+        billingAddress: string | null;
+        billingPostalCode: string | null;
+        billingCity: string | null;
+        billingCountry: string | null;
         role: import(".prisma/client").$Enums.Role;
         isBlocked: boolean;
     }>;
@@ -103,7 +150,14 @@ export declare class AuthService {
         firstName: string | null;
         lastName: string | null;
         phone: string | null;
-        avatar: string | null;
+        deliveryAddress: string | null;
+        deliveryPostalCode: string | null;
+        deliveryCity: string | null;
+        deliveryCountry: string | null;
+        billingAddress: string | null;
+        billingPostalCode: string | null;
+        billingCity: string | null;
+        billingCountry: string | null;
         role: import(".prisma/client").$Enums.Role;
         isBlocked: boolean;
     }>;

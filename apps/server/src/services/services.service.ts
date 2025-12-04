@@ -1,15 +1,16 @@
 import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
   BadRequestException,
+  ForbiddenException,
+  Injectable,
   Logger,
+  NotFoundException,
 } from '@nestjs/common';
+import { OrderStatus, Prisma, Role, ServiceStatus, VendorStatus } from '@prisma/client';
+import { Decimal } from '@prisma/client/runtime/library';
 import { PrismaService } from '../prisma/prisma.service';
-import { ServiceStatus, VendorStatus, Role } from '@prisma/client';
+import { EmailService } from '../email/email.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { UpdateServiceDto } from './dto/update-service.dto';
-import { Decimal } from '@prisma/client/runtime/library';
 
 export interface ServiceFilters {
   search?: string;
@@ -20,13 +21,17 @@ export interface ServiceFilters {
   maxPrice?: number;
   page?: number;
   limit?: number;
+  sortBy?: string;
 }
 
 @Injectable()
 export class ServicesService {
   private readonly logger = new Logger(ServicesService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly emailService: EmailService,
+  ) {}
 
   /**
    * Create a new service (vendor only)
@@ -48,14 +53,15 @@ export class ServicesService {
       throw new ForbiddenException('Your vendor account must be approved before creating services');
     }
 
-    // Validate category exists if provided
-    if (dto.categoryId) {
-      const category = await this.prisma.category.findUnique({
-        where: { id: dto.categoryId },
-      });
-      if (!category) {
-        throw new BadRequestException(`Category ${dto.categoryId} not found`);
-      }
+    // Validate category exists and is active (categoryId is now required)
+    const category = await this.prisma.category.findUnique({
+      where: { id: dto.categoryId },
+    });
+    if (!category) {
+      throw new BadRequestException(`Category ${dto.categoryId} not found`);
+    }
+    if (!category.isActive) {
+      throw new BadRequestException(`Category ${dto.categoryId} is not active`);
     }
 
     const service = await this.prisma.service.create({
@@ -92,8 +98,20 @@ export class ServicesService {
       maxPrice,
       page = 1,
       limit = 10,
+      sortBy = 'createdAt_desc',
     } = filters;
-    const skip = (page - 1) * limit;
+
+    // Validate search query (minimum 2 characters)
+    if (search && search.trim().length > 0) {
+      if (search.trim().length < 2) {
+        throw new BadRequestException('Search query must be at least 2 characters');
+      }
+    }
+
+    // Limit maximum page size to 10
+    const maxLimit = 10;
+    const actualLimit = Math.min(limit, maxLimit);
+    const skip = (page - 1) * actualLimit;
 
     const where: any = {
       // Only show active services from approved vendors (public)
@@ -103,10 +121,11 @@ export class ServicesService {
       },
     };
 
-    if (search) {
+    // Apply search filter (ignore empty strings)
+    if (search && search.trim().length >= 2) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
+        { name: { contains: search.trim(), mode: 'insensitive' } },
+        { description: { contains: search.trim(), mode: 'insensitive' } },
       ];
     }
 
@@ -128,12 +147,15 @@ export class ServicesService {
       }
     }
 
+    // Parse sortBy parameter
+    const orderBy = this.parseSortBy(sortBy);
+
     const [services, total] = await Promise.all([
       this.prisma.service.findMany({
         where,
         skip,
-        take: limit,
-        orderBy: { createdAt: 'desc' },
+        take: actualLimit,
+        orderBy,
         include: {
           vendor: true,
           category: true,
@@ -143,24 +165,31 @@ export class ServicesService {
     ]);
 
     return {
-      data: services.map(service => this.formatServiceResponse(service)),
+      data: services.map(service => this.formatServiceResponse(service, false)),
       meta: {
         page,
-        limit,
+        limit: actualLimit,
         total,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(total / actualLimit),
+        searchQuery: search && search.trim().length >= 2 ? search.trim() : null,
       },
     };
   }
 
   /**
    * Get service by ID (public endpoint)
+   * For public access: only ACTIVE services from APPROVED vendors
+   * For owner: can see any status
    */
-  async findOne(id: string) {
+  async findOne(id: string, userId?: string) {
     const service = await this.prisma.service.findUnique({
       where: { id },
       include: {
-        vendor: true,
+        vendor: {
+          include: {
+            user: true,
+          },
+        },
         category: true,
       },
     });
@@ -169,7 +198,20 @@ export class ServicesService {
       throw new NotFoundException(`Service ${id} not found`);
     }
 
-    return this.formatServiceResponse(service);
+    // Check if user is the owner
+    const isOwner = userId && service.vendor.userId === userId;
+
+    // For public access, check status and vendor approval
+    if (!isOwner) {
+      if (service.status !== ServiceStatus.ACTIVE) {
+        throw new NotFoundException(`Service ${id} not found`);
+      }
+      if (service.vendor.status !== VendorStatus.APPROVED) {
+        throw new NotFoundException(`Service ${id} not found`);
+      }
+    }
+
+    return this.formatServiceResponse(service, isOwner);
   }
 
   /**
@@ -222,7 +264,7 @@ export class ServicesService {
     ]);
 
     return {
-      data: services.map(service => this.formatServiceResponse(service)),
+      data: services.map(service => this.formatServiceResponse(service, true)), // Owner sees full info
       meta: {
         page,
         limit,
@@ -260,6 +302,9 @@ export class ServicesService {
       if (!category) {
         throw new BadRequestException(`Category ${dto.categoryId} not found`);
       }
+      if (!category.isActive) {
+        throw new BadRequestException(`Category ${dto.categoryId} is not active`);
+      }
     }
 
     const updated = await this.prisma.service.update({
@@ -285,12 +330,19 @@ export class ServicesService {
 
   /**
    * Delete service (vendor owner or admin)
+   * Admin can delete with cascade (removes active orders)
+   * Vendor cannot delete if there are active orders
    */
   async delete(id: string, userId: string, userRole: Role) {
     const service = await this.prisma.service.findUnique({
       where: { id },
       include: {
         vendor: true,
+        orderItems: {
+          include: {
+            order: true,
+          },
+        },
       },
     });
 
@@ -301,6 +353,44 @@ export class ServicesService {
     // Check ownership (vendor) or admin
     if (userRole !== Role.ADMIN && service.vendor.userId !== userId) {
       throw new ForbiddenException('You do not have permission to delete this service');
+    }
+
+    // Active order statuses: PENDING, CONFIRMED, IN_PROGRESS, REFUNDED
+    // Note: IN_DELIVERY and NEED_PAY are not in OrderStatus enum yet
+    const activeOrderStatuses: OrderStatus[] = [
+      OrderStatus.PENDING,
+      OrderStatus.CONFIRMED,
+      OrderStatus.IN_PROGRESS,
+      OrderStatus.REFUNDED,
+    ];
+
+    // Check for active orders
+    const activeOrders = service.orderItems.filter(item =>
+      activeOrderStatuses.includes(item.order.status as OrderStatus),
+    );
+
+    // Vendor cannot delete if there are active orders
+    if (userRole !== Role.ADMIN && activeOrders.length > 0) {
+      throw new BadRequestException('Cannot delete service with active orders');
+    }
+
+    // Admin can delete with cascade (soft delete orders)
+    if (userRole === Role.ADMIN && activeOrders.length > 0) {
+      // Soft delete active orders
+      const orderIds = [...new Set(activeOrders.map(item => item.orderId))];
+      await this.prisma.order.updateMany({
+        where: {
+          id: { in: orderIds },
+          status: { in: activeOrderStatuses },
+        },
+        data: {
+          status: OrderStatus.CANCELLED,
+          cancelledAt: new Date(),
+        },
+      });
+      this.logger.warn(
+        `Admin deleted service ${id} with ${activeOrders.length} active orders (cascade delete)`,
+      );
     }
 
     // Soft delete - mark as DELETED
@@ -321,6 +411,19 @@ export class ServicesService {
   async updateStatus(id: string, status: ServiceStatus) {
     const service = await this.prisma.service.findUnique({
       where: { id },
+      include: {
+        vendor: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!service) {
@@ -331,19 +434,74 @@ export class ServicesService {
       where: { id },
       data: { status },
       include: {
-        vendor: true,
+        vendor: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                firstName: true,
+              },
+            },
+          },
+        },
         category: true,
       },
     });
 
     this.logger.log(`Service ${id} status changed to ${status}`);
+
+    // Send email notification to vendor about service moderation
+    if (updated.vendor.user.email && updated.vendor.user.firstName) {
+      try {
+        const statusMessages: Record<ServiceStatus, string> = {
+          [ServiceStatus.ACTIVE]: 'Your service has been approved and is now active.',
+          [ServiceStatus.INACTIVE]: 'Your service has been deactivated.',
+          [ServiceStatus.PENDING_REVIEW]: 'Your service is pending review.',
+          [ServiceStatus.DELETED]: 'Your service has been deleted.',
+        };
+
+        await this.emailService.sendEmail({
+          to: updated.vendor.user.email,
+          subject: `Service ${updated.name} - Status Update`,
+          template: 'order-status', // Reuse order-status template for service status
+          context: {
+            firstName: updated.vendor.user.firstName,
+            orderNumber: updated.name,
+            status: status,
+            message: statusMessages[status] || 'Your service status has been updated.',
+          },
+        });
+      } catch (error) {
+        this.logger.error(`Failed to send service status email: ${(error as Error).message}`);
+      }
+    }
+
     return this.formatServiceResponse(updated);
   }
 
   /**
    * Format service for API response
+   * @param service - Service object from Prisma
+   * @param isOwner - Whether the requester is the owner (shows more vendor info)
    */
-  private formatServiceResponse(service: any) {
+  private formatServiceResponse(service: any, isOwner = false) {
+    const vendorInfo: any = {
+      id: service.vendor.id,
+      businessName: service.vendor.businessName,
+      rating: service.vendor.rating,
+      reviewCount: service.vendor.reviewCount,
+    };
+
+    // Add additional vendor fields for public access or owner
+    if (isOwner || !isOwner) {
+      // For public access: show contact info
+      vendorInfo.contactPhone = service.vendor.contactPhone;
+      vendorInfo.address = service.vendor.address;
+      vendorInfo.description = service.vendor.description;
+      vendorInfo.contactEmail = service.vendor.contactEmail;
+    }
+
     return {
       id: service.id,
       name: service.name,
@@ -353,23 +511,37 @@ export class ServicesService {
       duration: service.duration,
       images: service.images,
       status: service.status,
-      vendor: service.vendor
-        ? {
-            id: service.vendor.id,
-            businessName: service.vendor.businessName,
-            rating: service.vendor.rating,
-            reviewCount: service.vendor.reviewCount,
-          }
-        : null,
+      vendor: service.vendor ? vendorInfo : null,
       category: service.category
         ? {
             id: service.category.id,
             name: service.category.name,
             slug: service.category.slug,
+            description: service.category.description,
           }
         : null,
       createdAt: service.createdAt,
       updatedAt: service.updatedAt,
     };
+  }
+
+  /**
+   * Parse sortBy parameter and return Prisma orderBy object
+   */
+  private parseSortBy(sortBy: string): Prisma.ServiceOrderByWithRelationInput {
+    const [field, direction] = sortBy.split('_');
+    const order = direction === 'asc' ? 'asc' : 'desc';
+
+    switch (field) {
+      case 'price':
+        return { price: order };
+      case 'name':
+        return { name: order };
+      case 'rating':
+        return { vendor: { rating: order } };
+      case 'createdAt':
+      default:
+        return { createdAt: order };
+    }
   }
 }

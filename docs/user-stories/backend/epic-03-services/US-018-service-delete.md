@@ -1,9 +1,9 @@
 # US-018: Удаление услуги
 
-**Epic:** E-003 Services Catalog  
-**Portal:** Backend  
-**Приоритет:** 🔴 Must Have  
-**Story Points:** 1  
+**Epic:** E-003 Services Catalog
+**Portal:** Backend
+**Приоритет:** 🔴 Must Have
+**Story Points:** 1
 **Статус:** ⬜ Не начато
 
 ---
@@ -68,7 +68,10 @@ Authorization: Bearer <vendor-token>
 ## Technical Notes
 
 - Soft delete: изменить status на DELETED
-- Проверить наличие активных заказов (status != COMPLETED, CANCELLED)
+- Проверить наличие активных заказов через OrderItem
+- Активные статусы заказов: PENDING, CONFIRMED, IN_PROGRESS, REFUNDED
+- Vendor не может удалить услугу с активными заказами (400 Bad Request)
+- Admin может удалить услугу с активными заказами (каскадное удаление - заказы помечаются как CANCELLED)
 - Deleted услуги не показываются в каталоге
 - Можно восстановить через Admin (Phase 2)
 
@@ -100,40 +103,64 @@ async deleteService(
   const vendor = await this.prisma.vendorProfile.findUnique({
     where: { userId: user.id },
   });
-  
+
   if (!vendor) {
     throw new NotFoundException('Vendor profile not found');
   }
-  
+
   const service = await this.prisma.service.findUnique({
     where: { id },
     include: {
-      orders: {
-        where: {
-          status: { notIn: ['COMPLETED', 'CANCELLED'] },
+      orderItems: {
+        include: {
+          order: true,
         },
       },
+      vendor: true,
     },
   });
-  
+
   if (!service) {
     throw new NotFoundException('Service not found');
   }
-  
+
   if (service.vendorId !== vendor.id) {
     throw new ForbiddenException('You can only delete your own services');
   }
-  
-  if (service.orders.length > 0) {
+
+  // Check for active orders
+  const activeOrderStatuses = ['PENDING', 'CONFIRMED', 'IN_PROGRESS', 'REFUNDED'];
+  const activeOrders = service.orderItems.filter(item =>
+    activeOrderStatuses.includes(item.order.status),
+  );
+
+  // Vendor cannot delete if there are active orders
+  if (userRole !== Role.ADMIN && activeOrders.length > 0) {
     throw new BadRequestException('Cannot delete service with active orders');
   }
-  
+
+  // Admin can delete with cascade (soft delete orders)
+  if (userRole === Role.ADMIN && activeOrders.length > 0) {
+    // Soft delete active orders
+    const orderIds = [...new Set(activeOrders.map(item => item.orderId))];
+    await this.prisma.order.updateMany({
+      where: {
+        id: { in: orderIds },
+        status: { in: activeOrderStatuses },
+      },
+      data: {
+        status: 'CANCELLED',
+        cancelledAt: new Date(),
+      },
+    });
+  }
+
   // Soft delete
   await this.prisma.service.update({
     where: { id },
     data: { status: 'DELETED' },
   });
-  
+
   return { message: 'Услуга успешно удалена', id };
 }
 ```

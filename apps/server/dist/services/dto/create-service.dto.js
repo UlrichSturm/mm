@@ -48,12 +48,12 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateServiceDto.prototype, "price", void 0);
 __decorate([
-    (0, swagger_1.ApiPropertyOptional)({
-        description: 'Category ID',
+    (0, swagger_1.ApiProperty)({
+        description: 'Category ID (required)',
         example: '550e8400-e29b-41d4-a716-446655440000',
     }),
-    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsUUID)(),
+    (0, class_validator_1.IsNotEmpty)(),
     __metadata("design:type", String)
 ], CreateServiceDto.prototype, "categoryId", void 0);
 __decorate([
@@ -68,13 +68,15 @@ __decorate([
 ], CreateServiceDto.prototype, "duration", void 0);
 __decorate([
     (0, swagger_1.ApiPropertyOptional)({
-        description: 'Image URLs',
+        description: 'Image URLs (max 5 images)',
         example: ['https://example.com/image1.jpg'],
         type: [String],
+        maxItems: 5,
     }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsArray)(),
-    (0, class_validator_1.IsString)({ each: true }),
+    (0, class_validator_1.ArrayMaxSize)(5, { message: 'Maximum 5 images allowed' }),
+    (0, class_validator_1.IsUrl)({}, { each: true, message: 'Each image must be a valid URL' }),
     __metadata("design:type", Array)
 ], CreateServiceDto.prototype, "images", void 0);
 //# sourceMappingURL=create-service.dto.js.map
