@@ -1,9 +1,9 @@
 # US-016: Детали услуги
 
-**Epic:** E-003 Services Catalog  
-**Portal:** Backend  
-**Приоритет:** 🔴 Must Have  
-**Story Points:** 2  
+**Epic:** E-003 Services Catalog
+**Portal:** Backend
+**Приоритет:** 🔴 Must Have
+**Story Points:** 2
 **Статус:** ⬜ Не начато
 
 ---
@@ -18,10 +18,11 @@
 
 - [ ] Endpoint `GET /services/:id` публичный
 - [ ] Возвращает полную информацию об услуге
-- [ ] Включает данные поставщика (businessName, contactPhone, address)
-- [ ] Включает категорию
+- [ ] Включает данные поставщика (businessName, rating, reviewCount, contactPhone, address, description, contactEmail)
+- [ ] Включает категорию (id, name, slug, description)
 - [ ] 404 если услуга не найдена
-- [ ] 404 если услуга INACTIVE или vendor не APPROVED
+- [ ] 404 если услуга INACTIVE или vendor не APPROVED (для публичного доступа)
+- [ ] Владелец может видеть свои услуги с любым статусом
 
 ---
 
@@ -51,9 +52,12 @@ GET /services/uuid
   "vendor": {
     "id": "uuid",
     "businessName": "Ритуальные услуги АИ",
+    "rating": 4.5,
+    "reviewCount": 23,
     "contactPhone": "+7 999 123-45-67",
     "address": "г. Москва, ул. Примерная, д. 1",
-    "description": "Работаем с 2010 года"
+    "description": "Работаем с 2010 года",
+    "contactEmail": "info@ritual-services.ru"
   },
   "category": {
     "id": "uuid",
@@ -77,10 +81,10 @@ GET /services/uuid
 
 ## Technical Notes
 
-- Проверять status услуги = ACTIVE
-- Проверять vendor.status = APPROVED
+- Для публичного доступа: проверять status услуги = ACTIVE и vendor.status = APPROVED
 - Если любое условие не выполнено - 404 (не раскрывать причину)
-- Include vendor с нужными полями (без sensitive data)
+- Владелец (vendor) может видеть свои услуги с любым статусом
+- Include vendor с полными полями для публичного доступа: businessName, rating, reviewCount, contactPhone, address, description, contactEmail
 
 ---
 
@@ -114,11 +118,11 @@ async getService(@Param('id') id: string) {
       },
     },
   });
-  
+
   if (!service) {
     throw new NotFoundException('Service not found');
   }
-  
+
   return service;
 }
 ```

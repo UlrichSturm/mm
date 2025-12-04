@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailService } from '../email/email.service';
 
 export enum VendorStatus {
   PENDING = 'PENDING',
@@ -23,7 +24,12 @@ export interface VendorProfile {
 
 @Injectable()
 export class VendorsService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(VendorsService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService,
+  ) {}
 
   async findAll(status?: VendorStatus): Promise<VendorProfile[]> {
     const where = status ? { status: status as any } : {};
@@ -98,11 +104,41 @@ export class VendorsService {
   }
 
   async updateStatus(id: string, status: VendorStatus): Promise<VendorProfile> {
+    const vendor = await this.prisma.vendorProfile.findUnique({
+      where: { id },
+      include: { user: true },
+    });
+
+    if (!vendor) {
+      throw new NotFoundException(`Vendor ${id} not found`);
+    }
+
     const updated = await this.prisma.vendorProfile.update({
       where: { id },
       data: { status: status as any },
       include: { user: true },
     });
+
+    // Send email notification about status change
+    if (vendor.user.email && vendor.user.firstName) {
+      try {
+        if (status === VendorStatus.APPROVED) {
+          await this.emailService.sendVendorApprovalEmail(vendor.user.email, {
+            firstName: vendor.user.firstName || '',
+            businessName: vendor.businessName,
+          });
+        } else if (status === VendorStatus.REJECTED) {
+          await this.emailService.sendVendorRejectionEmail(
+            vendor.user.email,
+            vendor.user.firstName || '',
+            vendor.businessName,
+          );
+        }
+      } catch (error) {
+        this.logger.error(`Failed to send vendor status email: ${(error as Error).message}`);
+      }
+    }
+
     return this.mapToInterface(updated);
   }
 
