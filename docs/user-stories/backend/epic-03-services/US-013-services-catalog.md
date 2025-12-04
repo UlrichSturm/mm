@@ -1,9 +1,9 @@
 # US-013: Просмотр каталога услуг
 
-**Epic:** E-003 Services Catalog  
-**Portal:** Backend  
-**Приоритет:** 🔴 Must Have  
-**Story Points:** 3  
+**Epic:** E-003 Services Catalog
+**Portal:** Backend
+**Приоритет:** 🔴 Must Have
+**Story Points:** 3
 **Статус:** ⬜ Не начато
 
 ---
@@ -38,7 +38,13 @@ GET /services?page=1&limit=12
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | page | number | 1 | Номер страницы |
-| limit | number | 12 | Количество на странице (max 50) |
+| limit | number | 12 | Количество на странице (max 10) |
+| search | string | - | Поисковый запрос (min 2 символа) |
+| categoryId | string | - | Фильтр по категории |
+| vendorId | string | - | Фильтр по поставщику |
+| minPrice | number | - | Минимальная цена |
+| maxPrice | number | - | Максимальная цена |
+| sortBy | string | createdAt_desc | Сортировка: createdAt_desc, createdAt_asc, price_asc, price_desc, name_asc, name_desc, rating_asc, rating_desc |
 
 ### Response (Success - 200)
 
@@ -79,8 +85,10 @@ GET /services?page=1&limit=12
 - Фильтровать по vendor.status = APPROVED
 - Фильтровать по service.status = ACTIVE
 - Использовать include для vendor и category
-- Limit max 50 для производительности
+- Limit max 10 для производительности
 - Индексы на status полях
+- Поддержка фильтров по цене (minPrice/maxPrice)
+- Поддержка сортировки по различным полям
 
 ---
 
@@ -94,12 +102,12 @@ async getServices(
 ) {
   const take = Math.min(limit, 50);
   const skip = (page - 1) * take;
-  
+
   const where: Prisma.ServiceWhereInput = {
     status: 'ACTIVE',
     vendor: { status: 'APPROVED' },
   };
-  
+
   const [data, total] = await Promise.all([
     this.prisma.service.findMany({
       where,
@@ -113,7 +121,7 @@ async getServices(
     }),
     this.prisma.service.count({ where }),
   ]);
-  
+
   return {
     data,
     meta: { total, page, limit: take, totalPages: Math.ceil(total / take) },
@@ -128,7 +136,7 @@ async getServices(
 ```prisma
 model Service {
   // ... fields
-  
+
   @@index([status])
   @@index([vendorId])
   @@index([categoryId])
@@ -151,8 +159,10 @@ model Service {
 2. ✅ Только ACTIVE услуги возвращаются
 3. ✅ Только услуги APPROVED vendors возвращаются
 4. ✅ Пагинация работает
-5. ✅ Limit ограничен 50
+5. ✅ Limit ограничен 10
 6. ✅ Vendor и category включены
+7. ✅ Фильтры по цене работают
+8. ✅ Сортировка работает
 
 ---
 

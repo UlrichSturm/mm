@@ -2,6 +2,7 @@ import { BadRequestException, ConflictException, Injectable, Logger } from '@nes
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { Role } from '../common/enums/role.enum';
+import { EmailService } from '../email/email.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 /**
@@ -21,6 +22,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {
     this.keycloakUrl = this.configService.get<string>('KEYCLOAK_URL') || 'http://localhost:8080';
     this.keycloakRealm = this.configService.get<string>('KEYCLOAK_REALM') || 'memento-mori';
@@ -455,6 +457,16 @@ export class AuthService {
     });
 
     this.logger.log(`User ${data.email} registered successfully`);
+
+    // Send welcome email
+    if (user.email && user.firstName) {
+      try {
+        await this.emailService.sendWelcomeEmail(user.email, user.firstName);
+      } catch (error) {
+        this.logger.error(`Failed to send welcome email: ${(error as Error).message}`);
+      }
+    }
+
     return user;
   }
 

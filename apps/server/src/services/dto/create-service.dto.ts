@@ -6,9 +6,12 @@ import {
   IsUUID,
   IsArray,
   IsInt,
+  IsUrl,
+  IsNotEmpty,
   Min,
   MinLength,
   MaxLength,
+  ArrayMaxSize,
 } from 'class-validator';
 
 export class CreateServiceDto {
@@ -41,13 +44,13 @@ export class CreateServiceDto {
   @Min(0)
   price: number;
 
-  @ApiPropertyOptional({
-    description: 'Category ID',
+  @ApiProperty({
+    description: 'Category ID (required)',
     example: '550e8400-e29b-41d4-a716-446655440000',
   })
-  @IsOptional()
   @IsUUID()
-  categoryId?: string;
+  @IsNotEmpty()
+  categoryId: string;
 
   @ApiPropertyOptional({
     description: 'Service duration in minutes',
@@ -59,12 +62,14 @@ export class CreateServiceDto {
   duration?: number;
 
   @ApiPropertyOptional({
-    description: 'Image URLs',
+    description: 'Image URLs (max 5 images)',
     example: ['https://example.com/image1.jpg'],
     type: [String],
+    maxItems: 5,
   })
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
+  @ArrayMaxSize(5, { message: 'Maximum 5 images allowed' })
+  @IsUrl({}, { each: true, message: 'Each image must be a valid URL' })
   images?: string[];
 }

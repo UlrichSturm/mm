@@ -35,6 +35,14 @@ RUN adduser --system --uid 1001 nestjs
 COPY --from=builder --chown=nestjs:nodejs /app/dist ./dist
 COPY --from=builder --chown=nestjs:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=nestjs:nodejs /app/prisma ./prisma
+# Copy email templates (they are not compiled, need to be copied as-is)
+# Templates must be copied from builder stage where they exist
+USER root
+RUN mkdir -p ./dist/email/templates
+COPY --from=builder --chown=nestjs:nodejs /app/src/email/templates/ ./dist/email/templates/
+RUN ls -la ./dist/email/templates/ && echo "Templates verification" || echo "ERROR: Templates not found"
+RUN chown -R nestjs:nodejs ./dist/email
+USER nestjs
 
 # Copy node_modules (Prisma Client will be regenerated at runtime with correct DATABASE_URL)
 COPY --from=builder --chown=nestjs:nodejs /app/node_modules ./node_modules

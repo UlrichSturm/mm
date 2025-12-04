@@ -1,6 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
+import axios from 'axios';
+import * as fs from 'fs';
+import * as path from 'path';
+import * as Handlebars from 'handlebars';
 
 export interface SendEmailOptions {
   to: string;
@@ -43,33 +46,103 @@ export interface PasswordResetContext {
 export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private readonly appUrl: string;
+  private readonly mailgunDomain: string;
+  private readonly mailgunApiKey: string | undefined;
+  private readonly templatesDir: string;
+  private readonly mailgunApiUrl: string;
 
-  constructor(
-    private readonly mailerService: MailerService,
-    private readonly configService: ConfigService,
-  ) {
+  constructor(private readonly configService: ConfigService) {
     this.appUrl = this.configService.get('APP_URL', 'http://localhost:3000');
+    this.mailgunDomain = this.configService.get(
+      'MAILGUN_DOMAIN',
+      'sandboxe001d498458247eb9510fd6af0bdd3d7.mailgun.org',
+    );
+    this.mailgunApiKey = this.configService.get('MAILGUN_API_KEY');
+
+    // Mailgun API URL (use EU endpoint if domain is EU)
+    const isEuDomain = this.mailgunDomain.includes('.eu.');
+    this.mailgunApiUrl = isEuDomain
+      ? 'https://api.eu.mailgun.net/v3'
+      : 'https://api.mailgun.net/v3';
+
+    if (!this.mailgunApiKey) {
+      this.logger.warn('MAILGUN_API_KEY not set, email sending will be disabled');
+    }
+
+    // Set templates directory
+    this.templatesDir =
+      process.env.NODE_ENV === 'production'
+        ? path.join(process.cwd(), 'dist', 'email', 'templates')
+        : path.join(__dirname, 'templates');
+  }
+
+  /**
+   * Render Handlebars template to HTML
+   */
+  private renderTemplate(templateName: string, context: Record<string, unknown>): string {
+    const templatePath = path.join(this.templatesDir, `${templateName}.hbs`);
+    if (!fs.existsSync(templatePath)) {
+      throw new Error(`Template not found: ${templatePath}`);
+    }
+
+    const templateContent = fs.readFileSync(templatePath, 'utf-8');
+    const template = Handlebars.compile(templateContent);
+    return template({
+      ...context,
+      appUrl: this.appUrl,
+      year: new Date().getFullYear(),
+    });
   }
 
   /**
    * Send a generic email using a template
    */
   async sendEmail(options: SendEmailOptions): Promise<void> {
+    if (!this.mailgunApiKey) {
+      this.logger.warn(`Email sending disabled: MAILGUN_API_KEY not configured`);
+      return;
+    }
+
     try {
-      await this.mailerService.sendMail({
-        to: options.to,
-        subject: options.subject,
-        template: options.template,
-        context: {
-          ...options.context,
-          appUrl: this.appUrl,
-          year: new Date().getFullYear(),
+      const html = this.renderTemplate(options.template, options.context);
+
+      const from = this.configService.get(
+        'EMAIL_FROM',
+        `Memento Mori <postmaster@${this.mailgunDomain}>`,
+      );
+
+      // Use Mailgun API directly via axios
+      const formData = new URLSearchParams();
+      formData.append('from', from);
+      formData.append('to', options.to);
+      formData.append('subject', options.subject);
+      formData.append('html', html);
+
+      const apiUrl = `${this.mailgunApiUrl}/${this.mailgunDomain}/messages`;
+
+      this.logger.debug(`Sending email to ${options.to} via Mailgun API`);
+
+      const response = await axios.post(apiUrl, formData, {
+        auth: {
+          username: 'api',
+          password: this.mailgunApiKey,
+        },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
       });
 
-      this.logger.log(`Email sent to ${options.to}: ${options.subject}`);
+      this.logger.log(
+        `Email sent to ${options.to}: ${options.subject} (ID: ${response.data.id || 'N/A'})`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to send email to ${options.to}: ${error.message}`);
+      const errorMessage = axios.isAxiosError(error)
+        ? error.response?.data?.message || error.message
+        : (error as Error).message;
+      this.logger.error(
+        `Failed to send email to ${options.to}: ${errorMessage}`,
+        (error as Error).stack,
+      );
       // Don't throw - email failures shouldn't break the main flow
     }
   }

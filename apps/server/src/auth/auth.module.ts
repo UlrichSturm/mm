@@ -2,6 +2,7 @@ import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard, KeycloakConnectModule } from 'nest-keycloak-connect';
+import { EmailModule } from '../email/email.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -12,6 +13,7 @@ import { createKeycloakConfig } from './keycloak.config';
 @Module({
   imports: [
     PrismaModule,
+    EmailModule,
     KeycloakConnectModule.registerAsync({
       imports: [ConfigModule],
       useFactory: createKeycloakConfig,
