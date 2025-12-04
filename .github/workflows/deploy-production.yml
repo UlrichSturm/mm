@@ -40,7 +40,7 @@ jobs:
     if: ${{ github.event_name == 'push' || inputs.deploy_backend }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Deploy to Railway
         uses: bervProject/railway-deploy@main
@@ -57,7 +57,7 @@ jobs:
     if: ${{ github.event_name == 'push' || inputs.deploy_client }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Deploy to Vercel Production
         uses: amondnet/vercel-action@v25
@@ -77,7 +77,7 @@ jobs:
     if: ${{ github.event_name == 'push' || inputs.deploy_vendor }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Deploy to Vercel Production
         uses: amondnet/vercel-action@v25
@@ -97,7 +97,7 @@ jobs:
     if: ${{ github.event_name == 'push' || inputs.deploy_admin }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Deploy to Vercel Production
         uses: amondnet/vercel-action@v25
@@ -116,7 +116,7 @@ jobs:
     if: success()
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
