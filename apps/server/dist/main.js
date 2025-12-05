@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const common_1 = require("@nestjs/common");
 const core_1 = require("@nestjs/core");
 const swagger_1 = require("@nestjs/swagger");
-const common_1 = require("@nestjs/common");
 const helmet_1 = require("helmet");
 const yaml = require("js-yaml");
 const app_module_1 = require("./app.module");
@@ -11,6 +11,7 @@ async function bootstrap() {
     const logger = new common_1.Logger('Bootstrap');
     app.use((0, helmet_1.default)({
         contentSecurityPolicy: process.env.NODE_ENV === 'production',
+        hsts: process.env.NODE_ENV === 'production' ? undefined : false,
     }));
     app.setGlobalPrefix('api');
     app.useGlobalPipes(new common_1.ValidationPipe({

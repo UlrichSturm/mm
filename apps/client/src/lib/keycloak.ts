@@ -12,6 +12,10 @@ const keycloakConfig = {
 
 export const keycloak = new Keycloak(keycloakConfig);
 
+// Track initialization state
+let isInitialized = false;
+let initPromise: Promise<boolean> | null = null;
+
 /**
  * Initialize Keycloak
  * @param onAuthenticatedCallback - Called when user is authenticated
@@ -21,37 +25,56 @@ export async function initKeycloak(
   onAuthenticatedCallback?: () => void,
   onErrorCallback?: (error: Error) => void,
 ): Promise<boolean> {
-  try {
-    const token = localStorage.getItem('authToken');
-    const refreshToken = localStorage.getItem('refreshToken');
+  // If already initialized, return current state
+  if (isInitialized) {
+    return keycloak.authenticated || false;
+  }
 
-    const authenticated = await keycloak.init({
-      onLoad: 'check-sso', // Check SSO silently
-      silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
-      pkceMethod: 'S256', // Use PKCE for security
-      checkLoginIframe: false, // Disable iframe check for better performance
-      token: token || undefined,
-      refreshToken: refreshToken || undefined,
-    });
+  // If initialization is in progress, wait for it
+  if (initPromise) {
+    return initPromise;
+  }
 
-    if (authenticated) {
-      // Save token
-      if (keycloak.token) {
-        localStorage.setItem('authToken', keycloak.token);
+  // Start initialization
+  initPromise = (async () => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const refreshToken = localStorage.getItem('refreshToken');
+
+      const authenticated = await keycloak.init({
+        onLoad: 'check-sso', // Check SSO silently
+        silentCheckSsoRedirectUri: window.location.origin + '/silent-check-sso.html',
+        pkceMethod: 'S256', // Use PKCE for security
+        checkLoginIframe: false, // Disable iframe check for better performance
+        token: token || undefined,
+        refreshToken: refreshToken || undefined,
+      });
+
+      isInitialized = true;
+
+      if (authenticated) {
+        // Save token
+        if (keycloak.token) {
+          localStorage.setItem('authToken', keycloak.token);
+        }
+
+        // Setup token refresh
+        setupTokenRefresh();
+
+        onAuthenticatedCallback?.();
       }
 
-      // Setup token refresh
-      setupTokenRefresh();
-
-      onAuthenticatedCallback?.();
+      return authenticated;
+    } catch (error) {
+      console.error('Keycloak initialization error:', error);
+      onErrorCallback?.(error as Error);
+      isInitialized = false;
+      initPromise = null;
+      return false;
     }
+  })();
 
-    return authenticated;
-  } catch (error) {
-    console.error('Keycloak initialization error:', error);
-    onErrorCallback?.(error as Error);
-    return false;
-  }
+  return initPromise;
 }
 
 /**

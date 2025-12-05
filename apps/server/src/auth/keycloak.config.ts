@@ -4,8 +4,18 @@ import { KeycloakConnectOptions, PolicyEnforcementMode, TokenValidation } from '
 export const createKeycloakConfig = (
   configService: ConfigService,
 ): KeycloakConnectOptions => {
+  // Get Keycloak URL
+  // IMPORTANT: authServerUrl must match the issuer in tokens exactly
+  // Tokens have issuer: http://localhost:8080/realms/memento-mori
+  // So authServerUrl should be: http://localhost:8080 (not host.docker.internal)
+  const keycloakUrl = configService.get<string>('KEYCLOAK_URL', 'http://localhost:8080');
+
+  // Normalize URL: replace host.docker.internal with localhost for issuer matching
+  // This is needed because tokens are issued with localhost:8080 as issuer
+  const normalizedUrl = keycloakUrl.replace('host.docker.internal', 'localhost');
+
   return {
-    authServerUrl: 'http://localhost:8080', // Must match token issuer
+    authServerUrl: normalizedUrl, // Must be http://localhost:8080 to match token issuer
     realm: configService.get<string>('KEYCLOAK_REALM', 'memento-mori'),
     // clientId: configService.get<string>('KEYCLOAK_CLIENT_ID', 'memento-mori-api'),
     secret: configService.get<string>('KEYCLOAK_CLIENT_SECRET', ''),
@@ -14,11 +24,17 @@ export const createKeycloakConfig = (
     cookieKey: 'KEYCLOAK_JWT',
 
     // Token validation
-    tokenValidation: TokenValidation.OFFLINE,
+    // Try ONLINE validation to fetch public key from Keycloak automatically
+    tokenValidation: TokenValidation.ONLINE,
     verifyTokenAudience: false, // Disable audience check for simplicity in dev
 
-    // CORS
-    realmPublicKey: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzil2bNyaDBDt1I/+fKz9c/gIaCMc5CHi9h+dnUs98hosnsov5dy8I4UWZFHDAem24s7qJCblil96+4zyAwVaUSB58JtZXjawq2p0280lqERETYut9sSMVHWlYMnNwGFEV6dZnHxSimw1M3I9sMOTnTaHzhk6IbjI+yHsh+ePYH+F3tvXNVDQITDFVyZwe/A80zN5kNF9dvFhoihZWoQgj168ItxKw+At6o2mIAVWUMbY1IRBdd6fJPrVqPTTIvC3j3SGwoOQDPtcNHtSYvx91N3y6PF7yhtROlo/edDxRS2jTIcnfS4JDLvuLsm3w4HN8iex+oXNvjEm+KLniFbi8wIDAQAB',
+    // Allow different issuer (for Docker/localhost mismatch)
+    // In development, tokens from localhost:8080 can be validated even if authServerUrl is host.docker.internal:8080
+    // The library will handle this automatically with OFFLINE validation
+
+    // CORS - Public key for token validation (OFFLINE mode)
+    // Get from env or fetch from Keycloak
+    realmPublicKey: configService.get<string>('KEYCLOAK_REALM_PUBLIC_KEY'),
 
     // Policy Enforcement
     policyEnforcement: PolicyEnforcementMode.PERMISSIVE,

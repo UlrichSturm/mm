@@ -210,4 +210,74 @@ export const apiClient = {
     }
     return response.json();
   },
+
+  // Orders
+  async createOrder(data: { items: Array<{ serviceId: string; quantity: number }> }) {
+    const response = await fetch(`${API_BASE_URL}/orders`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Failed to create order' }));
+      throw new Error(error.message || 'Failed to create order');
+    }
+    return response.json();
+  },
+
+  async getMyOrders() {
+    const response = await fetch(`${API_BASE_URL}/orders/my`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch orders');
+    }
+    return response.json();
+  },
+
+  async getOrder(orderId: string) {
+    const response = await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch order');
+    }
+    return response.json();
+  },
+
+  // Payments
+  async createPaymentIntent(orderId: string, returnUrl?: string) {
+    const response = await fetch(`${API_BASE_URL}/payments/intent`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ orderId, returnUrl }),
+    });
+    if (!response.ok) {
+      const error = await response
+        .json()
+        .catch(() => ({ message: 'Failed to create payment intent' }));
+      throw new Error(error.message || 'Failed to create payment intent');
+    }
+    return response.json();
+  },
+
+  async getMyPayments() {
+    const response = await fetch(`${API_BASE_URL}/payments/my`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch payments');
+    }
+    return response.json();
+  },
+
+  async getPayment(paymentId: string) {
+    const response = await fetch(`${API_BASE_URL}/payments/${paymentId}`, {
+      headers: getAuthHeaders(),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch payment');
+    }
+    return response.json();
+  },
 };

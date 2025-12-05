@@ -323,12 +323,24 @@ async function setup() {
     process.exit(1);
   }
 
-  // Create realm
+  // Create or update realm
   try {
     await createRealm(token);
   } catch (err) {
     if (err.message.includes('409')) {
-      warning('Realm already exists, skipping...');
+      warning('Realm already exists, updating SSL settings...');
+      // Update realm to disable SSL requirement
+      try {
+        const currentRealm = await keycloakRequest('GET', `/admin/realms/${REALM_NAME}`, token);
+        const updatedRealm = {
+          ...currentRealm,
+          sslRequired: 'none',
+        };
+        await keycloakRequest('PUT', `/admin/realms/${REALM_NAME}`, token, updatedRealm);
+        success('Realm SSL settings updated to "none"');
+      } catch (updateErr) {
+        warning(`Failed to update realm: ${updateErr.message}`);
+      }
     } else {
       throw err;
     }

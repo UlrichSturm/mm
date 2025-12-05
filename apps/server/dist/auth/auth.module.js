@@ -9,12 +9,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthModule = void 0;
 const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
-const nest_keycloak_connect_1 = require("nest-keycloak-connect");
 const core_1 = require("@nestjs/core");
+const nest_keycloak_connect_1 = require("nest-keycloak-connect");
+const prisma_module_1 = require("../prisma/prisma.module");
 const auth_controller_1 = require("./auth.controller");
 const auth_service_1 = require("./auth.service");
+const debug_role_guard_1 = require("./debug-role.guard");
 const keycloak_config_1 = require("./keycloak.config");
-const prisma_module_1 = require("../prisma/prisma.module");
 let AuthModule = class AuthModule {
 };
 exports.AuthModule = AuthModule;
@@ -38,11 +39,7 @@ exports.AuthModule = AuthModule = __decorate([
             },
             {
                 provide: core_1.APP_GUARD,
-                useClass: nest_keycloak_connect_1.ResourceGuard,
-            },
-            {
-                provide: core_1.APP_GUARD,
-                useClass: nest_keycloak_connect_1.RoleGuard,
+                useClass: debug_role_guard_1.DebugRoleGuard,
             },
         ],
         exports: [auth_service_1.AuthService],
