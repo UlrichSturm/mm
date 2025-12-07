@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { Role } from '../common/enums/role.enum';
 import { PrismaService } from '../prisma/prisma.service';
 import { KeycloakService } from '../keycloak/keycloak.service';
@@ -41,7 +41,7 @@ export class AuthService {
         const keycloakUser = await this.keycloakService.verifyToken(keycloakToken);
         if (keycloakUser) {
           // Find or create user in local database
-          let user = await this.prisma.prisma.user.findUnique({
+          let user = await this.prisma.user.findUnique({
             where: { email: email.toLowerCase() },
           });
 
@@ -61,7 +61,7 @@ export class AuthService {
 
           if (!user) {
             // Create user in local database
-            user = await this.prisma.prisma.user.create({
+            user = await this.prisma.user.create({
               data: {
                 email: keycloakUser.email || email.toLowerCase(),
                 password: null, // Password stored in Keycloak
@@ -73,7 +73,7 @@ export class AuthService {
           } else {
             // Update existing user role if it changed in Keycloak
             if (user.role !== appRole) {
-              user = await this.prisma.prisma.user.update({
+              user = await this.prisma.user.update({
                 where: { id: user.id },
                 data: {
                   role: appRole as any,
@@ -102,7 +102,7 @@ export class AuthService {
     }
 
     // Fallback: Local authentication (for backward compatibility)
-    const user = await this.prisma.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
 
@@ -115,7 +115,7 @@ export class AuthService {
     if (user.password && user.password !== password) {
       throw new UnauthorizedException('Invalid email or password');
     }
-    
+
     // If user has no password but we're in fallback, it means Keycloak auth failed
     // and we can't authenticate without password
     if (!user.password) {
@@ -132,7 +132,8 @@ export class AuthService {
     });
 
     // Return data without password
-    const { password: _, ...userWithoutPassword } = user;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _password, ...userWithoutPassword } = user;
 
     return {
       token,
@@ -183,7 +184,7 @@ export class AuthService {
       role: user.role,
       exp: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
     };
-    
+
     // Base64 encoding (in production use JWT)
     return Buffer.from(JSON.stringify(payload)).toString('base64');
   }
@@ -194,7 +195,7 @@ export class AuthService {
       const keycloakUser = await this.keycloakService.verifyToken(token);
       if (keycloakUser) {
         // Find user in database by email
-        let user = await this.prisma.prisma.user.findUnique({
+        let user = await this.prisma.user.findUnique({
           where: { email: keycloakUser.email },
         });
 
@@ -203,7 +204,7 @@ export class AuthService {
           const appRole = this.keycloakService.mapKeycloakRoleToAppRole(
             keycloakUser.realm_access?.roles?.[0] || 'client',
           );
-          user = await this.prisma.prisma.user.create({
+          user = await this.prisma.user.create({
             data: {
               email: keycloakUser.email,
               password: null, // Password stored in Keycloak
@@ -225,17 +226,17 @@ export class AuthService {
 
       // Fallback: Validate as local token (for backward compatibility)
       const payload = JSON.parse(Buffer.from(token, 'base64').toString());
-      
+
       // Check expiration
       if (payload.exp && payload.exp < Date.now()) {
         return null;
       }
-      
+
       // Find user in database
-      const user = await this.prisma.prisma.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { id: payload.id },
       });
-      
+
       if (!user) {
         return null;
       }
@@ -254,10 +255,10 @@ export class AuthService {
 
   async register(email: string, password: string, role: Role = Role.CLIENT, firstName?: string, lastName?: string): Promise<User> {
     // Check if user already exists
-    const existingUser = await this.prisma.prisma.user.findUnique({
+    const existingUser = await this.prisma.user.findUnique({
       where: { email: email.toLowerCase() },
     });
-    
+
     if (existingUser) {
       throw new UnauthorizedException('User with this email already exists');
     }
@@ -282,7 +283,7 @@ export class AuthService {
     }
 
     // Create new user in local database
-    const newUser = await this.prisma.prisma.user.create({
+    const newUser = await this.prisma.user.create({
       data: {
         email: email.toLowerCase(),
         password, // In production hash password with bcrypt
@@ -302,7 +303,7 @@ export class AuthService {
   }
 
   async getProfile(userId: string): Promise<User> {
-    const user = await this.prisma.prisma.user.findUnique({
+    const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
 
@@ -322,17 +323,17 @@ export class AuthService {
   async updateProfile(userId: string, data: { firstName?: string; lastName?: string; email?: string }): Promise<User> {
     // Check if email is being changed and if it's already taken
     if (data.email) {
-      const existingUser = await this.prisma.prisma.user.findUnique({
+      const existingUser = await this.prisma.user.findUnique({
         where: { email: data.email.toLowerCase() },
       });
-      
+
       if (existingUser && existingUser.id !== userId) {
         throw new UnauthorizedException('Email already in use');
       }
     }
 
     // Update user
-    const updatedUser = await this.prisma.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id: userId },
       data: {
         ...(data.firstName !== undefined && { firstName: data.firstName || null }),
@@ -348,5 +349,169 @@ export class AuthService {
       firstName: updatedUser.firstName,
       lastName: updatedUser.lastName,
     };
+  }
+
+  /**
+   * Find user by Keycloak ID
+   * Note: Keycloak ID is not stored directly, so we need to get user info from token
+   */
+  async findByKeycloakId(_keycloakId: string): Promise<User | null> {
+    // Since we don't store Keycloak ID directly, we can't query by it
+    // This method should be called with a token to get user info
+    // For now, return null - use syncUserFromKeycloak instead
+    return null;
+  }
+
+  /**
+   * Sync user from Keycloak to local database
+   */
+  async syncUserFromKeycloak(keycloakUser: {
+    sub: string;
+    email: string;
+    given_name?: string;
+    family_name?: string;
+    roles?: string[];
+  }): Promise<User> {
+    if (!keycloakUser || !keycloakUser.sub || !keycloakUser.email) {
+      throw new BadRequestException('Invalid Keycloak user data');
+    }
+    // Find the highest priority role
+    const roles = keycloakUser.roles || [];
+    let selectedRole = 'client';
+    if (roles.includes('admin')) {
+      selectedRole = 'admin';
+    } else if (roles.includes('lawyer-notary')) {
+      selectedRole = 'lawyer-notary';
+    } else if (roles.includes('vendor')) {
+      selectedRole = 'vendor';
+    } else if (roles.includes('client')) {
+      selectedRole = 'client';
+    }
+    const appRole = this.keycloakService.mapKeycloakRoleToAppRole(selectedRole);
+
+    // Find or create user
+    let user = await this.prisma.user.findUnique({
+      where: { email: keycloakUser.email.toLowerCase() },
+    });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email: keycloakUser.email.toLowerCase(),
+          password: null,
+          role: appRole as any,
+          firstName: keycloakUser.given_name || null,
+          lastName: keycloakUser.family_name || null,
+        },
+      });
+    } else {
+      // Update role if changed
+      if (user.role !== appRole) {
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: { role: appRole as any },
+        });
+      }
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role as Role,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    };
+  }
+
+  /**
+   * Change user password in Keycloak
+   */
+  async changePassword(_keycloakUserId: string, _currentPassword: string, _newPassword: string): Promise<void> {
+    // Password changes are handled by Keycloak
+    // This method would need to call Keycloak Admin API to change password
+    // For now, we'll throw an error indicating this should be done through Keycloak
+    throw new UnauthorizedException('Password changes must be done through Keycloak');
+  }
+
+  /**
+   * Login user with username and password (Direct Access Grant)
+   */
+  async loginUser(username: string, password: string): Promise<{
+    access_token: string;
+    refresh_token: string;
+    expires_in: number;
+    token_type: string;
+  }> {
+    try {
+      const keycloakClientId = process.env.KEYCLOAK_CLIENT_ID || 'memento-mori-backend';
+      const keycloakClientSecret = process.env.KEYCLOAK_CLIENT_SECRET || '';
+      const keycloakUrl = process.env.KEYCLOAK_URL || 'http://localhost:8080';
+      const keycloakRealm = process.env.KEYCLOAK_REALM || 'memento-mori';
+
+      if (!keycloakClientSecret) {
+        throw new UnauthorizedException('Keycloak client secret not configured');
+      }
+
+      const response = await axios.post(
+        `${keycloakUrl}/realms/${keycloakRealm}/protocol/openid-connect/token`,
+        new URLSearchParams({
+          grant_type: 'password',
+          client_id: keycloakClientId,
+          client_secret: keycloakClientSecret,
+          username,
+          password,
+        }),
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+        },
+      );
+
+      const data = response.data;
+      const tokenPayload = this.parseJwt(data.access_token);
+
+      if (tokenPayload) {
+        await this.syncUserFromKeycloak({
+          sub: tokenPayload.sub,
+          email: tokenPayload.email || tokenPayload.preferred_username,
+          given_name: tokenPayload.given_name,
+          family_name: tokenPayload.family_name,
+          roles: tokenPayload.realm_access?.roles || [],
+        });
+      }
+
+      return {
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+        expires_in: data.expires_in,
+        token_type: data.token_type,
+      };
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        throw new UnauthorizedException('Invalid username or password');
+      }
+      throw new UnauthorizedException(error.message || 'Login failed');
+    }
+  }
+
+  /**
+   * Parse JWT token
+   */
+  private parseJwt(token: string): any {
+    try {
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(
+        Buffer.from(base64, 'base64')
+          .toString()
+          .split('')
+          .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+          .join(''),
+      );
+      return JSON.parse(jsonPayload);
+    } catch {
+      return null;
+    }
   }
 }

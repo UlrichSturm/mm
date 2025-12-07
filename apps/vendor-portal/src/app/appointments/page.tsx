@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { vendorApi } from '@/lib/api';
 import { AppointmentList } from '@/components/appointments/AppointmentList';
 import { AppointmentFilters } from '@/components/appointments/AppointmentFilters';
+import { useTranslations } from '@/lib/i18n';
 
 export default function AppointmentsPage() {
+  const t = useTranslations('appointments');
   const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<{
@@ -34,8 +36,8 @@ export default function AppointmentsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Заявки</h1>
-          <p className="text-muted-foreground">Управление заявками от клиентов</p>
+          <h1 className="text-3xl font-bold">{t('title')}</h1>
+          <p className="text-muted-foreground">{t('subtitle')}</p>
         </div>
       </div>
 
@@ -43,7 +45,7 @@ export default function AppointmentsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <p>Загрузка...</p>
+          <p>{t('loading')}</p>
         </div>
       ) : (
         <AppointmentList appointments={appointments} onRefresh={loadAppointments} />

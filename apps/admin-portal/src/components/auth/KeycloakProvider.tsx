@@ -9,6 +9,7 @@ interface KeycloakContextType {
   user: ReturnType<typeof getUserInfo> | null;
   login: () => void;
   logout: () => void;
+  refreshAuth: () => void;
 }
 
 const KeycloakContext = createContext<KeycloakContextType | undefined>(undefined);
@@ -82,6 +83,17 @@ export function KeycloakProvider({ children }: KeycloakProviderProps) {
     });
   };
 
+  const refreshAuth = () => {
+    // Force refresh authentication state
+    if (keycloak.authenticated) {
+      setIsAuthenticatedState(true);
+      setUser(getUserInfo());
+    } else {
+      setIsAuthenticatedState(false);
+      setUser(null);
+    }
+  };
+
   return (
     <KeycloakContext.Provider
       value={{
@@ -90,6 +102,7 @@ export function KeycloakProvider({ children }: KeycloakProviderProps) {
         user,
         login,
         logout,
+        refreshAuth,
       }}
     >
       {children}

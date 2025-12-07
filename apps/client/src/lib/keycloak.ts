@@ -12,6 +12,10 @@ const keycloakConfig = {
 
 export const keycloak = new Keycloak(keycloakConfig);
 
+// Track initialization state to prevent multiple initializations
+let isInitializing = false;
+let isInitialized = false;
+
 /**
  * Initialize Keycloak
  * @param onAuthenticatedCallback - Called when user is authenticated
@@ -21,6 +25,25 @@ export async function initKeycloak(
   onAuthenticatedCallback?: () => void,
   onErrorCallback?: (error: Error) => void,
 ): Promise<boolean> {
+  // Prevent multiple initializations
+  if (isInitialized) {
+    return keycloak.authenticated || false;
+  }
+
+  if (isInitializing) {
+    // Wait for ongoing initialization
+    return new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (!isInitializing) {
+          clearInterval(checkInterval);
+          resolve(keycloak.authenticated || false);
+        }
+      }, 100);
+    });
+  }
+
+  isInitializing = true;
+
   try {
     const token = localStorage.getItem('authToken');
     const refreshToken = localStorage.getItem('refreshToken');
@@ -33,6 +56,9 @@ export async function initKeycloak(
       token: token || undefined,
       refreshToken: refreshToken || undefined,
     });
+
+    isInitialized = true;
+    isInitializing = false;
 
     if (authenticated) {
       // Save token
@@ -48,6 +74,8 @@ export async function initKeycloak(
 
     return authenticated;
   } catch (error) {
+    isInitializing = false;
+    isInitialized = true; // Mark as initialized even on error to prevent retry loops
     console.error('Keycloak initialization error:', error);
     onErrorCallback?.(error as Error);
     return false;

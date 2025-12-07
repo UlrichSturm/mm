@@ -12,10 +12,33 @@ const keycloakConfig = {
 
 export const keycloak = new Keycloak(keycloakConfig);
 
+// Track initialization state to prevent multiple initializations
+let isInitializing = false;
+let isInitialized = false;
+
 export async function initKeycloak(
   onAuthenticatedCallback?: () => void,
   onErrorCallback?: (error: Error) => void,
 ): Promise<boolean> {
+  // Prevent multiple initializations
+  if (isInitialized) {
+    return keycloak.authenticated || false;
+  }
+
+  if (isInitializing) {
+    // Wait for ongoing initialization
+    return new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (!isInitializing) {
+          clearInterval(checkInterval);
+          resolve(keycloak.authenticated || false);
+        }
+      }, 100);
+    });
+  }
+
+  isInitializing = true;
+
   try {
     const authenticated = await keycloak.init({
       onLoad: 'check-sso',
@@ -23,6 +46,9 @@ export async function initKeycloak(
       pkceMethod: 'S256',
       checkLoginIframe: false,
     });
+
+    isInitialized = true;
+    isInitializing = false;
 
     if (authenticated) {
       if (keycloak.token) {
@@ -34,6 +60,8 @@ export async function initKeycloak(
 
     return authenticated;
   } catch (error) {
+    isInitializing = false;
+    isInitialized = true; // Mark as initialized even on error to prevent retry loops
     console.error('Keycloak initialization error:', error);
     onErrorCallback?.(error as Error);
     return false;

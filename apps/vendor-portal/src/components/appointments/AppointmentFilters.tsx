@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
+import { useTranslations } from '@/lib/i18n';
 
 interface AppointmentFiltersProps {
   filters: {
@@ -12,12 +13,14 @@ interface AppointmentFiltersProps {
 }
 
 export function AppointmentFilters({ filters, onFiltersChange }: AppointmentFiltersProps) {
+  const t = useTranslations('appointments');
+
   const statusOptions = [
-    { value: '', label: 'Все статусы' },
-    { value: 'PENDING', label: 'Ожидают подтверждения' },
-    { value: 'CONFIRMED', label: 'Подтверждены' },
-    { value: 'IN_PROGRESS', label: 'В процессе' },
-    { value: 'COMPLETED', label: 'Завершены' },
+    { value: '', label: t('allStatuses') },
+    { value: 'PENDING', label: t('pending') },
+    { value: 'CONFIRMED', label: t('confirmed') },
+    { value: 'IN_PROGRESS', label: t('inProgress') },
+    { value: 'COMPLETED', label: t('completed') },
   ];
 
   return (
@@ -26,7 +29,7 @@ export function AppointmentFilters({ filters, onFiltersChange }: AppointmentFilt
         <div className="flex gap-4 flex-wrap">
           <div className="flex-1 min-w-[200px]">
             <Input
-              placeholder="Поиск по номеру заявки или имени клиента..."
+              placeholder={t('searchPlaceholder')}
               value={filters.search || ''}
               onChange={e => onFiltersChange({ ...filters, search: e.target.value })}
             />

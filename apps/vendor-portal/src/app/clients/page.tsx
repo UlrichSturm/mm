@@ -5,8 +5,10 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { vendorApi } from '@/lib/api';
 import { ClientList } from '@/components/clients/ClientList';
+import { useTranslations } from '@/lib/i18n';
 
 export default function ClientsPage() {
+  const t = useTranslations('clients');
   const [clients, setClients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<{
@@ -32,7 +34,7 @@ export default function ClientsPage() {
           if (!clientsMap.has(clientId)) {
             clientsMap.set(clientId, {
               id: clientId,
-              name: appointment.clientName || 'Не указано',
+              name: appointment.clientName || t('notSpecified'),
               appointments: [],
               lastContact: appointment.appointmentDate || appointment.createdAt,
               status: appointment.willStatus || 'ACTIVE',
@@ -54,8 +56,8 @@ export default function ClientsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Клиенты</h1>
-        <p className="text-muted-foreground">Список всех ваших клиентов</p>
+        <h1 className="text-3xl font-bold">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       <Card>
@@ -63,7 +65,7 @@ export default function ClientsPage() {
           <div className="flex gap-4 flex-wrap">
             <div className="flex-1 min-w-[200px]">
               <Input
-                placeholder="Поиск по ФИО..."
+                placeholder={t('searchPlaceholder')}
                 value={filters.search || ''}
                 onChange={e => setFilters({ ...filters, search: e.target.value })}
               />
@@ -76,10 +78,10 @@ export default function ClientsPage() {
                   setFilters({ ...filters, status: (e.target.value as any) || undefined })
                 }
               >
-                <option value="">Все статусы</option>
-                <option value="ACTIVE">Активные</option>
-                <option value="EXECUTING">В процессе исполнения</option>
-                <option value="EXECUTED">Исполнены</option>
+                <option value="">{t('allStatuses')}</option>
+                <option value="ACTIVE">{t('active')}</option>
+                <option value="EXECUTING">{t('executing')}</option>
+                <option value="EXECUTED">{t('executed')}</option>
               </select>
             </div>
           </div>
@@ -88,7 +90,7 @@ export default function ClientsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <p>Загрузка...</p>
+          <p>{t('loading')}</p>
         </div>
       ) : (
         <ClientList clients={clients} />

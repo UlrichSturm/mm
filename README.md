@@ -11,7 +11,7 @@
 
 ### Prerequisites
 
-- **Node.js** 20+ 
+- **Node.js** 20+
 - **Docker** & Docker Compose
 - **npm** 10+
 - **PostgreSQL** 15+ (через Docker)
@@ -194,11 +194,37 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 
 ## 📚 Documentation
 
+### Getting Started
+- [Complete Setup Guide](docs/COMPLETE_SETUP_GUIDE.md)
+- [Development Guide](docs/DEVELOPMENT.md)
+- [Docker Setup](docs/DOCKER_SETUP.md)
+
+### Authentication & Security
+- [Keycloak Setup](docs/KEYCLOAK_SETUP.md)
+- [Keycloak Auto Setup](docs/KEYCLOAK_AUTO_SETUP.md)
+- [Frontend Keycloak Integration](docs/FRONTEND_KEYCLOAK_INTEGRATION.md)
+- [Admin Credentials](docs/ADMIN_CREDENTIALS.md)
+
+### Architecture & Design
 - [System Architecture](docs/SYSTEM_ARCHITECTURE.md)
+- [Database Schema](docs/DATABASE_SCHEMA.md)
+- [API Reference](docs/API_REFERENCE.md)
+- [API Implementation Summary](docs/API_IMPLEMENTATION_SUMMARY.md)
+
+### Development
 - [User Stories](docs/user-stories/README.md)
-- [API Documentation](http://localhost:3001/api/docs)
-- [Development Guide](DEVELOPMENT.md)
-- [Docker Setup](DOCKER_SETUP.md)
+- [Prisma Setup](docs/PRISMA_SETUP.md)
+- [i18n Setup](docs/I18N_SETUP.md)
+- [External Services](docs/EXTERNAL_SERVICES.md)
+
+### Project Management
+- [Project Analysis](docs/PROJECT_ANALYSIS.md)
+- [Project Features](docs/PROJECT_FEATURES.md)
+- [Roadmap](docs/ROADMAP.md)
+- [MVP Progress](docs/MVP_PROGRESS.md)
+
+### API Documentation
+- [Swagger UI](http://localhost:3001/api/docs) - Interactive API documentation
 
 ---
 
@@ -220,7 +246,8 @@ Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
 ### Infrastructure
 - **Docker** — Containerization
 - **GitHub Actions** — CI/CD
-- **Keycloak** — Authentication (planned)
+- **Keycloak** — Identity Provider (IdP) for authentication
+- **MailHog** — Local email testing (development)
 
 ---
 

@@ -7,9 +7,9 @@ import { Roles, Resource } from 'nest-keycloak-connect';
 @Resource('wills')
 export class WillsController {
   @Get('appointments')
-  @Roles({ roles: ['admin'] })
+  @Roles({ roles: ['admin', 'lawyer_notary'] })
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Get all will appointments (admin only)' })
+  @ApiOperation({ summary: 'Get will appointments (admin or lawyer/notary)' })
   async getAllAppointments(@Query() _filters: Record<string, unknown>) {
     // Return empty array - no mock data
     // Appointments should be retrieved from database via Prisma
@@ -17,9 +17,9 @@ export class WillsController {
   }
 
   @Get('appointments/:id')
-  @Roles({ roles: ['admin'] })
+  @Roles({ roles: ['admin', 'lawyer_notary'] })
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Get will appointment by ID (admin only)' })
+  @ApiOperation({ summary: 'Get will appointment by ID (admin or lawyer/notary)' })
   async getAppointment(@Param('id') _id: string) {
     // Return empty object - no mock data
     return null;

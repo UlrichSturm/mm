@@ -2,6 +2,8 @@
 
 import { Bell, User } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { getLocale, setLocale } from '@/lib/i18n';
+import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
 
 export function VendorHeader() {
   return (
@@ -11,6 +13,11 @@ export function VendorHeader() {
           <h2 className="text-xl font-semibold">Vendor Portal</h2>
         </div>
         <div className="flex items-center gap-4">
+          <LanguageSwitcher
+            getLocale={getLocale}
+            setLocale={setLocale}
+            selectClassName="bg-white"
+          />
           <Button variant="ghost" size="icon">
             <Bell className="h-5 w-5" />
           </Button>

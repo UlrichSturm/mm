@@ -8,6 +8,7 @@ import { ErrorDisplay } from '@/components/ui/ErrorDisplay';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { LawyerNotaryProfile, lawyerNotaryApi } from '@/lib/api/lawyer-notary';
 import { exportLawyersToCSV } from '@/lib/utils/export';
+import { useTranslations } from '@/lib/i18n';
 import { ArrowLeft, CheckCircle, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -21,6 +22,8 @@ interface LawyerStatistics {
 }
 
 export default function LawyerStatisticsPage() {
+  const t = useTranslations('statistics');
+  const tCommon = useTranslations('common');
   const { error, handleError, clearError } = useErrorHandler();
   const [lawyers, setLawyers] = useState<any[]>([]);
   const [statistics, setStatistics] = useState<LawyerStatistics[]>([]);
@@ -72,7 +75,7 @@ export default function LawyerStatisticsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading...</div>
+        <div className="text-gray-500">{tCommon('loading')}</div>
       </div>
     );
   }
@@ -85,7 +88,7 @@ export default function LawyerStatisticsPage() {
             <ArrowLeft className="w-5 h-5" />
           </button>
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">Статистика по адвокатам</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('title')}</h1>
       </div>
 
       {error && (
@@ -104,7 +107,7 @@ export default function LawyerStatisticsPage() {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                По заявкам
+                {t('byAppointments')}
               </button>
               <button
                 onClick={() => setSortBy('completed')}
@@ -114,7 +117,7 @@ export default function LawyerStatisticsPage() {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                По завершенным
+                {t('byCompleted')}
               </button>
               <button
                 onClick={() => setSortBy('rating')}
@@ -124,12 +127,13 @@ export default function LawyerStatisticsPage() {
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                По рейтингу
+                {t('byRating')}
               </button>
             </div>
             <ExportButton
               onExport={() => exportLawyersToCSV(lawyers)}
               disabled={lawyers.length === 0}
+              label={t('exportToCSV')}
             />
           </div>
         </CardContent>
@@ -139,7 +143,7 @@ export default function LawyerStatisticsPage() {
         {sortedStatistics.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
-              <p className="text-gray-500">Нет данных для отображения</p>
+              <p className="text-gray-500">{t('noData')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -159,14 +163,14 @@ export default function LawyerStatisticsPage() {
                       <div className="flex items-center gap-2">
                         <TrendingUp className="w-4 h-4 text-blue-500" />
                         <div>
-                          <p className="text-sm text-gray-500">Заявок</p>
+                          <p className="text-sm text-gray-500">{t('appointments')}</p>
                           <p className="text-lg font-semibold">{stat.appointmentsCount}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <CheckCircle className="w-4 h-4 text-green-500" />
                         <div>
-                          <p className="text-sm text-gray-500">Completed</p>
+                          <p className="text-sm text-gray-500">{t('completed')}</p>
                           <p className="text-lg font-semibold">{stat.completedWillsCount}</p>
                         </div>
                       </div>
@@ -174,7 +178,7 @@ export default function LawyerStatisticsPage() {
                         <div className="flex items-center gap-2">
                           <TrendingUp className="w-4 h-4 text-yellow-500" />
                           <div>
-                            <p className="text-sm text-gray-500">Рейтинг</p>
+                            <p className="text-sm text-gray-500">{t('rating')}</p>
                             <p className="text-lg font-semibold">
                               {stat.averageRating.toFixed(1)}/5
                             </p>
@@ -185,7 +189,7 @@ export default function LawyerStatisticsPage() {
                         <div className="flex items-center gap-2">
                           <CheckCircle className="w-4 h-4 text-purple-500" />
                           <div>
-                            <p className="text-sm text-gray-500">Confirmed</p>
+                            <p className="text-sm text-gray-500">{t('confirmed')}</p>
                             <p className="text-lg font-semibold">
                               {stat.confirmationRate.toFixed(0)}%
                             </p>
@@ -197,7 +201,7 @@ export default function LawyerStatisticsPage() {
                   <div className="ml-4">
                     <Link href={`/lawyer-notary/${stat.lawyer.id}`}>
                       <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                        Детали
+                        {t('details')}
                       </button>
                     </Link>
                   </div>

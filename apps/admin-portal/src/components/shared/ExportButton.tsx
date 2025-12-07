@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/Button';
 import { Download } from 'lucide-react';
+import { useTranslations } from '@/lib/i18n';
 
 interface ExportButtonProps {
   onExport: () => void;
@@ -9,7 +10,10 @@ interface ExportButtonProps {
   label?: string;
 }
 
-export function ExportButton({ onExport, disabled = false, label = 'Экспорт в CSV' }: ExportButtonProps) {
+export function ExportButton({ onExport, disabled = false, label }: ExportButtonProps) {
+  const t = useTranslations('statistics');
+  const buttonLabel = label || t('exportToCSV');
+
   return (
     <Button
       variant="outline"
@@ -17,7 +21,7 @@ export function ExportButton({ onExport, disabled = false, label = 'Экспор
       disabled={disabled}
     >
       <Download className="w-4 h-4 mr-2" />
-      {label}
+      {buttonLabel}
     </Button>
   );
 }

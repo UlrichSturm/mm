@@ -1,0 +1,91 @@
+{
+  "common": {
+    "loading": "Загрузка...",
+    "error": "Ошибка",
+    "success": "Успешно",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "delete": "Удалить",
+    "edit": "Редактировать",
+    "view": "Просмотр",
+    "create": "Создать",
+    "search": "Поиск",
+    "filter": "Фильтр",
+    "actions": "Действия",
+    "status": "Статус",
+    "logout": "Выйти"
+  },
+  "dashboard": {
+    "title": "Панель управления",
+    "welcome": "Добро пожаловать в личный кабинет адвоката/нотариуса",
+    "applications": "Заявки",
+    "newApplications": "Новых заявок",
+    "viewAll": "Посмотреть все →",
+    "clients": "Клиенты",
+    "activeClients": "Активных клиентов",
+    "viewAllClients": "Посмотреть всех →",
+    "schedule": "Расписание",
+    "nextMeeting": "Ближайшая встреча",
+    "manage": "Управление →",
+    "settings": "Настройки",
+    "profileAndSettings": "Профиль и настройки",
+    "configure": "Настроить →",
+    "quickActions": "Быстрые действия",
+    "frequentlyUsed": "Часто используемые функции",
+    "viewApplications": "Просмотр заявок",
+    "notifyDeath": "Уведомить о смерти",
+    "manageSchedule": "Управление расписанием",
+    "recentApplications": "Последние заявки",
+    "recentFromClients": "Недавние заявки от клиентов",
+    "noApplications": "Заявок пока нет"
+  },
+  "nav": {
+    "dashboard": "Панель управления",
+    "appointments": "Заявки",
+    "calendar": "Календарь встреч",
+    "clients": "Клиенты",
+    "schedule": "Расписание",
+    "deathNotification": "Уведомление о смерти",
+    "settings": "Настройки"
+  },
+  "appointments": {
+    "title": "Заявки",
+    "subtitle": "Управление заявками от клиентов",
+    "searchPlaceholder": "Поиск по номеру заявки или имени клиента...",
+    "allStatuses": "Все статусы",
+    "pending": "Ожидают подтверждения",
+    "confirmed": "Подтверждены",
+    "inProgress": "В процессе",
+    "completed": "Завершены",
+    "noApplications": "Заявок пока нет",
+    "loading": "Загрузка..."
+  },
+  "clients": {
+    "title": "Клиенты",
+    "subtitle": "Список всех ваших клиентов",
+    "searchPlaceholder": "Поиск по ФИО...",
+    "allStatuses": "Все статусы",
+    "active": "Активные",
+    "executing": "В процессе исполнения",
+    "executed": "Исполнены",
+    "notSpecified": "Не указано",
+    "loading": "Загрузка..."
+  },
+  "schedule": {
+    "title": "Управление расписанием",
+    "subtitle": "Настройте рабочие часы и доступность для клиентов",
+    "loading": "Загрузка...",
+    "saveSuccess": "Расписание успешно сохранено",
+    "saveError": "Ошибка при сохранении расписания",
+    "blockSuccess": "Дата успешно заблокирована",
+    "unblockSuccess": "Дата успешно разблокирована"
+  },
+  "settings": {
+    "title": "Настройки радиуса поиска",
+    "subtitle": "Настройте радиус поиска для вашего офиса и выезда на дом",
+    "loading": "Загрузка...",
+    "saveSuccess": "Настройки успешно сохранены",
+    "saveError": "Ошибка при сохранении настроек"
+  }
+}
+

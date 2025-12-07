@@ -12,8 +12,17 @@
   "keywords": [],
   "author": "SturmUlrich",
   "license": "UNLICENSED",
+  "peerDependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "dependencies": {
+    "lucide-react": "^0.400.0"
+  },
   "devDependencies": {
     "@types/node": "^20.10.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
     "typescript": "^5.3.0"
   }
 }

@@ -46,7 +46,10 @@ services:
       - KC_DB_PASSWORD=postgres
       - KC_HTTP_ENABLED=true
       - KC_HEALTH_ENABLED=true
-    command: start-dev
+      - KC_HOSTNAME_STRICT=false
+      - KC_HOSTNAME_STRICT_HTTPS=false
+      - KC_HTTP_RELATIVE_PATH=/
+    command: start-dev --http-relative-path=/
     depends_on:
       postgres:
         condition: service_healthy
@@ -77,7 +80,7 @@ services:
       - KEYCLOAK_URL=http://keycloak:8080
       - KEYCLOAK_REALM=memento-mori
       - KEYCLOAK_CLIENT_ID=memento-mori-backend
-      - KEYCLOAK_CLIENT_SECRET=gjLfwOp8caCqLtSBvhFsN2Z7OAUWmcZY
+      - KEYCLOAK_CLIENT_SECRET=JoMdgFRekkYk77GhjoShGbsBIZz8Lel0
     volumes:
       - ./apps/server/src:/app/src
       - ./apps/server/package.json:/app/package.json

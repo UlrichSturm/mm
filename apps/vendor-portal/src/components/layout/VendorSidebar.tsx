@@ -4,19 +4,21 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Calendar, FileText, Users, Settings, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const navigation = [
-  { name: 'Панель управления', href: '/', icon: LayoutDashboard },
-  { name: 'Заявки', href: '/appointments', icon: FileText },
-  { name: 'Календарь встреч', href: '/appointments/calendar', icon: Calendar },
-  { name: 'Клиенты', href: '/clients', icon: Users },
-  { name: 'Расписание', href: '/schedule', icon: Calendar },
-  { name: 'Уведомление о смерти', href: '/wills/notify-death', icon: Bell },
-  { name: 'Настройки', href: '/settings/radius', icon: Settings },
-];
+import { useTranslations } from '@/lib/i18n';
 
 export function VendorSidebar() {
   const pathname = usePathname();
+  const t = useTranslations('nav');
+
+  const navigation = [
+    { name: t('dashboard'), href: '/', icon: LayoutDashboard },
+    { name: t('appointments'), href: '/appointments', icon: FileText },
+    { name: t('calendar'), href: '/appointments/calendar', icon: Calendar },
+    { name: t('clients'), href: '/clients', icon: Users },
+    { name: t('schedule'), href: '/schedule', icon: Calendar },
+    { name: t('deathNotification'), href: '/wills/notify-death', icon: Bell },
+    { name: t('settings'), href: '/settings/radius', icon: Settings },
+  ];
 
   return (
     <aside className="w-64 border-r bg-background">

@@ -1,138 +1,114 @@
-# Test Credentials
-
-This document contains test credentials for the development environment.
+# Test Credentials for All Services
 
 > ⚠️ **Warning**: These credentials are for development and testing only. Never use these in production!
 
-## Quick Start
+---
 
+## 🔐 Admin Portal
+
+**URL:** http://localhost:3003/auth/login
+
+| Email | Password | Role |
+|-------|----------|------|
+| `admin@mementomori.com` | `admin123456` | ADMIN |
+
+**Alternative (from setup script):**
+- Email: `admin@memento-mori.com`
+- Password: `OVrgGAAXKp2z6*qG`
+
+---
+
+## 🏪 Vendor Portal
+
+**URL:** http://localhost:3002/auth/login
+
+| Email | Password | Role |
+|-------|----------|------|
+| `vendor@mementomori.com` | `vendor123456` | VENDOR |
+
+**Alternative test vendors (from seed):**
+- `vendor1@test.com` / `password123`
+- `vendor2@test.com` / `password123`
+- `vendor3@test.com` / `password123`
+
+---
+
+## 👤 Client Portal
+
+**URL:** http://localhost:3000
+
+| Email | Password | Role |
+|-------|----------|------|
+| `client1@test.com` | `password123` | CLIENT |
+
+**Additional test clients:**
+- `client2@test.com` / `password123`
+- `client3@test.com` / `password123`
+- `client4@test.com` / `password123`
+
+---
+
+## ⚖️ Lawyer/Notary Accounts
+
+**URL:** http://localhost:3002/auth/login (Vendor Portal)
+
+| Email | Password | Type |
+|-------|----------|------|
+| `lawyer1@test.com` | `password123` | LAWYER |
+| `notary1@test.com` | `password123` | NOTARY |
+
+---
+
+## 🔑 Keycloak Admin Console
+
+**URL:** http://localhost:8080
+
+| Username | Password |
+|----------|----------|
+| `admin` | `admin` |
+
+**Realm:** `memento-mori`
+
+---
+
+## 📝 Notes
+
+1. **All users are managed by Keycloak** - passwords are stored in Keycloak, not in the application database
+2. **To create new test users**, use the setup scripts:
+   - `scripts/create-admin-in-keycloak.sh` - Create admin user
+   - `scripts/create-vendor-in-keycloak.sh` - Create vendor user
+3. **To seed database with test data** (users must exist in Keycloak first):
+   ```bash
+   cd apps/server
+   npm run db:seed
+   ```
+4. **Domain note**: Use `.com` domain for logins (not `.ru`)
+
+---
+
+## 🚀 Quick Test
+
+### Test Admin Portal Login:
 ```bash
-# Seed the database with test data
-cd apps/server
-npm run db:seed
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@mementomori.com","password":"admin123456"}'
+```
 
-# Reset and reseed database
-npm run db:reset
+### Test Vendor Portal Login:
+```bash
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"vendor@mementomori.com","password":"vendor123456"}'
+```
+
+### Test Client Portal Login:
+```bash
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"client1@test.com","password":"password123"}'
 ```
 
 ---
 
-## Admin Account
-
-| Email                | Password    | Role  |
-| -------------------- | ----------- | ----- |
-| admin@mementomori.de | password123 | ADMIN |
-
----
-
-## Client Accounts
-
-| Email            | Password    | Name          |
-| ---------------- | ----------- | ------------- |
-| client1@test.com | password123 | Hans Mueller  |
-| client2@test.com | password123 | Anna Schmidt  |
-| client3@test.com | password123 | Klaus Weber   |
-| client4@test.com | password123 | Maria Fischer |
-
----
-
-## Vendor Accounts
-
-### Approved Vendors
-
-| Email            | Password    | Business Name            | Category         |
-| ---------------- | ----------- | ------------------------ | ---------------- |
-| vendor1@test.com | password123 | Bestattungen Becker GmbH | Funeral Services |
-| vendor2@test.com | password123 | Hoffmann Blumen & Kränze | Flowers          |
-| vendor3@test.com | password123 | Wolf Transport Services  | Transportation   |
-
-### Pending Vendors
-
-| Email            | Password    | Business Name                 |
-| ---------------- | ----------- | ----------------------------- |
-| vendor4@test.com | password123 | Koch Steinmetz Meisterbetrieb |
-
----
-
-## Lawyer / Notary Accounts
-
-| Email            | Password    | Organization              | Type   |
-| ---------------- | ----------- | ------------------------- | ------ |
-| lawyer1@test.com | password123 | Kanzlei Richter & Partner | LAWYER |
-| notary1@test.com | password123 | Notariat Braun            | NOTARY |
-
----
-
-## Test Data Summary
-
-After running `npm run db:seed`, you will have:
-
-- **1** Admin user
-- **4** Client users
-- **4** Vendor users (3 approved, 1 pending)
-- **2** Lawyer/Notary users
-- **7** Service categories
-- **12** Services (from approved vendors)
-- **6** Orders (with various statuses)
-- **~2-3** Completed payments
-
----
-
-## Database Commands
-
-```bash
-# Generate Prisma Client
-npm run db:generate
-
-# Run migrations (development)
-npm run db:migrate:dev
-
-# Run migrations (production)
-npm run db:migrate
-
-# Push schema changes (no migration)
-npm run db:push
-
-# Seed database
-npm run db:seed
-
-# Reset database (deletes all data!)
-npm run db:reset
-
-# Open Prisma Studio (database GUI)
-npm run db:studio
-```
-
----
-
-## Environments
-
-### Local Development
-
-- **API URL**: http://localhost:3001
-- **Swagger Docs**: http://localhost:3001/api/docs
-- **Prisma Studio**: http://localhost:5555
-
-### Staging
-
-- **API URL**: https://api-staging.mementomori.de
-- Use Keycloak authentication (no password-based login)
-
-### Production
-
-- **API URL**: https://api.mementomori.de
-- Use Keycloak authentication only
-
----
-
-## Notes
-
-1. All test accounts use the same password: `password123`
-2. Passwords are hashed with bcrypt (10 rounds)
-3. Vendor ratings and review counts are pre-populated for approved vendors
-4. Orders have random statuses and multiple order items
-5. Completed orders include payment records with fee calculations
-
----
-
-**Last updated:** December 2025
+**Last Updated:** 2025-12-02

@@ -15,6 +15,7 @@ import { Search, Calendar, User, MapPin, Eye } from 'lucide-react';
 import { exportAppointmentsToCSV } from '@/lib/utils/export';
 import { ExportButton } from '@/components/shared/ExportButton';
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay';
+import { useTranslations } from '@/lib/i18n';
 
 const statusLabels: Record<AppointmentStatus, string> = {
   PENDING: 'Pending',
@@ -24,6 +25,9 @@ const statusLabels: Record<AppointmentStatus, string> = {
 };
 
 export default function AppointmentsPage() {
+  const t = useTranslations('nav');
+  const tCommon = useTranslations('common');
+  const tAppointments = useTranslations('appointments');
   const [appointments, setAppointments] = useState<WillAppointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +63,7 @@ export default function AppointmentsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Загрузка...</div>
+        <div className="text-gray-500">{tCommon('loading')}</div>
       </div>
     );
   }
@@ -67,7 +71,7 @@ export default function AppointmentsPage() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Заявки на завещания</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('appointments')}</h1>
         <ExportButton
           onExport={() => exportAppointmentsToCSV(appointments)}
           disabled={appointments.length === 0}
@@ -99,7 +103,7 @@ export default function AppointmentsPage() {
                   />
                 </div>
               </div>
-              <Button onClick={handleSearch}>Поиск</Button>
+              <Button onClick={handleSearch}>{tCommon('search')}</Button>
             </div>
 
             <div className="flex gap-2 flex-wrap">
@@ -108,7 +112,7 @@ export default function AppointmentsPage() {
                 size="sm"
                 onClick={() => handleStatusFilter(undefined)}
               >
-                Все статусы
+                {tAppointments('allStatuses')}
               </Button>
               <Button
                 variant={filters.status === 'PENDING' ? 'default' : 'outline'}
@@ -147,7 +151,7 @@ export default function AppointmentsPage() {
         {appointments.length === 0 ? (
           <Card>
             <CardContent className="p-12 text-center">
-              <p className="text-gray-500">Заявки не найдены</p>
+              <p className="text-gray-500">{tAppointments('noAppointments')}</p>
             </CardContent>
           </Card>
         ) : (
@@ -158,7 +162,7 @@ export default function AppointmentsPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
                       <h3 className="text-lg font-semibold text-gray-900">
-                        Заявка #{appointment.id.slice(0, 8)}
+                        Appointment #{appointment.id.slice(0, 8)}
                       </h3>
                       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border bg-blue-100 text-blue-800 border-blue-200">
                         {statusLabels[appointment.status]}
@@ -168,7 +172,7 @@ export default function AppointmentsPage() {
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4" />
                         <span>
-                          <span className="font-medium">Клиент:</span>{' '}
+                          <span className="font-medium">Client:</span>{' '}
                           {appointment.client?.email || 'N/A'}
                         </span>
                       </div>
@@ -182,20 +186,20 @@ export default function AppointmentsPage() {
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
                         <span>
-                          <span className="font-medium">Дата:</span>{' '}
-                          {new Date(appointment.appointmentDate).toLocaleDateString('ru-RU')} в{' '}
+                          <span className="font-medium">Date:</span>{' '}
+                          {new Date(appointment.appointmentDate).toLocaleDateString('en-US')} at{' '}
                           {appointment.appointmentTime}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="w-4 h-4" />
                         <span>
-                          <span className="font-medium">Место:</span> {appointment.location}
+                          <span className="font-medium">Location:</span> {appointment.location}
                         </span>
                       </div>
                       <div>
-                        <span className="font-medium">Создано:</span>{' '}
-                        {new Date(appointment.createdAt).toLocaleString('ru-RU')}
+                        <span className="font-medium">Created:</span>{' '}
+                        {new Date(appointment.createdAt).toLocaleString('en-US')}
                       </div>
                     </div>
                   </div>
@@ -203,7 +207,7 @@ export default function AppointmentsPage() {
                     <Link href={`/wills/data/${appointment.id}`}>
                       <Button variant="outline" size="sm">
                         <Eye className="w-4 h-4 mr-2" />
-                        Просмотр
+                        {tCommon('view')}
                       </Button>
                     </Link>
                   </div>

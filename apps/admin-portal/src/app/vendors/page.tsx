@@ -30,7 +30,7 @@ export default function VendorsPage() {
       setLoading(true);
       clearError();
       let data = await vendorsApi.getAll(filters);
-      
+
       // Apply search filter on client side
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
@@ -40,7 +40,7 @@ export default function VendorsPage() {
             v.email.toLowerCase().includes(query)
         );
       }
-      
+
       setVendors(data);
     } catch (err) {
       handleError(err);
@@ -101,18 +101,40 @@ export default function VendorsPage() {
                 />
               </div>
             </div>
-            <div className="flex gap-2">
-              <select
-                value={filters.status || ''}
-                onChange={(e) => handleStatusFilter(e.target.value as VendorStatus || undefined)}
-                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleStatusFilter(undefined)}
+                className="bg-white"
               >
-                <option value="">{t('allStatuses')}</option>
-                <option value="PENDING">{tCommon('pending')}</option>
-                <option value="APPROVED">{tCommon('approved')}</option>
-                <option value="REJECTED">{tCommon('rejected')}</option>
-              </select>
-              <Button onClick={handleSearch} variant="outline">
+                {t('allStatuses')}
+              </Button>
+              <Button
+                variant={filters.status === 'PENDING' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleStatusFilter('PENDING')}
+                className={filters.status === 'PENDING' ? '' : 'bg-white'}
+              >
+                {tCommon('pending')}
+              </Button>
+              <Button
+                variant={filters.status === 'APPROVED' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleStatusFilter('APPROVED')}
+                className={filters.status === 'APPROVED' ? '' : 'bg-white'}
+              >
+                {tCommon('approved')}
+              </Button>
+              <Button
+                variant={filters.status === 'REJECTED' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => handleStatusFilter('REJECTED')}
+                className={filters.status === 'REJECTED' ? '' : 'bg-white'}
+              >
+                {tCommon('rejected')}
+              </Button>
+              <Button onClick={handleSearch} variant="outline" size="sm" className="bg-white">
                 <Search className="w-4 h-4 mr-2" />
                 {tCommon('search')}
               </Button>

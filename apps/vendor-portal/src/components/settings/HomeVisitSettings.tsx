@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from '@/lib/i18n';
 
 interface HomeVisitSettingsProps {
   settings: any;
@@ -15,6 +16,7 @@ interface HomeVisitSettingsProps {
 }
 
 export function HomeVisitSettings({ settings, onSave, saving }: HomeVisitSettingsProps) {
+  const t = useTranslations('settings');
   const [homeVisitEnabled, setHomeVisitEnabled] = useState(false);
   const [homeVisitPostalCode, setHomeVisitPostalCode] = useState('');
   const [homeVisitRadius, setHomeVisitRadius] = useState(10);
@@ -29,15 +31,15 @@ export function HomeVisitSettings({ settings, onSave, saving }: HomeVisitSetting
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (homeVisitEnabled) {
       if (!homeVisitPostalCode || !homeVisitRadius) {
-        alert('Пожалуйста, заполните все поля для выезда на дом');
+        alert(t('fillHomeVisitFields'));
         return;
       }
 
       if (homeVisitRadius <= 0 || homeVisitRadius > 100) {
-        alert('Радиус должен быть от 1 до 100 км');
+        alert(t('radiusRange'));
         return;
       }
     }
@@ -52,9 +54,9 @@ export function HomeVisitSettings({ settings, onSave, saving }: HomeVisitSetting
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Настройки выезда на дом</CardTitle>
+        <CardTitle>{t('homeVisitSettings')}</CardTitle>
         <CardDescription>
-          Настройте возможность предоставления услуг на выезде
+          {t('homeVisitSettingsDesc')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -74,7 +76,7 @@ export function HomeVisitSettings({ settings, onSave, saving }: HomeVisitSetting
               </CheckboxPrimitive.Indicator>
             </CheckboxPrimitive.Root>
             <label htmlFor="homeVisitEnabled" className="text-sm font-medium cursor-pointer">
-              Предоставляю услугу на выезде
+              {t('homeVisitEnabled')}
             </label>
           </div>
 
@@ -82,7 +84,7 @@ export function HomeVisitSettings({ settings, onSave, saving }: HomeVisitSetting
             <>
               <div>
                 <label htmlFor="homeVisitPostalCode" className="block text-sm font-medium mb-1">
-                  Почтовый индекс базы выезда *
+                  {t('homeVisitPostalCode')}
                 </label>
                 <Input
                   id="homeVisitPostalCode"
@@ -96,7 +98,7 @@ export function HomeVisitSettings({ settings, onSave, saving }: HomeVisitSetting
 
               <div>
                 <label htmlFor="homeVisitRadius" className="block text-sm font-medium mb-1">
-                  Радиус выезда (км) *
+                  {t('homeVisitRadius')}
                 </label>
                 <Input
                   id="homeVisitRadius"
@@ -108,14 +110,14 @@ export function HomeVisitSettings({ settings, onSave, saving }: HomeVisitSetting
                   required={homeVisitEnabled}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Максимальное расстояние от базы выезда
+                  {t('homeVisitRadiusDesc')}
                 </p>
               </div>
             </>
           )}
 
           <Button type="submit" disabled={saving}>
-            {saving ? 'Сохранение...' : 'Сохранить настройки выезда'}
+            {saving ? t('saving') : t('saveHomeVisit')}
           </Button>
         </form>
       </CardContent>

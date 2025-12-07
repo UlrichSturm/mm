@@ -17,7 +17,7 @@ export interface VendorProfile {
 }
 
 export interface CreateVendorDto {
-  userId: string;
+  password: string;
   businessName: string;
   email: string;
   phone?: string;

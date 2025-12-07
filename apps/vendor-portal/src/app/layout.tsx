@@ -1,9 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { VendorHeader } from '@/components/layout/VendorHeader';
-import { VendorSidebar } from '@/components/layout/VendorSidebar';
-import { AuthProvider } from '@/components/auth/AuthProvider';
+import { KeycloakProvider } from '@/components/auth/KeycloakProvider';
+import { LayoutContent } from '@/components/layout/LayoutContent';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' });
 
@@ -18,11 +17,13 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="ru">
+        <html lang="en">
             <body className={`${inter.variable} ${inter.className}`}>
-                <AuthProvider>
-                    {children}
-                </AuthProvider>
+                <KeycloakProvider>
+                    <LayoutContent>
+                        {children}
+                    </LayoutContent>
+                </KeycloakProvider>
             </body>
         </html>
     );

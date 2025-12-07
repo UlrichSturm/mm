@@ -30,10 +30,10 @@ export class VendorsController {
   @Post()
   @Roles({ roles: ['admin'] })
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Create vendor profile (admin only)' })
+  @ApiOperation({ summary: 'Create vendor profile (admin only). User will be created in Keycloak with UUID.' })
   async create(@Body() data: any) {
-    // Admin creates vendor profile
-    return this.vendorsService.create(data.userId, data);
+    // Admin creates vendor profile - user will be created in Keycloak automatically
+    return this.vendorsService.create(data);
   }
 
   @Get()

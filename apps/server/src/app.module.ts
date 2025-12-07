@@ -9,9 +9,10 @@ import { KeycloakModule } from './keycloak/keycloak.module';
 import { VendorsModule } from './vendors/vendors.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { WillsController } from './wills/wills.controller';
+import { HealthModule } from './health/health.module';
 
 @Module({
-  imports: [PrismaModule, LawyerNotaryModule, AuthModule, VendorsModule, KeycloakModule],
+  imports: [PrismaModule, LawyerNotaryModule, AuthModule, VendorsModule, KeycloakModule, HealthModule],
   controllers: [CategoriesController, ServicesController, WillsController],
   providers: [CategoriesService, ServicesService],
 })

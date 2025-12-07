@@ -27,41 +27,91 @@ export function setLocale(locale: string): void {
 type MessagesType = typeof enMessages;
 type NestedValue = MessagesType | string | undefined;
 
-// Get translation function
+// Get translation function (React hook)
+import { useMemo, useState, useEffect } from 'react';
+
 export function useTranslations(namespace?: string) {
-  const locale = getLocale();
-  const localeMessages = messages[locale as keyof typeof messages] || messages.en;
+  // Use state to track locale changes
+  const [locale, setLocaleState] = useState(() =>
+    typeof window !== 'undefined' ? getLocale() : 'en'
+  );
 
-  return (key: string, params?: Record<string, string | number>) => {
-    const keys = namespace ? `${namespace}.${key}` : key;
-    const keysArray = keys.split('.');
-    let value: NestedValue = localeMessages;
+  // Update locale when it changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
 
-    for (const k of keysArray) {
-      value = (value as any)?.[k];
-      if (value === undefined) {
-        // Fallback to English
-        let fallback: NestedValue = messages.en;
-        for (const k2 of keysArray) {
-          fallback = (fallback as any)?.[k2];
-        }
-        value = fallback;
-        break;
+    const updateLocale = () => {
+      const currentLocale = getLocale();
+      if (currentLocale !== locale) {
+        setLocaleState(currentLocale);
       }
-    }
+    };
 
-    if (typeof value !== 'string') {
-      return keys; // Return key if translation not found
-    }
+    // Check locale on mount and periodically
+    updateLocale();
+    const interval = setInterval(updateLocale, 100);
 
-    // Replace params
-    if (params) {
-      return Object.entries(params).reduce(
-        (str, [param, val]) => str.replace(`{${param}}`, String(val)),
-        value,
-      );
-    }
+    // Listen for storage changes (when locale is changed in another tab)
+    window.addEventListener('storage', updateLocale);
 
-    return value;
-  };
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', updateLocale);
+    };
+  }, [locale]);
+
+  return useMemo(() => {
+    const localeMessages = messages[locale as keyof typeof messages] || messages.en;
+
+    return (key: string, params?: Record<string, string | number>) => {
+      const fullKey = namespace ? `${namespace}.${key}` : key;
+      const keysArray = fullKey.split('.');
+
+      // Start from the root messages object
+      let value: NestedValue = localeMessages;
+
+      // Navigate through the nested object
+      for (const k of keysArray) {
+        if (value && typeof value === 'object' && k in value) {
+          value = (value as any)[k];
+        } else {
+          value = undefined;
+          break;
+        }
+      }
+
+      // If not found, try fallback to English
+      if (value === undefined || typeof value !== 'string') {
+        let fallback: NestedValue = messages.en;
+        for (const k of keysArray) {
+          if (fallback && typeof fallback === 'object' && k in fallback) {
+            fallback = (fallback as any)[k];
+          } else {
+            fallback = undefined;
+            break;
+          }
+        }
+
+        if (typeof fallback === 'string') {
+          value = fallback;
+        }
+      }
+
+      // If still not found, return the key (for debugging)
+      if (typeof value !== 'string') {
+        console.warn(`[i18n] Translation not found for key: ${fullKey}, locale: ${locale}`);
+        return fullKey;
+      }
+
+      // Replace params
+      if (params) {
+        return Object.entries(params).reduce(
+          (str, [param, val]) => str.replace(`{${param}}`, String(val)),
+          value,
+        );
+      }
+
+      return value;
+    };
+  }, [locale, namespace]);
 }

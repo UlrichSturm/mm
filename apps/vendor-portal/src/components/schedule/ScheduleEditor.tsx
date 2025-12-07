@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import { Check, Plus, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslations } from '@/lib/i18n';
 
 interface ScheduleEditorProps {
   schedule: any;
@@ -14,18 +15,19 @@ interface ScheduleEditorProps {
   saving: boolean;
 }
 
-const daysOfWeek = [
-  { key: 'monday', label: 'Понедельник' },
-  { key: 'tuesday', label: 'Вторник' },
-  { key: 'wednesday', label: 'Среда' },
-  { key: 'thursday', label: 'Четверг' },
-  { key: 'friday', label: 'Пятница' },
-  { key: 'saturday', label: 'Суббота' },
-  { key: 'sunday', label: 'Воскресенье' },
-];
-
 export function ScheduleEditor({ schedule, onSave, saving }: ScheduleEditorProps) {
+  const t = useTranslations('schedule');
   const [scheduleData, setScheduleData] = useState<Record<string, { enabled: boolean; timeSlots: Array<{ start: string; end: string }> }>>({});
+
+  const daysOfWeek = [
+    { key: 'monday', label: t('monday') },
+    { key: 'tuesday', label: t('tuesday') },
+    { key: 'wednesday', label: t('wednesday') },
+    { key: 'thursday', label: t('thursday') },
+    { key: 'friday', label: t('friday') },
+    { key: 'saturday', label: t('saturday') },
+    { key: 'sunday', label: t('sunday') },
+  ];
 
   useEffect(() => {
     if (schedule) {
@@ -93,9 +95,9 @@ export function ScheduleEditor({ schedule, onSave, saving }: ScheduleEditorProps
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Рабочие часы</CardTitle>
+        <CardTitle>{t('workingHours')}</CardTitle>
         <CardDescription>
-          Установите рабочие часы для каждого дня недели
+          {t('workingHoursDesc')}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -128,7 +130,7 @@ export function ScheduleEditor({ schedule, onSave, saving }: ScheduleEditorProps
                       onClick={() => addTimeSlot(day.key)}
                     >
                       <Plus className="h-4 w-4 mr-1" />
-                      Добавить слот
+                      {t('addSlot')}
                     </Button>
                   )}
                 </div>
@@ -169,7 +171,7 @@ export function ScheduleEditor({ schedule, onSave, saving }: ScheduleEditorProps
           })}
 
           <Button type="submit" disabled={saving}>
-            {saving ? 'Сохранение...' : 'Сохранить расписание'}
+            {saving ? t('saving') : t('saveSchedule')}
           </Button>
         </form>
       </CardContent>

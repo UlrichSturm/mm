@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { X, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
-import { ru } from 'date-fns/locale';
+import { enUS, ru } from 'date-fns/locale';
+import { useTranslations, getLocale } from '@/lib/i18n';
 
 interface BlockedDatesProps {
   blockedDates?: string[];
@@ -15,13 +16,16 @@ interface BlockedDatesProps {
 }
 
 export function BlockedDates({ blockedDates = [], onBlockDate, onUnblockDate }: BlockedDatesProps) {
+  const t = useTranslations('schedule');
   const [newBlockDate, setNewBlockDate] = useState('');
   const [blocking, setBlocking] = useState(false);
+  const locale = getLocale();
+  const dateLocale = locale === 'ru' ? ru : enUS;
 
   const handleBlockDate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newBlockDate) {
-      alert('Пожалуйста, выберите дату');
+      alert(t('selectDate'));
       return;
     }
 
@@ -31,7 +35,7 @@ export function BlockedDates({ blockedDates = [], onBlockDate, onUnblockDate }: 
       setNewBlockDate('');
     } catch (error) {
       console.error('Failed to block date:', error);
-      alert('Ошибка при блокировке даты');
+      alert(t('blockError'));
     } finally {
       setBlocking(false);
     }
@@ -42,7 +46,7 @@ export function BlockedDates({ blockedDates = [], onBlockDate, onUnblockDate }: 
       return;
     }
 
-    if (!confirm('Вы уверены, что хотите разблокировать эту дату?')) {
+    if (!confirm(t('unblockConfirm'))) {
       return;
     }
 
@@ -50,15 +54,15 @@ export function BlockedDates({ blockedDates = [], onBlockDate, onUnblockDate }: 
       await onUnblockDate(date);
     } catch (error) {
       console.error('Failed to unblock date:', error);
-      alert('Ошибка при разблокировке даты');
+      alert(t('unblockError'));
     }
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Блокировка дат</CardTitle>
-        <CardDescription>Заблокируйте конкретные даты (отпуск, выходные дни)</CardDescription>
+        <CardTitle>{t('blockedDates')}</CardTitle>
+        <CardDescription>{t('blockedDatesDesc')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <form onSubmit={handleBlockDate} className="flex gap-2">
@@ -70,20 +74,20 @@ export function BlockedDates({ blockedDates = [], onBlockDate, onUnblockDate }: 
             min={new Date().toISOString().split('T')[0]}
           />
           <Button type="submit" disabled={blocking}>
-            {blocking ? 'Блокировка...' : 'Заблокировать'}
+            {blocking ? t('blocking') : t('block')}
           </Button>
         </form>
 
         {blockedDates.length > 0 ? (
           <div className="space-y-2">
-            <p className="text-sm font-medium">Заблокированные даты:</p>
+            <p className="text-sm font-medium">{t('blockedDatesList')}</p>
             <div className="space-y-1">
               {blockedDates.map(date => (
                 <div key={date} className="flex items-center justify-between p-2 border rounded-lg">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">
-                      {format(new Date(date), 'dd MMMM yyyy', { locale: ru })}
+                      {format(new Date(date), 'dd MMMM yyyy', { locale: dateLocale })}
                     </span>
                   </div>
                   {onUnblockDate && (
@@ -96,7 +100,7 @@ export function BlockedDates({ blockedDates = [], onBlockDate, onUnblockDate }: 
             </div>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">Нет заблокированных дат</p>
+          <p className="text-sm text-muted-foreground">{t('noBlockedDates')}</p>
         )}
       </CardContent>
     </Card>

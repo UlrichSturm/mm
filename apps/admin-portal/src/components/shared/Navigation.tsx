@@ -1,30 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { Users, LayoutDashboard, Calendar, CheckCircle, TrendingUp, Store, Globe } from 'lucide-react';
+import { Users, LayoutDashboard, Calendar, CheckCircle, TrendingUp, Store } from 'lucide-react';
 import { LogoutButton } from '@/components/shared/LogoutButton';
 import { useTranslations, getLocale, setLocale } from '@/lib/i18n';
-import { useState, useEffect } from 'react';
+import { useKeycloak } from '@/components/auth/KeycloakProvider';
+import { LanguageSwitcher } from '@/components/shared/LanguageSwitcher';
 
 export function Navigation() {
   const t = useTranslations('nav');
-  const [locale, setLocaleState] = useState('en');
+  const { isAuthenticated, isLoading } = useKeycloak();
 
-  useEffect(() => {
-    // Force English as default
-    const currentLocale = getLocale();
-    if (currentLocale !== 'en' && currentLocale !== 'ru') {
-      setLocale('en');
-      setLocaleState('en');
-    } else {
-      setLocaleState(currentLocale);
-    }
-  }, []);
-
-  const handleLocaleChange = (newLocale: string) => {
-    setLocale(newLocale);
-    setLocaleState(newLocale);
-  };
+  // Don't show navigation if not authenticated
+  if (isLoading || !isAuthenticated) {
+    return null;
+  }
 
   return (
     <nav className="bg-white border-b border-gray-200">
@@ -80,17 +70,10 @@ export function Navigation() {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Globe className="w-4 h-4 text-gray-500" />
-              <select
-                value={locale}
-                onChange={(e) => handleLocaleChange(e.target.value)}
-                className="text-sm border border-gray-300 rounded px-2 py-1"
-              >
-                <option value="en">EN</option>
-                <option value="ru">RU</option>
-              </select>
-            </div>
+            <LanguageSwitcher
+              getLocale={getLocale}
+              setLocale={setLocale}
+            />
             <LogoutButton />
           </div>
         </div>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { useTranslations } from '@/lib/i18n';
 
 interface RadiusSettingsProps {
   settings: any;
@@ -12,6 +13,7 @@ interface RadiusSettingsProps {
 }
 
 export function RadiusSettings({ settings, onSave, saving }: RadiusSettingsProps) {
+  const t = useTranslations('settings');
   const [officePostalCode, setOfficePostalCode] = useState('');
   const [officeAddress, setOfficeAddress] = useState('');
   const [officeRadius, setOfficeRadius] = useState(10);
@@ -26,14 +28,14 @@ export function RadiusSettings({ settings, onSave, saving }: RadiusSettingsProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!officePostalCode || !officeAddress || !officeRadius) {
-      alert('Пожалуйста, заполните все обязательные поля');
+      alert(t('fillAllFields'));
       return;
     }
 
     if (officeRadius <= 0 || officeRadius > 100) {
-      alert('Радиус должен быть от 1 до 100 км');
+      alert(t('radiusRange'));
       return;
     }
 
@@ -47,16 +49,16 @@ export function RadiusSettings({ settings, onSave, saving }: RadiusSettingsProps
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Настройки офиса</CardTitle>
+        <CardTitle>{t('officeSettings')}</CardTitle>
         <CardDescription>
-          Укажите адрес офиса и радиус поиска для клиентов
+          {t('officeSettingsDesc')}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="officePostalCode" className="block text-sm font-medium mb-1">
-              Почтовый индекс офиса *
+              {t('officePostalCode')}
             </label>
             <Input
               id="officePostalCode"
@@ -70,21 +72,21 @@ export function RadiusSettings({ settings, onSave, saving }: RadiusSettingsProps
 
           <div>
             <label htmlFor="officeAddress" className="block text-sm font-medium mb-1">
-              Полный адрес офиса *
+              {t('officeAddress')}
             </label>
             <Input
               id="officeAddress"
               type="text"
               value={officeAddress}
               onChange={(e) => setOfficeAddress(e.target.value)}
-              placeholder="Город, улица, дом"
+              placeholder={t('officeAddressPlaceholder')}
               required
             />
           </div>
 
           <div>
             <label htmlFor="officeRadius" className="block text-sm font-medium mb-1">
-              Радиус поиска (км) *
+              {t('officeRadius')}
             </label>
             <Input
               id="officeRadius"
@@ -96,12 +98,12 @@ export function RadiusSettings({ settings, onSave, saving }: RadiusSettingsProps
               required
             />
             <p className="text-xs text-muted-foreground mt-1">
-              Клиенты в пределах этого радиуса смогут найти вас при поиске
+              {t('officeRadiusDesc')}
             </p>
           </div>
 
           <Button type="submit" disabled={saving}>
-            {saving ? 'Сохранение...' : 'Сохранить настройки офиса'}
+            {saving ? t('saving') : t('saveOffice')}
           </Button>
         </form>
       </CardContent>

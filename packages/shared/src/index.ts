@@ -3,5 +3,8 @@
 // Re-export all types
 export * from './types';
 export * from './constants';
+
+// Re-export components
+export * from './components/LanguageSwitcher';
 export * from './utils';
 

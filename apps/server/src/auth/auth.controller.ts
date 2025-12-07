@@ -4,6 +4,7 @@ import { AuthService } from './auth.service';
 import { Public, Unprotected } from 'nest-keycloak-connect';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { Role } from '../common/enums/role.enum';
 
 interface AuthenticatedRequest {
   user: {
@@ -42,16 +43,11 @@ export class AuthController {
   })
   @ApiResponse({ status: 401, description: 'Not authenticated' })
   async getProfile(@Request() req: AuthenticatedRequest) {
-    const keycloakUserId = req.user.sub;
-
-    // Try to get user from database
-    let user = await this.authService.findByKeycloakId(keycloakUserId);
-
-    // If not found, sync from Keycloak
-    if (!user) {
-      user = await this.authService.syncUserFromKeycloak(req.user);
+    if (!req.user || !req.user.sub) {
+      throw new BadRequestException('User not authenticated');
     }
-
+    // Sync user from Keycloak to ensure it exists in local database
+    const user = await this.authService.syncUserFromKeycloak(req.user);
     return user;
   }
 
@@ -191,7 +187,13 @@ export class AuthController {
       lastName?: string;
     },
   ) {
-    return this.authService.registerUser(body);
+    return this.authService.register(
+      body.email,
+      body.password,
+      Role.CLIENT,
+      body.firstName,
+      body.lastName,
+    );
   }
 
   @Get('health')

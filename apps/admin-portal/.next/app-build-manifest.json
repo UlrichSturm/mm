@@ -1,20 +1,161 @@
 {
   "pages": {
-    "/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+    "/_not-found/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/app/_not-found/page-1514663e9524291c.js"
     ],
     "/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/layout.css",
-      "static/chunks/app/layout.js"
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/css/a802a360f10fcbec.css",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/648-095f971c6fb8a193.js",
+      "static/chunks/app/layout-01385165ade4c849.js"
     ],
     "/auth/login/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/auth/login/page.js"
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/920-ac588adc574bbc21.js",
+      "static/chunks/app/auth/login/page-ac25558c79f6fb51.js"
+    ],
+    "/lawyer-notary/create/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/648-095f971c6fb8a193.js",
+      "static/chunks/920-ac588adc574bbc21.js",
+      "static/chunks/app/lawyer-notary/create/page-38251ac52988682b.js"
+    ],
+    "/lawyer-notary/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/648-095f971c6fb8a193.js",
+      "static/chunks/920-ac588adc574bbc21.js",
+      "static/chunks/907-1e886e00c90f9cac.js",
+      "static/chunks/app/lawyer-notary/page-bded80cdf4fe053f.js"
+    ],
+    "/lawyer-notary/[id]/edit/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/648-095f971c6fb8a193.js",
+      "static/chunks/920-ac588adc574bbc21.js",
+      "static/chunks/app/lawyer-notary/[id]/edit/page-cf69bf3c9185209a.js"
+    ],
+    "/dashboard/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/648-095f971c6fb8a193.js",
+      "static/chunks/920-ac588adc574bbc21.js",
+      "static/chunks/app/dashboard/page-f8a22a4103debf8b.js"
+    ],
+    "/vendors/[id]/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/648-095f971c6fb8a193.js",
+      "static/chunks/920-ac588adc574bbc21.js",
+      "static/chunks/907-1e886e00c90f9cac.js",
+      "static/chunks/app/vendors/[id]/page-552d7dd65b3dcf3f.js"
+    ],
+    "/lawyer-notary/[id]/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/648-095f971c6fb8a193.js",
+      "static/chunks/920-ac588adc574bbc21.js",
+      "static/chunks/907-1e886e00c90f9cac.js",
+      "static/chunks/app/lawyer-notary/[id]/page-7815b382b477004d.js"
+    ],
+    "/vendors/create/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/648-095f971c6fb8a193.js",
+      "static/chunks/920-ac588adc574bbc21.js",
+      "static/chunks/app/vendors/create/page-a5fd853484bbc460.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/app/page-3c8e3019e592c260.js"
+    ],
+    "/lawyer-notary/statistics/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/648-095f971c6fb8a193.js",
+      "static/chunks/920-ac588adc574bbc21.js",
+      "static/chunks/907-1e886e00c90f9cac.js",
+      "static/chunks/app/lawyer-notary/statistics/page-59c76f02d858c4e7.js"
+    ],
+    "/wills/appointments/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/648-095f971c6fb8a193.js",
+      "static/chunks/920-ac588adc574bbc21.js",
+      "static/chunks/app/wills/appointments/page-d7e92ec84ab7105b.js"
+    ],
+    "/vendors/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/648-095f971c6fb8a193.js",
+      "static/chunks/920-ac588adc574bbc21.js",
+      "static/chunks/907-1e886e00c90f9cac.js",
+      "static/chunks/app/vendors/page-0d090e83202c3822.js"
+    ],
+    "/wills/data/[id]/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/648-095f971c6fb8a193.js",
+      "static/chunks/920-ac588adc574bbc21.js",
+      "static/chunks/app/wills/data/[id]/page-30465d87c08cdb98.js"
+    ],
+    "/wills/executions/page": [
+      "static/chunks/webpack-fecccb320e7337a1.js",
+      "static/chunks/fd9d1056-ff5a18c7ce15949a.js",
+      "static/chunks/117-0600134705001aec.js",
+      "static/chunks/main-app-e0c82730a84b51b4.js",
+      "static/chunks/442-432575d36da2b7b5.js",
+      "static/chunks/920-ac588adc574bbc21.js",
+      "static/chunks/app/wills/executions/page-038f48031074f95d.js"
     ]
   }
 }

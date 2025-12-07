@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { KeycloakService } from '../keycloak/keycloak.service';
 
 export enum VendorStatus {
   PENDING = 'PENDING',
@@ -23,7 +24,10 @@ export interface VendorProfile {
 
 @Injectable()
 export class VendorsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private keycloakService: KeycloakService,
+  ) {}
 
   async findAll(status?: VendorStatus): Promise<VendorProfile[]> {
     const where = status ? { status: status as any } : {};
@@ -51,10 +55,48 @@ export class VendorsService {
     return vendor ? this.mapToInterface(vendor) : null;
   }
 
-  async create(userId: string, data: Partial<VendorProfile>): Promise<VendorProfile> {
+  async create(data: Partial<VendorProfile> & { password: string }): Promise<VendorProfile> {
+    // Validate required fields
+    if (!data.email || !data.password || !data.businessName) {
+      throw new BadRequestException('Email, password, and business name are required');
+    }
+
+    // Check if user with this email already exists
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: data.email.toLowerCase() },
+    });
+
+    if (existingUser) {
+      throw new BadRequestException('User with this email already exists');
+    }
+
+    // Create user in Keycloak first (this will generate a UUID automatically)
+    const keycloakUserId = await this.keycloakService.createUser(
+      data.email,
+      data.password,
+      undefined, // firstName
+      undefined, // lastName
+      ['vendor'], // role
+    );
+
+    if (!keycloakUserId) {
+      throw new BadRequestException('Failed to create user in Keycloak');
+    }
+
+    // Create user in local database using Keycloak UUID as id
+    await this.prisma.user.create({
+      data: {
+        id: keycloakUserId, // Use Keycloak UUID as the user ID
+        email: data.email.toLowerCase(),
+        password: null, // Password stored in Keycloak
+        role: 'VENDOR',
+      },
+    });
+
+    // Create vendor profile
     const vendor = await this.prisma.vendorProfile.create({
       data: {
-        userId,
+        userId: keycloakUserId, // Use Keycloak UUID as userId
         businessName: data.businessName || '',
         contactEmail: data.email || '',
         contactPhone: data.phone,

@@ -1,4 +1,17 @@
 {
+  "/_not-found/page": "app/_not-found/page.js",
   "/auth/login/page": "app/auth/login/page.js",
-  "/page": "app/page.js"
+  "/lawyer-notary/create/page": "app/lawyer-notary/create/page.js",
+  "/lawyer-notary/page": "app/lawyer-notary/page.js",
+  "/lawyer-notary/[id]/edit/page": "app/lawyer-notary/[id]/edit/page.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/vendors/[id]/page": "app/vendors/[id]/page.js",
+  "/lawyer-notary/[id]/page": "app/lawyer-notary/[id]/page.js",
+  "/vendors/create/page": "app/vendors/create/page.js",
+  "/page": "app/page.js",
+  "/lawyer-notary/statistics/page": "app/lawyer-notary/statistics/page.js",
+  "/wills/appointments/page": "app/wills/appointments/page.js",
+  "/vendors/page": "app/vendors/page.js",
+  "/wills/data/[id]/page": "app/wills/data/[id]/page.js",
+  "/wills/executions/page": "app/wills/executions/page.js"
 }

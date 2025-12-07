@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { X } from 'lucide-react';
+import { useTranslations } from '@/lib/i18n';
 
 interface DeathNotificationFormProps {
   client: any;
@@ -13,6 +14,8 @@ interface DeathNotificationFormProps {
 }
 
 export function DeathNotificationForm({ client, onNotify, onCancel }: DeathNotificationFormProps) {
+  const t = useTranslations('deathNotification');
+  const tCommon = useTranslations('common');
   const [deathDate, setDeathDate] = useState('');
   const [deathCertificate, setDeathCertificate] = useState<File | null>(null);
   const [additionalDocuments, setAdditionalDocuments] = useState<File[]>([]);
@@ -23,7 +26,7 @@ export function DeathNotificationForm({ client, onNotify, onCancel }: DeathNotif
     e.preventDefault();
 
     if (!deathDate || !deathCertificate || !notifierContact) {
-      alert('Пожалуйста, заполните все обязательные поля');
+      alert(t('fillAllFields'));
       return;
     }
 
@@ -49,9 +52,9 @@ export function DeathNotificationForm({ client, onNotify, onCancel }: DeathNotif
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle>Уведомление о смерти</CardTitle>
+            <CardTitle>{t('notificationTitle')}</CardTitle>
             <CardDescription>
-              Клиент: {client.clientName || 'Не указано'}
+              {t('client')}: {client.clientName || tCommon('notSpecified')}
             </CardDescription>
           </div>
           <Button variant="ghost" size="icon" onClick={onCancel}>
@@ -63,7 +66,7 @@ export function DeathNotificationForm({ client, onNotify, onCancel }: DeathNotif
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="deathDate" className="block text-sm font-medium mb-1">
-              Дата смерти *
+              {t('deathDate')}
             </label>
             <Input
               id="deathDate"
@@ -76,7 +79,7 @@ export function DeathNotificationForm({ client, onNotify, onCancel }: DeathNotif
 
           <div>
             <label htmlFor="deathCertificate" className="block text-sm font-medium mb-1">
-              Справка о смерти *
+              {t('deathCertificate')}
             </label>
             <Input
               id="deathCertificate"
@@ -91,14 +94,14 @@ export function DeathNotificationForm({ client, onNotify, onCancel }: DeathNotif
             />
             {deathCertificate && (
               <p className="text-sm text-muted-foreground mt-1">
-                Выбран файл: {deathCertificate.name}
+                {t('fileSelected')} {deathCertificate.name}
               </p>
             )}
           </div>
 
           <div>
             <label htmlFor="additionalDocuments" className="block text-sm font-medium mb-1">
-              Дополнительные документы
+              {t('additionalDocuments')}
             </label>
             <Input
               id="additionalDocuments"
@@ -124,23 +127,23 @@ export function DeathNotificationForm({ client, onNotify, onCancel }: DeathNotif
 
           <div>
             <label htmlFor="notifierContact" className="block text-sm font-medium mb-1">
-              Контактная информация уведомителя *
+              {t('notifierContact')}
             </label>
             <Input
               id="notifierContact"
               value={notifierContact}
               onChange={(e) => setNotifierContact(e.target.value)}
-              placeholder="Телефон или email"
+              placeholder={t('notifierContactPlaceholder')}
               required
             />
           </div>
 
           <div className="flex gap-2">
             <Button type="button" variant="outline" onClick={onCancel}>
-              Отмена
+              {t('cancel')}
             </Button>
             <Button type="submit" disabled={saving}>
-              {saving ? 'Отправка...' : 'Отправить уведомление'}
+              {saving ? t('sending') : t('sendNotification')}
             </Button>
           </div>
         </form>

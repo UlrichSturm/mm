@@ -38,7 +38,7 @@ export class PaymentResponseDto {
   orderNumber: string;
 
   @ApiPropertyOptional({ example: 'pi_1234567890abcdef' })
-  stripePaymentIntentId?: string;
+  stripePaymentId?: string;
 
   @ApiProperty({ example: 357.0 })
   amount: number;

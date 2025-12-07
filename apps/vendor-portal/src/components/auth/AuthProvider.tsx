@@ -15,7 +15,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const token = localStorage.getItem('auth_token');
     const isLoginPage = pathname?.startsWith('/auth/login');
-    
+
     if (!token && !isLoginPage) {
       // Не авторизован и не на странице логина - редирект
       router.replace('/auth/login');
@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground">Загрузка...</p>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     );
@@ -58,5 +58,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
+
 
 

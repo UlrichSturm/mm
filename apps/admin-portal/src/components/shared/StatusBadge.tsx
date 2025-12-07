@@ -1,29 +1,35 @@
+'use client';
+
 import { cn } from "@/lib/utils";
 import { LawyerNotaryStatus } from "@/lib/api/lawyer-notary";
+import { VendorStatus } from "@/lib/api/vendors";
+import { useTranslations } from "@/lib/i18n";
+
+type Status = LawyerNotaryStatus | VendorStatus;
 
 interface StatusBadgeProps {
-  status: LawyerNotaryStatus;
+  status: Status;
   className?: string;
 }
 
-const statusConfig: Record<LawyerNotaryStatus, { label: string; className: string }> = {
+const statusConfig: Record<Status, { className: string }> = {
   PENDING: {
-    label: "Ожидает",
     className: "bg-yellow-100 text-yellow-800 border-yellow-200",
   },
   APPROVED: {
-    label: "Одобрен",
     className: "bg-green-100 text-green-800 border-green-200",
   },
   REJECTED: {
-    label: "Отклонен",
     className: "bg-red-100 text-red-800 border-red-200",
   },
 };
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
+  const t = useTranslations('status');
   const config = statusConfig[status];
-  
+
+  const label = t(status.toLowerCase() as 'pending' | 'approved' | 'rejected');
+
   return (
     <span
       className={cn(
@@ -32,7 +38,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         className
       )}
     >
-      {config.label}
+      {label}
     </span>
   );
 }

@@ -73,12 +73,11 @@ export class AdminService {
    * Vendor statistics by status
    */
   private async getVendorStats() {
-    const [total, pending, approved, rejected, suspended] = await Promise.all([
+    const [total, pending, approved, rejected] = await Promise.all([
       this.prisma.vendorProfile.count(),
       this.prisma.vendorProfile.count({ where: { status: VendorStatus.PENDING } }),
       this.prisma.vendorProfile.count({ where: { status: VendorStatus.APPROVED } }),
       this.prisma.vendorProfile.count({ where: { status: VendorStatus.REJECTED } }),
-      this.prisma.vendorProfile.count({ where: { status: VendorStatus.SUSPENDED } }),
     ]);
 
     return {
@@ -86,7 +85,7 @@ export class AdminService {
       pending,
       approved,
       rejected,
-      suspended,
+      suspended: 0, // SUSPENDED status not in enum
     };
   }
 
@@ -239,9 +238,20 @@ export class AdminService {
       this.prisma.payment.findMany({
         where: {
           status: PaymentStatus.COMPLETED,
-          paidAt: {
-            gte: sevenDaysAgo,
-          },
+          // Note: paidAt is optional, so we filter by createdAt if paidAt is not available
+          OR: [
+            {
+              paidAt: {
+                gte: sevenDaysAgo,
+              },
+            },
+            {
+              paidAt: null,
+              createdAt: {
+                gte: sevenDaysAgo,
+              },
+            },
+          ],
         },
         select: {
           amount: true,

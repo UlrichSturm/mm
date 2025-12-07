@@ -16,7 +16,14 @@
     "logout": "Logout",
     "pending": "Pending",
     "approved": "Approved",
-    "rejected": "Rejected"
+    "rejected": "Rejected",
+    "phone": "Phone",
+    "address": "Address",
+    "postalCode": "Postal Code",
+    "createdAt": "Created At",
+    "approve": "Approve",
+    "reject": "Reject",
+    "setPending": "Set Pending"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -29,6 +36,7 @@
   "dashboard": {
     "title": "Dashboard",
     "totalLawyers": "Total Lawyers",
+    "totalVendors": "Total Vendors",
     "approved": "Approved",
     "pending": "Pending",
     "rejected": "Rejected",
@@ -36,7 +44,11 @@
     "willExecutions": "Will Executions",
     "createProfile": "Create Profile",
     "latestProfiles": "Latest Profiles",
+    "latestLawyers": "Latest Lawyers",
+    "latestVendors": "Latest Vendors",
     "noProfiles": "No profiles found",
+    "noLawyers": "No lawyers found",
+    "noVendors": "No vendors found",
     "loadError": "Failed to load data"
   },
   "lawyers": {
@@ -60,7 +72,17 @@
     "noVendors": "No vendors found",
     "businessName": "Business Name",
     "email": "Email",
-    "registrationDate": "Registration Date"
+    "registrationDate": "Registration Date",
+    "vendorNotFound": "Vendor not found",
+    "backToList": "Back to list",
+    "vendorInformation": "Vendor Information",
+    "phone": "Phone",
+    "userId": "User ID",
+    "userIdDescription": "Keycloak User ID (UUID)",
+    "additionalInfo": "Additional Information",
+    "approve": "Approve",
+    "reject": "Reject",
+    "setPending": "Set Pending"
   },
   "auth": {
     "login": "Login",
@@ -79,6 +101,11 @@
     "approved": "Approved",
     "rejected": "Rejected"
   },
+  "licenseType": {
+    "lawyer": "Lawyer",
+    "notary": "Notary",
+    "both": "Lawyer & Notary"
+  },
   "errors": {
     "unauthorized": "Authorization required. Please log in.",
     "forbidden": "You don't have permission to perform this action.",
@@ -86,6 +113,23 @@
     "serverError": "Server error. Please try again later.",
     "serviceUnavailable": "Service temporarily unavailable. Please try again later.",
     "connectionError": "Connection error. Please ensure the backend server is running on http://localhost:3001"
+  },
+  "statistics": {
+    "title": "Statistics by Lawyers",
+    "byAppointments": "By Appointments",
+    "byCompleted": "By Completed",
+    "byRating": "By Rating",
+    "noData": "No data to display",
+    "appointments": "Appointments",
+    "completed": "Completed",
+    "rating": "Rating",
+    "confirmed": "Confirmed",
+    "details": "Details",
+    "exportToCSV": "Export to CSV"
+  },
+  "appointments": {
+    "allStatuses": "All Statuses",
+    "noAppointments": "No appointments found"
   }
 }
 

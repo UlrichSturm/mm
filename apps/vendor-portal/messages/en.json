@@ -1,0 +1,91 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "actions": "Actions",
+    "status": "Status",
+    "logout": "Logout"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to the lawyer/notary personal account",
+    "applications": "Applications",
+    "newApplications": "New applications",
+    "viewAll": "View all →",
+    "clients": "Clients",
+    "activeClients": "Active clients",
+    "viewAllClients": "View all →",
+    "schedule": "Schedule",
+    "nextMeeting": "Next meeting",
+    "manage": "Manage →",
+    "settings": "Settings",
+    "profileAndSettings": "Profile and settings",
+    "configure": "Configure →",
+    "quickActions": "Quick Actions",
+    "frequentlyUsed": "Frequently used functions",
+    "viewApplications": "View applications",
+    "notifyDeath": "Notify of death",
+    "manageSchedule": "Manage schedule",
+    "recentApplications": "Recent Applications",
+    "recentFromClients": "Recent applications from clients",
+    "noApplications": "No applications yet"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "appointments": "Applications",
+    "calendar": "Meeting Calendar",
+    "clients": "Clients",
+    "schedule": "Schedule",
+    "deathNotification": "Death Notification",
+    "settings": "Settings"
+  },
+  "appointments": {
+    "title": "Applications",
+    "subtitle": "Managing applications from clients",
+    "searchPlaceholder": "Search by application number or client name...",
+    "allStatuses": "All statuses",
+    "pending": "Pending confirmation",
+    "confirmed": "Confirmed",
+    "inProgress": "In progress",
+    "completed": "Completed",
+    "noApplications": "No applications yet",
+    "loading": "Loading..."
+  },
+  "clients": {
+    "title": "Clients",
+    "subtitle": "List of all your clients",
+    "searchPlaceholder": "Search by full name...",
+    "allStatuses": "All statuses",
+    "active": "Active",
+    "executing": "In execution",
+    "executed": "Executed",
+    "notSpecified": "Not specified",
+    "loading": "Loading..."
+  },
+  "schedule": {
+    "title": "Schedule Management",
+    "subtitle": "Set working hours and availability for clients",
+    "loading": "Loading...",
+    "saveSuccess": "Schedule saved successfully",
+    "saveError": "Error saving schedule",
+    "blockSuccess": "Date blocked successfully",
+    "unblockSuccess": "Date unblocked successfully"
+  },
+  "settings": {
+    "title": "Search Radius Settings",
+    "subtitle": "Configure search radius for your office and home visits",
+    "loading": "Loading...",
+    "saveSuccess": "Settings saved successfully",
+    "saveError": "Error saving settings"
+  }
+}
+

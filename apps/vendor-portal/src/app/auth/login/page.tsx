@@ -1,14 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export default function LoginPage() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -18,13 +16,16 @@ export default function LoginPage() {
 
   // Если уже авторизован, редиректим на главную
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        router.replace('/');
-      }
+    if (typeof window === 'undefined') {
+      return;
     }
-  }, [router]);
+
+    const token = localStorage.getItem('auth_token') || localStorage.getItem('authToken');
+    if (token) {
+      // Use window.location to avoid router state updates
+      window.location.href = '/';
+    }
+  }, []); // Empty deps - only run once on mount
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,34 +33,43 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          username: formData.email, // Backend expects 'username', not 'email'
+          password: formData.password,
+        }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Неверные учетные данные' }));
-        throw new Error(errorData.message || 'Неверные учетные данные');
+        const errorData = await response.json().catch(() => ({ message: 'Invalid credentials' }));
+        throw new Error(errorData.message || 'Invalid credentials');
       }
 
       const data = await response.json();
-      
-      // Сохраняем токен
-      if (data.token && data.user) {
-        localStorage.setItem('auth_token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        // Редирект на главную страницу
+
+      // Backend returns access_token, not token
+      if (data.access_token) {
+        // Store token in both keys for compatibility
+        localStorage.setItem('authToken', data.access_token);
+        localStorage.setItem('auth_token', data.access_token);
+        if (data.refresh_token) {
+          localStorage.setItem('refreshToken', data.refresh_token);
+          localStorage.setItem('refresh_token', data.refresh_token);
+        }
+
+        // Get user info from token or make a separate request
+        // For now, redirect to home - user info will be loaded there
         window.location.href = '/';
         return;
       }
 
-      throw new Error('Токен не получен от сервера');
+      throw new Error('Token not received from server');
     } catch (err: any) {
-      setError(err.message || 'Ошибка подключения');
+      setError(err.message || 'Connection error');
     } finally {
       setLoading(false);
     }
@@ -72,7 +82,7 @@ export default function LoginPage() {
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Vendor Portal</h1>
             <p className="text-sm text-gray-600">
-              Войдите в личный кабинет адвоката/нотариуса
+              Log in to your lawyer/notary account
             </p>
           </div>
 
@@ -100,7 +110,7 @@ export default function LoginPage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Пароль
+                Password
               </label>
               <Input
                 id="password"
@@ -108,7 +118,7 @@ export default function LoginPage() {
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="Введите пароль"
+                placeholder="Enter password"
                 autoComplete="current-password"
               />
             </div>
@@ -118,12 +128,12 @@ export default function LoginPage() {
               className="w-full"
               disabled={loading}
             >
-              {loading ? 'Вход...' : 'Войти'}
+              {loading ? 'Logging in...' : 'Log in'}
             </Button>
           </form>
 
           <div className="mt-6 text-center text-sm text-gray-500">
-            <p>Используйте учетные данные адвоката/нотариуса</p>
+            <p>Use your lawyer/notary credentials</p>
           </div>
         </CardContent>
       </Card>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { useTranslations } from '@/lib/i18n';
 
 interface ClientSearchProps {
   clients: any[];
@@ -18,6 +19,8 @@ export function ClientSearch({
   onSelectClient,
   selectedClient: _selectedClient,
 }: ClientSearchProps) {
+  const t = useTranslations('deathNotification');
+  const tCommon = useTranslations('common');
   const [searchQuery, setSearchQuery] = useState('');
   const [searchBy, setSearchBy] = useState<'name' | 'appointment'>('name');
 
@@ -39,8 +42,8 @@ export function ClientSearch({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Поиск клиента</CardTitle>
-        <CardDescription>Найдите клиента по имени или номеру заявки</CardDescription>
+        <CardTitle>{t('clientSearch')}</CardTitle>
+        <CardDescription>{t('clientSearchDesc')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-2">
@@ -49,11 +52,11 @@ export function ClientSearch({
             value={searchBy}
             onChange={e => setSearchBy(e.target.value as 'name' | 'appointment')}
           >
-            <option value="name">По имени</option>
-            <option value="appointment">По номеру заявки</option>
+            <option value="name">{t('searchByName')}</option>
+            <option value="appointment">{t('searchByAppointment')}</option>
           </select>
           <Input
-            placeholder={searchBy === 'name' ? 'Введите имя клиента' : 'Введите номер заявки'}
+            placeholder={searchBy === 'name' ? t('enterClientName') : t('enterAppointmentNumber')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="flex-1"
@@ -61,7 +64,7 @@ export function ClientSearch({
         </div>
 
         {loading ? (
-          <p className="text-sm text-muted-foreground">Загрузка...</p>
+          <p className="text-sm text-muted-foreground">{tCommon('loading')}</p>
         ) : searchQuery && filteredClients.length > 0 ? (
           <div className="space-y-2">
             {filteredClients.map(client => (
@@ -71,22 +74,22 @@ export function ClientSearch({
                 onClick={() => onSelectClient(client)}
               >
                 <div>
-                  <p className="font-medium">{client.clientName || 'Клиент без имени'}</p>
+                  <p className="font-medium">{client.clientName || t('clientWithoutName')}</p>
                   <p className="text-sm text-muted-foreground">
-                    Заявка #{client.id || client.appointmentNumber}
+                    {t('application')}{client.id || client.appointmentNumber}
                   </p>
                 </div>
                 <Button variant="outline" size="sm">
-                  Выбрать
+                  {t('select')}
                 </Button>
               </div>
             ))}
           </div>
         ) : searchQuery ? (
-          <p className="text-sm text-muted-foreground">Клиенты не найдены</p>
+          <p className="text-sm text-muted-foreground">{t('clientsNotFound')}</p>
         ) : (
           <div className="space-y-2">
-            <p className="text-sm font-medium">Активные клиенты:</p>
+            <p className="text-sm font-medium">{t('activeClients')}</p>
             {clients.length > 0 ? (
               <div className="space-y-2">
                 {clients.slice(0, 5).map(client => (
@@ -96,19 +99,19 @@ export function ClientSearch({
                     onClick={() => onSelectClient(client)}
                   >
                     <div>
-                      <p className="font-medium">{client.clientName || 'Клиент без имени'}</p>
+                      <p className="font-medium">{client.clientName || t('clientWithoutName')}</p>
                       <p className="text-sm text-muted-foreground">
-                        Заявка #{client.id || client.appointmentNumber}
+                        {t('application')}{client.id || client.appointmentNumber}
                       </p>
                     </div>
                     <Button variant="outline" size="sm">
-                      Выбрать
+                      {t('select')}
                     </Button>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">Активных клиентов нет</p>
+              <p className="text-sm text-muted-foreground">{t('noActiveClients')}</p>
             )}
           </div>
         )}

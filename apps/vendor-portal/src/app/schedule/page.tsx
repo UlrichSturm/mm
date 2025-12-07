@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { vendorApi } from '@/lib/api';
 import { ScheduleEditor } from '@/components/schedule/ScheduleEditor';
 import { BlockedDates } from '@/components/schedule/BlockedDates';
+import { useTranslations } from '@/lib/i18n';
 
 export default function SchedulePage() {
+  const t = useTranslations('schedule');
   const [schedule, setSchedule] = useState<any>(null);
   const [blockedDates, setBlockedDates] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,10 +47,10 @@ export default function SchedulePage() {
       setSaving(true);
       await vendorApi.updateSchedule(updatedSchedule);
       await loadSchedule();
-      alert('Расписание успешно сохранено');
+      alert(t('saveSuccess'));
     } catch (error) {
       console.error('Failed to save schedule:', error);
-      alert('Ошибка при сохранении расписания');
+      alert(t('saveError'));
     } finally {
       setSaving(false);
     }
@@ -58,7 +60,7 @@ export default function SchedulePage() {
     try {
       await vendorApi.blockDate(date);
       await loadBlockedDates();
-      alert('Дата успешно заблокирована');
+      alert(t('blockSuccess'));
     } catch (error) {
       console.error('Failed to block date:', error);
       throw error;
@@ -69,7 +71,7 @@ export default function SchedulePage() {
     try {
       await vendorApi.unblockDate(date);
       await loadBlockedDates();
-      alert('Дата успешно разблокирована');
+      alert(t('unblockSuccess'));
     } catch (error) {
       console.error('Failed to unblock date:', error);
       throw error;
@@ -79,7 +81,7 @@ export default function SchedulePage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p>Загрузка...</p>
+        <p>{t('loading')}</p>
       </div>
     );
   }
@@ -87,8 +89,8 @@ export default function SchedulePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Управление расписанием</h1>
-        <p className="text-muted-foreground">Настройте рабочие часы и доступность для клиентов</p>
+        <h1 className="text-3xl font-bold">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       <ScheduleEditor schedule={schedule} onSave={handleSave} saving={saving} />

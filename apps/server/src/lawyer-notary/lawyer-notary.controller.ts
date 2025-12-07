@@ -74,6 +74,43 @@ export class LawyerNotaryController {
     return this.lawyerNotaryService.findOne(id);
   }
 
+  @Get('me/settings')
+  @Roles({ roles: ['lawyer_notary', 'admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get my lawyer/notary settings' })
+  async getMySettings(@Request() req: any) {
+    const profile = await this.lawyerNotaryService.findByUserId(req.user.sub);
+    if (!profile) {
+      throw new NotFoundException('Profile not found');
+    }
+    return {
+      officePostalCode: profile.postalCode || '',
+      officeAddress: profile.address || '',
+      officeRadius: profile.maxTravelRadius || 10,
+      homeVisitEnabled: profile.homeVisitAvailable || false,
+      homeVisitPostalCode: profile.postalCode || '',
+      homeVisitRadius: profile.maxTravelRadius || 10,
+    };
+  }
+
+  @Patch('me/settings')
+  @Roles({ roles: ['lawyer_notary', 'admin'] })
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Update my lawyer/notary settings' })
+  async updateMySettings(@Request() req: any, @Body() data: any) {
+    const profile = await this.lawyerNotaryService.findByUserId(req.user.sub);
+    if (!profile) {
+      throw new NotFoundException('Profile not found');
+    }
+    const userRole = this.getRoleFromKeycloakRoles(req.user.roles);
+    return this.lawyerNotaryService.updateProfile(profile.id, req.user.sub, userRole, {
+      postalCode: data.officePostalCode || data.homeVisitPostalCode,
+      address: data.officeAddress,
+      maxTravelRadius: data.officeRadius || data.homeVisitRadius,
+      homeVisitAvailable: data.homeVisitEnabled || false,
+    });
+  }
+
   @Patch('me')
   @Roles({ roles: ['lawyer_notary', 'admin'] })
   @ApiBearerAuth('JWT-auth')

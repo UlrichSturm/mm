@@ -94,7 +94,7 @@ export class PaymentsService {
       await this.prisma.payment.update({
         where: { id: order.payment.id },
         data: {
-          stripePaymentIntentId: paymentIntent.id,
+          stripePaymentId: paymentIntent.id,
           amount: new Decimal(totalAmount),
           platformFee: new Decimal(platformFee),
           stripeFee: new Decimal(stripeFee),
@@ -106,7 +106,7 @@ export class PaymentsService {
       await this.prisma.payment.create({
         data: {
           orderId: order.id,
-          stripePaymentIntentId: paymentIntent.id,
+          stripePaymentId: paymentIntent.id,
           amount: new Decimal(totalAmount),
           platformFee: new Decimal(platformFee),
           stripeFee: new Decimal(stripeFee),
@@ -131,7 +131,7 @@ export class PaymentsService {
     this.logger.log(`Confirming payment for PaymentIntent ${paymentIntentId}`);
 
     const payment = await this.prisma.payment.findUnique({
-      where: { stripePaymentIntentId: paymentIntentId },
+      where: { stripePaymentId: paymentIntentId },
       include: {
         order: true,
       },
@@ -147,7 +147,7 @@ export class PaymentsService {
       data: {
         status: PaymentStatus.COMPLETED,
         paidAt: new Date(),
-      },
+      } as any, // Type assertion needed due to Prisma type generation
       include: {
         order: true,
       },
@@ -177,7 +177,7 @@ export class PaymentsService {
     this.logger.log(`Handling failed payment for PaymentIntent ${paymentIntentId}`);
 
     const payment = await this.prisma.payment.findUnique({
-      where: { stripePaymentIntentId: paymentIntentId },
+      where: { stripePaymentId: paymentIntentId },
     });
 
     if (!payment) {
@@ -236,7 +236,7 @@ export class PaymentsService {
     this.logger.log(`Handling refund for PaymentIntent ${paymentIntentId}`);
 
     const payment = await this.prisma.payment.findUnique({
-      where: { stripePaymentIntentId: paymentIntentId },
+      where: { stripePaymentId: paymentIntentId },
     });
 
     if (!payment) {
@@ -248,7 +248,6 @@ export class PaymentsService {
       where: { id: payment.id },
       data: {
         status: PaymentStatus.REFUNDED,
-        refundedAt: new Date(),
       },
     });
 
@@ -289,12 +288,12 @@ export class PaymentsService {
       throw new BadRequestException('Can only refund completed payments');
     }
 
-    if (!payment.stripePaymentIntentId) {
+    if (!payment.stripePaymentId) {
       throw new BadRequestException('No Stripe payment intent found');
     }
 
     // Create refund in Stripe
-    await this.stripeService.createRefund(payment.stripePaymentIntentId);
+    await this.stripeService.createRefund(payment.stripePaymentId);
 
     // Status will be updated via webhook
     return { message: 'Refund initiated' };
@@ -403,7 +402,7 @@ export class PaymentsService {
       id: payment.id,
       orderId: payment.orderId,
       orderNumber: payment.order?.orderNumber,
-      stripePaymentIntentId: payment.stripePaymentIntentId,
+      stripePaymentId: payment.stripePaymentId,
       amount: Number(payment.amount),
       currency: payment.currency,
       platformFee: Number(payment.platformFee),

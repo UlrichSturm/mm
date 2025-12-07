@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import { vendorApi } from '@/lib/api';
 import { RadiusSettings } from '@/components/settings/RadiusSettings';
 import { HomeVisitSettings } from '@/components/settings/HomeVisitSettings';
+import { useTranslations } from '@/lib/i18n';
 
 export default function RadiusSettingsPage() {
+  const t = useTranslations('settings');
   const [settings, setSettings] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -31,10 +33,10 @@ export default function RadiusSettingsPage() {
       setSaving(true);
       await vendorApi.updateSettings(updatedSettings);
       await loadSettings();
-      alert('Настройки успешно сохранены');
+      alert(t('saveSuccess'));
     } catch (error) {
       console.error('Failed to save settings:', error);
-      alert('Ошибка при сохранении настроек');
+      alert(t('saveError'));
     } finally {
       setSaving(false);
     }
@@ -43,7 +45,7 @@ export default function RadiusSettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <p>Загрузка...</p>
+        <p>{t('loading')}</p>
       </div>
     );
   }
@@ -51,10 +53,8 @@ export default function RadiusSettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Настройки радиуса поиска</h1>
-        <p className="text-muted-foreground">
-          Настройте радиус поиска для вашего офиса и выезда на дом
-        </p>
+        <h1 className="text-3xl font-bold">{t('title')}</h1>
+        <p className="text-muted-foreground">{t('subtitle')}</p>
       </div>
 
       <RadiusSettings settings={settings} onSave={handleSave} saving={saving} />

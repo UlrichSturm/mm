@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MailerService } from '@nestjs-modules/mailer';
+// TODO: Install @nestjs-modules/mailer when email functionality is needed
+// import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 
 export interface SendEmailOptions {
@@ -45,7 +46,7 @@ export class EmailService {
   private readonly appUrl: string;
 
   constructor(
-    private readonly mailerService: MailerService,
+    // private readonly mailerService: MailerService, // Temporarily disabled
     private readonly configService: ConfigService,
   ) {
     this.appUrl = this.configService.get('APP_URL', 'http://localhost:3000');
@@ -55,23 +56,25 @@ export class EmailService {
    * Send a generic email using a template
    */
   async sendEmail(options: SendEmailOptions): Promise<void> {
-    try {
-      await this.mailerService.sendMail({
-        to: options.to,
-        subject: options.subject,
-        template: options.template,
-        context: {
-          ...options.context,
-          appUrl: this.appUrl,
-          year: new Date().getFullYear(),
-        },
-      });
-
-      this.logger.log(`Email sent to ${options.to}: ${options.subject}`);
-    } catch (error) {
-      this.logger.error(`Failed to send email to ${options.to}: ${error.message}`);
-      // Don't throw - email failures shouldn't break the main flow
-    }
+    // Email functionality temporarily disabled - install @nestjs-modules/mailer to enable
+    this.logger.warn(`Email sending disabled: ${options.subject} to ${options.to}`);
+    // try {
+    //   await this.mailerService.sendMail({
+    //     to: options.to,
+    //     subject: options.subject,
+    //     template: options.template,
+    //     context: {
+    //       ...options.context,
+    //       appUrl: this.appUrl,
+    //       year: new Date().getFullYear(),
+    //     },
+    //   });
+    //
+    //   this.logger.log(`Email sent to ${options.to}: ${options.subject}`);
+    // } catch (error) {
+    //   this.logger.error(`Failed to send email to ${options.to}: ${error.message}`);
+    //   // Don't throw - email failures shouldn't break the main flow
+    // }
   }
 
   /**

@@ -24,16 +24,18 @@ function getAuthHeaders(): HeadersInit {
 
 export const apiClient = {
   async getCategories() {
-    const response = await fetch(`${API_BASE_URL}/categories`);
+    const response = await fetch(`${API_BASE_URL}/api/categories`);
     if (!response.ok) {
       throw new Error('Failed to fetch categories');
     }
-    return response.json();
+    const result = await response.json();
+    // Backend returns { data: [], total: 0 }, extract the data array
+    return result.data || result;
   },
 
   async getServices(params?: { search?: string; categoryId?: string }) {
     const query = new URLSearchParams(params as Record<string, string>);
-    const response = await fetch(`${API_BASE_URL}/services?${query}`);
+    const response = await fetch(`${API_BASE_URL}/api/services?${query}`);
     if (!response.ok) {
       throw new Error('Failed to fetch services');
     }
@@ -43,7 +45,7 @@ export const apiClient = {
   // Will/Appointment related methods
   async getAvailableLawyers(postalCode: string) {
     const response = await fetch(
-      `${API_BASE_URL}/lawyer-notary/available?postalCode=${postalCode}`,
+      `${API_BASE_URL}/api/lawyer-notary/available?postalCode=${postalCode}`,
     );
     if (!response.ok) {
       throw new Error('Failed to fetch available lawyers');
@@ -52,7 +54,7 @@ export const apiClient = {
   },
 
   async getLawyerSchedule(lawyerId: string) {
-    const response = await fetch(`${API_BASE_URL}/lawyer-notary/${lawyerId}/schedule`);
+    const response = await fetch(`${API_BASE_URL}/api/lawyer-notary/${lawyerId}/schedule`);
     if (!response.ok) {
       throw new Error('Failed to fetch lawyer schedule');
     }
@@ -67,7 +69,7 @@ export const apiClient = {
     insurance?: boolean;
     paymentMethod?: 'prepayment' | 'insurance' | 'relatives';
   }) {
-    const response = await fetch(`${API_BASE_URL}/wills/appointments`, {
+    const response = await fetch(`${API_BASE_URL}/api/wills/appointments`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -79,7 +81,7 @@ export const apiClient = {
   },
 
   async getMyAppointments() {
-    const response = await fetch(`${API_BASE_URL}/wills/appointments`, {
+    const response = await fetch(`${API_BASE_URL}/api/wills/appointments`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) {
@@ -89,7 +91,7 @@ export const apiClient = {
   },
 
   async getAppointment(id: string) {
-    const response = await fetch(`${API_BASE_URL}/wills/appointments/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/wills/appointments/${id}`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) {
@@ -99,7 +101,7 @@ export const apiClient = {
   },
 
   async cancelAppointment(id: string) {
-    const response = await fetch(`${API_BASE_URL}/wills/appointments/${id}/cancel`, {
+    const response = await fetch(`${API_BASE_URL}/api/wills/appointments/${id}/cancel`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
     });
@@ -135,7 +137,7 @@ export const apiClient = {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}/wills/executions`, {
+    const response = await fetch(`${API_BASE_URL}/api/wills/executions`, {
       method: 'POST',
       headers,
       body: formData,
@@ -147,7 +149,7 @@ export const apiClient = {
   },
 
   async createInsurancePolicy(data: { appointmentId: string; coverageAmount?: number }) {
-    const response = await fetch(`${API_BASE_URL}/insurance/policies`, {
+    const response = await fetch(`${API_BASE_URL}/api/insurance/policies`, {
       method: 'POST',
       headers: getAuthHeaders(),
       body: JSON.stringify(data),
@@ -159,7 +161,7 @@ export const apiClient = {
   },
 
   async getInsurancePayments(policyId: string) {
-    const response = await fetch(`${API_BASE_URL}/insurance/policies/${policyId}/payments`, {
+    const response = await fetch(`${API_BASE_URL}/api/insurance/policies/${policyId}/payments`, {
       headers: getAuthHeaders(),
     });
     if (!response.ok) {
@@ -170,7 +172,7 @@ export const apiClient = {
 
   async getCityByPostalCode(postalCode: string) {
     try {
-      const response = await fetch(`${API_BASE_URL}/postal-codes/${postalCode}`);
+      const response = await fetch(`${API_BASE_URL}/api/postal-codes/${postalCode}`);
       if (!response.ok) {
         // If API doesn't have this endpoint, return null
         return null;

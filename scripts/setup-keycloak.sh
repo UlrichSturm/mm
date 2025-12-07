@@ -56,7 +56,8 @@ REALM_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${KEYCLOAK_URL}/admin/real
     \"loginTheme\": \"keycloak\",
     \"accountTheme\": \"keycloak\",
     \"adminTheme\": \"keycloak\",
-    \"emailTheme\": \"keycloak\"
+    \"emailTheme\": \"keycloak\",
+    \"sslRequired\": \"none\"
   }")
 
 HTTP_CODE=$(echo "$REALM_RESPONSE" | tail -n1)
@@ -77,7 +78,7 @@ for ROLE in "${ROLES[@]}"; do
     -H "Authorization: Bearer ${ADMIN_TOKEN}" \
     -H "Content-Type: application/json" \
     -d "{\"name\": \"${ROLE}\"}")
-  
+
   HTTP_CODE=$(echo "$ROLE_RESPONSE" | tail -n1)
   if [ "$HTTP_CODE" -eq 201 ] || [ "$HTTP_CODE" -eq 409 ]; then
     echo "    ✅ Роль '$ROLE' создана"
@@ -108,19 +109,19 @@ CLIENT_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "${KEYCLOAK_URL}/admin/rea
 HTTP_CODE=$(echo "$CLIENT_RESPONSE" | tail -n1)
 if [ "$HTTP_CODE" -eq 201 ] || [ "$HTTP_CODE" -eq 409 ]; then
   echo "✅ Клиент '${CLIENT_ID}' создан"
-  
+
   # Получаем ID клиента
   CLIENT_UUID=$(curl -s -X GET "${KEYCLOAK_URL}/admin/realms/${REALM_NAME}/clients?clientId=${CLIENT_ID}" \
     -H "Authorization: Bearer ${ADMIN_TOKEN}" \
     -H "Content-Type: application/json" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
-  
+
   if [ ! -z "$CLIENT_UUID" ]; then
     echo ""
     echo "🔐 Получение Client Secret..."
     CLIENT_SECRET=$(curl -s -X GET "${KEYCLOAK_URL}/admin/realms/${REALM_NAME}/clients/${CLIENT_UUID}/client-secret" \
       -H "Authorization: Bearer ${ADMIN_TOKEN}" \
       -H "Content-Type: application/json" | grep -o '"value":"[^"]*"' | cut -d'"' -f4)
-    
+
     if [ ! -z "$CLIENT_SECRET" ]; then
       echo "✅ Client Secret получен:"
       echo ""
@@ -138,12 +139,12 @@ else
   CLIENT_UUID=$(curl -s -X GET "${KEYCLOAK_URL}/admin/realms/${REALM_NAME}/clients?clientId=${CLIENT_ID}" \
     -H "Authorization: Bearer ${ADMIN_TOKEN}" \
     -H "Content-Type: application/json" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
-  
+
   if [ ! -z "$CLIENT_UUID" ]; then
     CLIENT_SECRET=$(curl -s -X GET "${KEYCLOAK_URL}/admin/realms/${REALM_NAME}/clients/${CLIENT_UUID}/client-secret" \
       -H "Authorization: Bearer ${ADMIN_TOKEN}" \
       -H "Content-Type: application/json" | grep -o '"value":"[^"]*"' | cut -d'"' -f4)
-    
+
     if [ ! -z "$CLIENT_SECRET" ]; then
       echo "✅ Client Secret получен:"
       echo "  KEYCLOAK_CLIENT_SECRET=${CLIENT_SECRET}"
