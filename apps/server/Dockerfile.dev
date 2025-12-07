@@ -10,8 +10,14 @@ COPY package.json ./
 # Install dependencies
 RUN npm install
 
-# Copy rest of the files
-COPY . .
+# Copy rest of the files (excluding package.json to avoid conflicts)
+COPY prisma ./prisma
+COPY src ./src
+COPY tsconfig.json nest-cli.json ./
+
+# Generate Prisma Client (will be regenerated at runtime with correct DATABASE_URL)
+ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy?schema=public"
+RUN npx prisma generate --schema=./prisma/schema.prisma || true
 
 ENV NODE_ENV development
 

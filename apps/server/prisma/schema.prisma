@@ -38,7 +38,7 @@ enum VendorStatus {
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  password  String
+  password  String?  // Optional - not needed when using Keycloak
   role      Role     @default(CLIENT)
   firstName String?
   lastName  String?

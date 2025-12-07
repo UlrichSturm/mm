@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { VendorHeader } from '@/components/layout/VendorHeader';
 import { VendorSidebar } from '@/components/layout/VendorSidebar';
+import { AuthProvider } from '@/components/auth/AuthProvider';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'], variable: '--font-inter' });
 
@@ -19,13 +20,9 @@ export default function RootLayout({
     return (
         <html lang="ru">
             <body className={`${inter.variable} ${inter.className}`}>
-                <div className="flex min-h-screen bg-background">
-                    <VendorSidebar />
-                    <div className="flex-1 flex flex-col">
-                        <VendorHeader />
-                        <main className="flex-1 p-6">{children}</main>
-                    </div>
-                </div>
+                <AuthProvider>
+                    {children}
+                </AuthProvider>
             </body>
         </html>
     );

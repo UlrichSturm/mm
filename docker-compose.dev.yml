@@ -1,4 +1,67 @@
 services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: memento-mori-postgres-dev
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=memento_mori
+    command: postgres -c max_connections=200
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+      - ./scripts/init-keycloak-db.sh:/docker-entrypoint-initdb.d/init-keycloak-db.sh
+    restart: unless-stopped
+    networks:
+      - memento-mori-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: memento-mori-mailhog-dev
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"  # Web UI port
+    restart: unless-stopped
+    networks:
+      - memento-mori-network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    container_name: memento-mori-keycloak-dev
+    ports:
+      - "8080:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_DB=postgres
+      - KC_DB_URL_HOST=postgres
+      - KC_DB_URL_DATABASE=keycloak
+      - KC_DB_USERNAME=postgres
+      - KC_DB_PASSWORD=postgres
+      - KC_HTTP_ENABLED=true
+      - KC_HEALTH_ENABLED=true
+    command: start-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mailhog:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - memento-mori-network
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
   server:
     build:
       context: ./apps/server
@@ -10,12 +73,23 @@ services:
       - NODE_ENV=development
       - PORT=3001
       - FRONTEND_URL=http://localhost:3000
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/memento_mori?schema=public
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=memento-mori
+      - KEYCLOAK_CLIENT_ID=memento-mori-backend
+      - KEYCLOAK_CLIENT_SECRET=gjLfwOp8caCqLtSBvhFsN2Z7OAUWmcZY
     volumes:
       - ./apps/server/src:/app/src
       - ./apps/server/package.json:/app/package.json
       - ./apps/server/tsconfig.json:/app/tsconfig.json
       - ./apps/server/nest-cli.json:/app/nest-cli.json
+      - ./apps/server/prisma:/app/prisma
       - /app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - memento-mori-network
@@ -50,6 +124,66 @@ services:
     networks:
       - memento-mori-network
     command: npm run dev
+
+  admin-portal:
+    build:
+      context: ./apps/admin-portal
+      dockerfile: Dockerfile.dev
+    container_name: memento-mori-admin-portal-dev
+    ports:
+      - "3003:3003"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./apps/admin-portal/src:/app/src
+      - ./apps/admin-portal/public:/app/public
+      - ./apps/admin-portal/package.json:/app/package.json
+      - ./apps/admin-portal/package-lock.json:/app/package-lock.json
+      - ./apps/admin-portal/tsconfig.json:/app/tsconfig.json
+      - ./apps/admin-portal/next.config.js:/app/next.config.js
+      - ./apps/admin-portal/tailwind.config.js:/app/tailwind.config.js
+      - ./apps/admin-portal/postcss.config.js:/app/postcss.config.js
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - server
+    restart: unless-stopped
+    networks:
+      - memento-mori-network
+    command: npm run dev
+
+  vendor-portal:
+    build:
+      context: ./apps/vendor-portal
+      dockerfile: Dockerfile.dev
+    container_name: memento-mori-vendor-portal-dev
+    ports:
+      - "3002:3002"
+    environment:
+      - NODE_ENV=development
+      - NEXT_PUBLIC_API_URL=http://localhost:3001
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./apps/vendor-portal/src:/app/src
+      - ./apps/vendor-portal/public:/app/public
+      - ./apps/vendor-portal/package.json:/app/package.json
+      - ./apps/vendor-portal/tsconfig.json:/app/tsconfig.json
+      - ./apps/vendor-portal/next.config.js:/app/next.config.js
+      - ./apps/vendor-portal/tailwind.config.js:/app/tailwind.config.js
+      - ./apps/vendor-portal/postcss.config.js:/app/postcss.config.js
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - server
+    restart: unless-stopped
+    networks:
+      - memento-mori-network
+    command: npm run dev
+
+volumes:
+  postgres_data_dev:
 
 networks:
   memento-mori-network:

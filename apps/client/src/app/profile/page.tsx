@@ -7,7 +7,7 @@ import { apiClient } from '@/lib/api';
 import { getUser, isAuthenticated, logout } from '@/lib/auth';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, LogOut } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ProfilePage() {
@@ -247,6 +247,16 @@ export default function ProfilePage() {
                         </div>
 
                         <div className="flex gap-4 pt-4">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => logout()}
+                                disabled={saving}
+                                className="flex items-center gap-2"
+                            >
+                                <LogOut className="h-4 w-4" />
+                                {t('profile.logout.button') || 'Logout'}
+                            </Button>
                             <Button
                                 type="submit"
                                 disabled={saving}
