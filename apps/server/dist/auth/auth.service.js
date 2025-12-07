@@ -12,10 +12,10 @@ var AuthService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
-const prisma_service_1 = require("../prisma/prisma.service");
-const role_enum_1 = require("../common/enums/role.enum");
 const config_1 = require("@nestjs/config");
 const axios_1 = require("axios");
+const role_enum_1 = require("../common/enums/role.enum");
+const prisma_service_1 = require("../prisma/prisma.service");
 let AuthService = AuthService_1 = class AuthService {
     constructor(prisma, configService) {
         this.prisma = prisma;
@@ -24,7 +24,8 @@ let AuthService = AuthService_1 = class AuthService {
         this.keycloakUrl = this.configService.get('KEYCLOAK_URL') || 'http://localhost:8080';
         this.keycloakRealm = this.configService.get('KEYCLOAK_REALM') || 'memento-mori';
         this.keycloakAdminUser = this.configService.get('KEYCLOAK_ADMIN_USER') || 'admin';
-        this.keycloakAdminPassword = this.configService.get('KEYCLOAK_ADMIN_PASSWORD') || 'admin';
+        this.keycloakAdminPassword =
+            this.configService.get('KEYCLOAK_ADMIN_PASSWORD') || 'admin';
     }
     async getProfile(userId) {
         const user = await this.prisma.user.findUnique({
@@ -35,7 +36,14 @@ let AuthService = AuthService_1 = class AuthService {
                 firstName: true,
                 lastName: true,
                 phone: true,
-                avatar: true,
+                deliveryAddress: true,
+                deliveryPostalCode: true,
+                deliveryCity: true,
+                deliveryCountry: true,
+                billingAddress: true,
+                billingPostalCode: true,
+                billingCity: true,
+                billingCountry: true,
                 role: true,
                 createdAt: true,
                 updatedAt: true,
@@ -48,21 +56,57 @@ let AuthService = AuthService_1 = class AuthService {
         return user;
     }
     async updateProfile(userId, data) {
+        const updateData = {};
+        if (data.firstName !== undefined) {
+            updateData.firstName = data.firstName;
+        }
+        if (data.lastName !== undefined) {
+            updateData.lastName = data.lastName;
+        }
+        if (data.phone !== undefined) {
+            updateData.phone = data.phone;
+        }
+        if (data.deliveryAddress !== undefined) {
+            updateData.deliveryAddress = data.deliveryAddress;
+        }
+        if (data.deliveryPostalCode !== undefined) {
+            updateData.deliveryPostalCode = data.deliveryPostalCode;
+        }
+        if (data.deliveryCity !== undefined) {
+            updateData.deliveryCity = data.deliveryCity;
+        }
+        if (data.deliveryCountry !== undefined) {
+            updateData.deliveryCountry = data.deliveryCountry;
+        }
+        if (data.billingAddress !== undefined) {
+            updateData.billingAddress = data.billingAddress;
+        }
+        if (data.billingPostalCode !== undefined) {
+            updateData.billingPostalCode = data.billingPostalCode;
+        }
+        if (data.billingCity !== undefined) {
+            updateData.billingCity = data.billingCity;
+        }
+        if (data.billingCountry !== undefined) {
+            updateData.billingCountry = data.billingCountry;
+        }
         const user = await this.prisma.user.update({
             where: { id: userId },
-            data: {
-                firstName: data.firstName,
-                lastName: data.lastName,
-                phone: data.phone,
-                avatar: data.avatar,
-            },
+            data: updateData,
             select: {
                 id: true,
                 email: true,
                 firstName: true,
                 lastName: true,
                 phone: true,
-                avatar: true,
+                deliveryAddress: true,
+                deliveryPostalCode: true,
+                deliveryCity: true,
+                deliveryCountry: true,
+                billingAddress: true,
+                billingPostalCode: true,
+                billingCity: true,
+                billingCountry: true,
                 role: true,
                 createdAt: true,
                 updatedAt: true,
@@ -70,6 +114,75 @@ let AuthService = AuthService_1 = class AuthService {
         });
         this.logger.log(`User ${userId} profile updated`);
         return user;
+    }
+    async changePassword(userId, currentPassword, newPassword) {
+        this.logger.log(`Changing password for user ${userId}`);
+        const keycloakClientId = this.configService.get('KEYCLOAK_CLIENT_ID') || 'memento-mori-api';
+        const keycloakClientSecret = this.configService.get('KEYCLOAK_CLIENT_SECRET');
+        if (!keycloakClientSecret) {
+            throw new common_1.BadRequestException('Keycloak client secret not configured');
+        }
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { email: true },
+        });
+        if (!user) {
+            throw new common_1.BadRequestException('User not found');
+        }
+        try {
+            await axios_1.default.post(`${this.keycloakUrl}/realms/${this.keycloakRealm}/protocol/openid-connect/token`, new URLSearchParams({
+                grant_type: 'password',
+                client_id: keycloakClientId,
+                client_secret: keycloakClientSecret,
+                username: user.email,
+                password: currentPassword,
+            }).toString(), {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            });
+        }
+        catch (error) {
+            if (axios_1.default.isAxiosError(error) && error.response?.status === 401) {
+                throw new common_1.BadRequestException('Current password is incorrect');
+            }
+            this.logger.error('Error verifying current password:', error);
+            throw new common_1.BadRequestException('Failed to verify current password');
+        }
+        const adminToken = await this.getKeycloakAdminToken();
+        if (!adminToken) {
+            throw new common_1.BadRequestException('Failed to authenticate with Keycloak admin');
+        }
+        try {
+            await axios_1.default.put(`${this.keycloakUrl}/admin/realms/${this.keycloakRealm}/users/${userId}/reset-password`, {
+                type: 'password',
+                value: newPassword,
+                temporary: false,
+            }, {
+                headers: {
+                    Authorization: `Bearer ${adminToken}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+            this.logger.log(`Password changed successfully for user ${userId}`);
+            return { message: 'Password changed successfully' };
+        }
+        catch (error) {
+            if (axios_1.default.isAxiosError(error)) {
+                this.logger.error('Error changing password via Keycloak Admin API:', error.response?.data || error.message);
+                if (error.response?.status === 401) {
+                    throw new common_1.BadRequestException('Failed to authenticate with Keycloak admin');
+                }
+                if (error.response?.status === 403) {
+                    throw new common_1.BadRequestException('Insufficient permissions to change password');
+                }
+                if (error.response?.status === 404) {
+                    throw new common_1.BadRequestException('User not found in Keycloak');
+                }
+                throw new common_1.BadRequestException('Failed to change password in Keycloak');
+            }
+            throw error;
+        }
     }
     async syncUserFromKeycloak(keycloakUser) {
         this.logger.log(`Syncing user from Keycloak: ${keycloakUser.email}`);
@@ -171,7 +284,7 @@ let AuthService = AuthService_1 = class AuthService {
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
             const jsonPayload = decodeURIComponent(atob(base64)
                 .split('')
-                .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
                 .join(''));
             return JSON.parse(jsonPayload);
         }
@@ -252,7 +365,7 @@ let AuthService = AuthService_1 = class AuthService {
                 ],
             }, {
                 headers: {
-                    'Authorization': `Bearer ${adminToken}`,
+                    Authorization: `Bearer ${adminToken}`,
                     'Content-Type': 'application/json',
                 },
                 validateStatus: () => true,
@@ -272,7 +385,7 @@ let AuthService = AuthService_1 = class AuthService {
             const searchResponse = await axios_1.default.get(`${this.keycloakUrl}/admin/realms/${this.keycloakRealm}/users`, {
                 params: { email: data.email },
                 headers: {
-                    'Authorization': `Bearer ${adminToken}`,
+                    Authorization: `Bearer ${adminToken}`,
                 },
             });
             if (searchResponse.data && searchResponse.data.length > 0) {
@@ -292,7 +405,7 @@ let AuthService = AuthService_1 = class AuthService {
         try {
             const roleResponse = await axios_1.default.get(`${this.keycloakUrl}/admin/realms/${this.keycloakRealm}/roles/${roleName}`, {
                 headers: {
-                    'Authorization': `Bearer ${adminToken}`,
+                    Authorization: `Bearer ${adminToken}`,
                 },
                 validateStatus: () => true,
             });
@@ -303,7 +416,7 @@ let AuthService = AuthService_1 = class AuthService {
             const role = roleResponse.data;
             const assignResponse = await axios_1.default.post(`${this.keycloakUrl}/admin/realms/${this.keycloakRealm}/users/${userId}/role-mappings/realm`, [role], {
                 headers: {
-                    'Authorization': `Bearer ${adminToken}`,
+                    Authorization: `Bearer ${adminToken}`,
                     'Content-Type': 'application/json',
                 },
                 validateStatus: () => true,

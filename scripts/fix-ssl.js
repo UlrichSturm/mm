@@ -19,31 +19,49 @@ async function getAdminToken() {
   return (await response.json()).access_token;
 }
 
+async function getRealm(token) {
+  const response = await fetch(`${KEYCLOAK_URL}/admin/realms/${REALM_NAME}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!response.ok) throw new Error(`Failed to get realm: ${response.status}`);
+  return response.json();
+}
+
 async function updateRealm() {
   try {
     console.log('Getting admin token...');
     const token = await getAdminToken();
 
+    console.log(`Getting current realm settings...`);
+    const currentRealm = await getRealm(token);
+
     console.log(`Updating realm '${REALM_NAME}' SSL settings...`);
+    const updatedRealm = {
+      ...currentRealm,
+      sslRequired: 'none',
+    };
+
     const response = await fetch(`${KEYCLOAK_URL}/admin/realms/${REALM_NAME}`, {
       method: 'PUT',
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        sslRequired: 'none',
-      }),
+      body: JSON.stringify(updatedRealm),
     });
 
     if (response.ok) {
       console.log('✅ Realm SSL settings updated to "none"');
     } else {
+      const errorText = await response.text();
       console.error(`❌ Failed to update realm: ${response.status}`);
-      console.error(await response.text());
+      console.error(errorText);
     }
   } catch (err) {
     console.error('❌ Error:', err.message);
+    if (err.stack) console.error(err.stack);
   }
 }
 
