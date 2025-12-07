@@ -32,7 +32,7 @@ export class LawyerNotaryService {
   constructor(private prisma: PrismaService) {}
 
   async create(userId: string, data: Partial<LawyerNotaryProfile>): Promise<LawyerNotaryProfile> {
-    const profile = await this.prisma.prisma.lawyerNotaryProfile.create({
+    const profile = await this.prisma.lawyerNotaryProfile.create({
       data: {
         userId,
         licenseNumber: data.licenseNumber || '',
@@ -46,7 +46,6 @@ export class LawyerNotaryService {
         homeVisitAvailable: data.homeVisitAvailable || false,
         maxTravelRadius: data.maxTravelRadius,
         rating: data.rating,
-        name: data.name,
       },
     });
     return this.mapToInterface(profile);
@@ -54,7 +53,7 @@ export class LawyerNotaryService {
 
   async findAll(status?: LawyerNotaryStatus): Promise<LawyerNotaryProfile[]> {
     const where = status ? { status: status as any } : {};
-    const profiles = await this.prisma.prisma.lawyerNotaryProfile.findMany({
+    const profiles = await this.prisma.lawyerNotaryProfile.findMany({
       where,
       include: { user: true },
       orderBy: { createdAt: 'desc' },
@@ -63,7 +62,7 @@ export class LawyerNotaryService {
   }
 
   async findByUserId(userId: string): Promise<LawyerNotaryProfile | null> {
-    const profile = await this.prisma.prisma.lawyerNotaryProfile.findUnique({
+    const profile = await this.prisma.lawyerNotaryProfile.findUnique({
       where: { userId },
       include: { user: true },
     });
@@ -71,7 +70,7 @@ export class LawyerNotaryService {
   }
 
   async findOne(id: string): Promise<LawyerNotaryProfile> {
-    const profile = await this.prisma.prisma.lawyerNotaryProfile.findUnique({
+    const profile = await this.prisma.lawyerNotaryProfile.findUnique({
       where: { id },
       include: { user: true },
     });
@@ -115,7 +114,7 @@ export class LawyerNotaryService {
       throw new ForbiddenException('You can only update your own profile');
     }
 
-    const updated = await this.prisma.prisma.lawyerNotaryProfile.update({
+    const updated = await this.prisma.lawyerNotaryProfile.update({
       where: { id },
       data: {
         licenseNumber: data.licenseNumber,
@@ -128,7 +127,6 @@ export class LawyerNotaryService {
         homeVisitAvailable: data.homeVisitAvailable,
         maxTravelRadius: data.maxTravelRadius,
         rating: data.rating,
-        name: data.name,
       },
       include: { user: true },
     });
@@ -136,7 +134,7 @@ export class LawyerNotaryService {
   }
 
   async updateStatus(id: string, status: LawyerNotaryStatus): Promise<LawyerNotaryProfile> {
-    const updated = await this.prisma.prisma.lawyerNotaryProfile.update({
+    const updated = await this.prisma.lawyerNotaryProfile.update({
       where: { id },
       data: { status: status as any },
       include: { user: true },
@@ -145,14 +143,14 @@ export class LawyerNotaryService {
   }
 
   async delete(id: string): Promise<void> {
-    await this.prisma.prisma.lawyerNotaryProfile.delete({
+    await this.prisma.lawyerNotaryProfile.delete({
       where: { id },
     });
   }
 
   async getAvailableLawyers(postalCode: string): Promise<any[]> {
     // Return only approved lawyers
-    const approvedLawyers = await this.prisma.prisma.lawyerNotaryProfile.findMany({
+    const approvedLawyers = await this.prisma.lawyerNotaryProfile.findMany({
       where: { status: 'APPROVED' },
       include: { user: true },
     });
@@ -160,28 +158,34 @@ export class LawyerNotaryService {
     // Filter lawyers by postal code proximity
     // Simple logic: check if postal codes are in the same city/region
     // For Germany: Berlin (10115-14199), Dresden (01067-01328), etc.
-    const filteredLawyers = approvedLawyers.filter((profile) => {
-      if (!profile.postalCode) return false;
-      
+    const filteredLawyers = approvedLawyers.filter(profile => {
+      if (!profile.postalCode) {
+        return false;
+      }
+
       // If lawyer offers home visits, they can serve wider area
       if (profile.homeVisitAvailable && profile.maxTravelRadius) {
         // For now, consider all lawyers with home visits as available
         // In a real implementation, calculate distance between postal codes
         return true;
       }
-      
+
       // For office-only lawyers, check if postal codes are in same city
       // Berlin: 10115-14199
       // Dresden: 01067-01328 (stored as strings to preserve leading zeros)
       const userPostalNum = parseInt(postalCode);
       const lawyerPostalNum = parseInt(profile.postalCode);
-      
+
       // Check if both are in Berlin (10115-14199)
-      if (userPostalNum >= 10115 && userPostalNum <= 14199 && 
-          lawyerPostalNum >= 10115 && lawyerPostalNum <= 14199) {
+      if (
+        userPostalNum >= 10115 &&
+        userPostalNum <= 14199 &&
+        lawyerPostalNum >= 10115 &&
+        lawyerPostalNum <= 14199
+      ) {
         return true;
       }
-      
+
       // Check if both are in Dresden (01067-01328)
       // Parse as string to handle leading zeros correctly
       const userPostalStr = postalCode.padStart(5, '0');
@@ -190,7 +194,7 @@ export class LawyerNotaryService {
         // Both in Dresden area (01xxx)
         return true;
       }
-      
+
       // If lawyer offers home visits, include them
       return profile.homeVisitAvailable === true;
     });
@@ -219,4 +223,3 @@ export class LawyerNotaryService {
     });
   }
 }
-

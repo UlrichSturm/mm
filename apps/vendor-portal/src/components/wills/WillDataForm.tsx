@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/Button';
 import { RelativesForm } from './RelativesForm';
 import { BeneficiariesForm } from './BeneficiariesForm';
 import { DocumentUpload } from './DocumentUpload';
-import { Plus } from 'lucide-react';
 
 interface WillDataFormProps {
   onSave: (data: any) => Promise<void>;
@@ -24,18 +23,22 @@ export function WillDataForm({ onSave, saving }: WillDataFormProps) {
     email: '',
   });
 
-  const [relatives, setRelatives] = useState<Array<{
-    name: string;
-    relationship: string;
-    phone: string;
-    email: string;
-  }>>([]);
+  const [relatives, setRelatives] = useState<
+    Array<{
+      name: string;
+      relationship: string;
+      phone: string;
+      email: string;
+    }>
+  >([]);
 
-  const [beneficiaries, setBeneficiaries] = useState<Array<{
-    name: string;
-    relationship: string;
-    share: string;
-  }>>([]);
+  const [beneficiaries, setBeneficiaries] = useState<
+    Array<{
+      name: string;
+      relationship: string;
+      share: string;
+    }>
+  >([]);
 
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [willNumber, setWillNumber] = useState('');
@@ -45,8 +48,14 @@ export function WillDataForm({ onSave, saving }: WillDataFormProps) {
     e.preventDefault();
 
     // Validation
-    if (!clientData.fullName || !clientData.dateOfBirth || !clientData.passportData || 
-        !clientData.address || !clientData.phone || !clientData.email) {
+    if (
+      !clientData.fullName ||
+      !clientData.dateOfBirth ||
+      !clientData.passportData ||
+      !clientData.address ||
+      !clientData.phone ||
+      !clientData.email
+    ) {
       alert('Пожалуйста, заполните все обязательные поля данных клиента');
       return;
     }
@@ -77,7 +86,7 @@ export function WillDataForm({ onSave, saving }: WillDataFormProps) {
             <Input
               id="fullName"
               value={clientData.fullName}
-              onChange={(e) => setClientData({ ...clientData, fullName: e.target.value })}
+              onChange={e => setClientData({ ...clientData, fullName: e.target.value })}
               required
             />
           </div>
@@ -90,7 +99,7 @@ export function WillDataForm({ onSave, saving }: WillDataFormProps) {
               id="dateOfBirth"
               type="date"
               value={clientData.dateOfBirth}
-              onChange={(e) => setClientData({ ...clientData, dateOfBirth: e.target.value })}
+              onChange={e => setClientData({ ...clientData, dateOfBirth: e.target.value })}
               required
             />
           </div>
@@ -102,7 +111,7 @@ export function WillDataForm({ onSave, saving }: WillDataFormProps) {
             <Input
               id="passportData"
               value={clientData.passportData}
-              onChange={(e) => setClientData({ ...clientData, passportData: e.target.value })}
+              onChange={e => setClientData({ ...clientData, passportData: e.target.value })}
               placeholder="Серия и номер паспорта"
               required
             />
@@ -115,7 +124,7 @@ export function WillDataForm({ onSave, saving }: WillDataFormProps) {
             <Input
               id="address"
               value={clientData.address}
-              onChange={(e) => setClientData({ ...clientData, address: e.target.value })}
+              onChange={e => setClientData({ ...clientData, address: e.target.value })}
               required
             />
           </div>
@@ -128,7 +137,7 @@ export function WillDataForm({ onSave, saving }: WillDataFormProps) {
               id="phone"
               type="tel"
               value={clientData.phone}
-              onChange={(e) => setClientData({ ...clientData, phone: e.target.value })}
+              onChange={e => setClientData({ ...clientData, phone: e.target.value })}
               required
             />
           </div>
@@ -141,7 +150,7 @@ export function WillDataForm({ onSave, saving }: WillDataFormProps) {
               id="email"
               type="email"
               value={clientData.email}
-              onChange={(e) => setClientData({ ...clientData, email: e.target.value })}
+              onChange={e => setClientData({ ...clientData, email: e.target.value })}
               required
             />
           </div>
@@ -149,16 +158,10 @@ export function WillDataForm({ onSave, saving }: WillDataFormProps) {
       </Card>
 
       {/* Relatives */}
-      <RelativesForm 
-        relatives={relatives}
-        onChange={setRelatives}
-      />
+      <RelativesForm relatives={relatives} onChange={setRelatives} />
 
       {/* Beneficiaries */}
-      <BeneficiariesForm 
-        beneficiaries={beneficiaries}
-        onChange={setBeneficiaries}
-      />
+      <BeneficiariesForm beneficiaries={beneficiaries} onChange={setBeneficiaries} />
 
       {/* Additional Information */}
       <Card>
@@ -174,7 +177,7 @@ export function WillDataForm({ onSave, saving }: WillDataFormProps) {
               id="specialInstructions"
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               value={specialInstructions}
-              onChange={(e) => setSpecialInstructions(e.target.value)}
+              onChange={e => setSpecialInstructions(e.target.value)}
               rows={4}
             />
           </div>
@@ -194,7 +197,7 @@ export function WillDataForm({ onSave, saving }: WillDataFormProps) {
             <Input
               id="willNumber"
               value={willNumber}
-              onChange={(e) => setWillNumber(e.target.value)}
+              onChange={e => setWillNumber(e.target.value)}
             />
           </div>
 
@@ -206,7 +209,7 @@ export function WillDataForm({ onSave, saving }: WillDataFormProps) {
               id="registrationDate"
               type="date"
               value={registrationDate}
-              onChange={(e) => setRegistrationDate(e.target.value)}
+              onChange={e => setRegistrationDate(e.target.value)}
             />
           </div>
         </CardContent>
@@ -223,6 +226,3 @@ export function WillDataForm({ onSave, saving }: WillDataFormProps) {
     </form>
   );
 }
-
-
-

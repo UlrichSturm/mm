@@ -1,31 +1,39 @@
-export function exportToCSV<T extends Record<string, any>>(
+export function exportToCSV<T extends Record<string, unknown>>(
   data: T[],
   filename: string,
-  headers?: Record<keyof T, string>
+  headers?: Record<keyof T, string>,
 ): void {
   if (data.length === 0) {
-    alert('Нет данных для экспорта');
+    alert('No data to export');
     return;
   }
 
-  // Определяем заголовки
+  // Define headers
   const keys = Object.keys(data[0]) as Array<keyof T>;
   const csvHeaders = keys.map(key => headers?.[key] || String(key));
 
-  // Создаем CSV строку
+  // Create CSV string
   const csvRows = [
     csvHeaders.join(','),
     ...data.map(row =>
-      keys.map(key => {
-        const value = row[key];
-        // Обрабатываем значения с запятыми или кавычками
-        if (value === null || value === undefined) return '';
-        const stringValue = String(value);
-        if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
-          return `"${stringValue.replace(/"/g, '""')}"`;
-        }
-        return stringValue;
-      }).join(',')
+      keys
+        .map(key => {
+          const value = row[key];
+          // Handle values with commas or quotes
+          if (value === null || value === undefined) {
+            return '';
+          }
+          const stringValue = String(value);
+          if (
+            stringValue.includes(',') ||
+            stringValue.includes('"') ||
+            stringValue.includes('\n')
+          ) {
+            return `"${stringValue.replace(/"/g, '""')}"`;
+          }
+          return stringValue;
+        })
+        .join(','),
     ),
   ];
 
@@ -42,7 +50,21 @@ export function exportToCSV<T extends Record<string, any>>(
   document.body.removeChild(link);
 }
 
-export function exportLawyersToCSV(lawyers: any[]) {
+interface LawyerExport {
+  user?: { email?: string };
+  licenseNumber: string;
+  licenseType: string;
+  status: string;
+  organization?: string;
+  specialization?: string;
+  yearsOfExperience?: number;
+  officePostalCode: string;
+  officeAddress: string;
+  phone?: string;
+  createdAt: string;
+}
+
+export function exportLawyersToCSV(lawyers: LawyerExport[]) {
   exportToCSV(
     lawyers.map(l => ({
       email: l.user?.email || '',
@@ -55,50 +77,58 @@ export function exportLawyersToCSV(lawyers: any[]) {
       officePostalCode: l.officePostalCode,
       officeAddress: l.officeAddress,
       phone: l.phone || '',
-      createdAt: new Date(l.createdAt).toLocaleDateString('ru-RU'),
+      createdAt: new Date(l.createdAt).toLocaleDateString('de-DE'),
     })),
     'lawyers',
     {
       email: 'Email',
-      licenseNumber: 'Номер лицензии',
-      licenseType: 'Тип лицензии',
-      status: 'Статус',
-      organization: 'Организация',
-      specialization: 'Специализация',
-      yearsOfExperience: 'Годы опыта',
-      officePostalCode: 'Почтовый индекс',
-      officeAddress: 'Адрес офиса',
-      phone: 'Телефон',
-      createdAt: 'Дата создания',
-    }
+      licenseNumber: 'License Number',
+      licenseType: 'License Type',
+      status: 'Status',
+      organization: 'Organization',
+      specialization: 'Specialization',
+      yearsOfExperience: 'Years of Experience',
+      officePostalCode: 'Postal Code',
+      officeAddress: 'Office Address',
+      phone: 'Phone',
+      createdAt: 'Created At',
+    },
   );
 }
 
-export function exportAppointmentsToCSV(appointments: any[]) {
+interface AppointmentExport {
+  id: string;
+  client?: { email?: string };
+  lawyerNotary?: { licenseNumber?: string };
+  appointmentDate: string;
+  appointmentTime: string;
+  location: string;
+  status: string;
+  createdAt: string;
+}
+
+export function exportAppointmentsToCSV(appointments: AppointmentExport[]) {
   exportToCSV(
     appointments.map(a => ({
       id: a.id.slice(0, 8),
       clientEmail: a.client?.email || '',
       lawyerLicense: a.lawyerNotary?.licenseNumber || '',
-      appointmentDate: new Date(a.appointmentDate).toLocaleDateString('ru-RU'),
+      appointmentDate: new Date(a.appointmentDate).toLocaleDateString('de-DE'),
       appointmentTime: a.appointmentTime,
       location: a.location,
       status: a.status,
-      createdAt: new Date(a.createdAt).toLocaleDateString('ru-RU'),
+      createdAt: new Date(a.createdAt).toLocaleDateString('de-DE'),
     })),
     'appointments',
     {
-      id: 'ID заявки',
-      clientEmail: 'Email клиента',
-      lawyerLicense: 'Лицензия адвоката',
-      appointmentDate: 'Дата встречи',
-      appointmentTime: 'Время встречи',
-      location: 'Место встречи',
-      status: 'Статус',
-      createdAt: 'Дата создания',
-    }
+      id: 'Request ID',
+      clientEmail: 'Client Email',
+      lawyerLicense: 'Lawyer License',
+      appointmentDate: 'Appointment Date',
+      appointmentTime: 'Appointment Time',
+      location: 'Location',
+      status: 'Status',
+      createdAt: 'Created At',
+    },
   );
 }
-
-
-

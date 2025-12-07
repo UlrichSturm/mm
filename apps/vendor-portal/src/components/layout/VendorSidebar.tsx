@@ -2,15 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  FileText, 
-  Users, 
-  Settings, 
-  Bell,
-  Home
-} from 'lucide-react';
+import { LayoutDashboard, Calendar, FileText, Users, Settings, Bell } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navigation = [
@@ -32,8 +24,9 @@ export function VendorSidebar() {
         <h1 className="text-lg font-bold">Memento Mori</h1>
       </div>
       <nav className="p-4 space-y-1">
-        {navigation.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href));
+        {navigation.map(item => {
+          const isActive =
+            pathname === item.href || (item.href !== '/' && pathname?.startsWith(item.href));
           return (
             <Link
               key={item.name}
@@ -42,7 +35,7 @@ export function VendorSidebar() {
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
                 isActive
                   ? 'bg-primary text-primary-foreground'
-                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
               )}
             >
               <item.icon className="h-5 w-5" />
@@ -54,4 +47,3 @@ export function VendorSidebar() {
     </aside>
   );
 }
-

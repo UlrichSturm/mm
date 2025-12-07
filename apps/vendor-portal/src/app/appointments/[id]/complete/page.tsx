@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { vendorApi } from '@/lib/api';
 import { WillDataForm } from '@/components/wills/WillDataForm';
@@ -13,7 +12,7 @@ export default function CompleteAppointmentPage() {
   const params = useParams();
   const router = useRouter();
   const appointmentId = params.id as string;
-  
+
   const [saving, setSaving] = useState(false);
 
   const handleSave = async (willData: any) => {
@@ -49,13 +48,7 @@ export default function CompleteAppointmentPage() {
         </div>
       </div>
 
-      <WillDataForm 
-        onSave={handleSave}
-        saving={saving}
-      />
+      <WillDataForm onSave={handleSave} saving={saving} />
     </div>
   );
 }
-
-
-

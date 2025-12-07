@@ -3,10 +3,19 @@
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, getDay } from 'date-fns';
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  addMonths,
+  subMonths,
+  getDay,
+} from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { StatusBadge } from '@/components/shared/StatusBadge';
 import { cn } from '@/lib/utils';
 
 interface AppointmentsCalendarProps {
@@ -22,7 +31,10 @@ const statusColors: Record<string, string> = {
   CANCELLED: 'bg-red-100 text-red-800 border-red-300',
 };
 
-export function AppointmentsCalendar({ appointments, onAppointmentClick }: AppointmentsCalendarProps) {
+export function AppointmentsCalendar({
+  appointments,
+  onAppointmentClick,
+}: AppointmentsCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'month' | 'week' | 'day'>('month');
 
@@ -33,7 +45,9 @@ export function AppointmentsCalendar({ appointments, onAppointmentClick }: Appoi
   // Get appointments for a specific date
   const getAppointmentsForDate = (date: Date) => {
     return appointments.filter(appointment => {
-      if (!appointment.appointmentDate) return false;
+      if (!appointment.appointmentDate) {
+        return false;
+      }
       const appointmentDate = new Date(appointment.appointmentDate);
       return isSameDay(appointmentDate, date);
     });
@@ -66,7 +80,7 @@ export function AppointmentsCalendar({ appointments, onAppointmentClick }: Appoi
   // Calendar grid
   const firstDayOfWeek = getDay(monthStart);
   const weekDays = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-  
+
   // Create calendar grid with empty cells for days before month start
   // getDay returns 0-6 (Sunday = 0), we need Monday = 0
   const firstDayIndex = firstDayOfWeek === 0 ? 6 : firstDayOfWeek - 1;
@@ -75,7 +89,7 @@ export function AppointmentsCalendar({ appointments, onAppointmentClick }: Appoi
     calendarDays.push(null);
   }
   daysInMonth.forEach(day => calendarDays.push(day));
-  
+
   // Fill remaining cells to complete the grid (6 weeks * 7 days = 42)
   const remainingCells = 42 - calendarDays.length;
   for (let i = 0; i < remainingCells; i++) {
@@ -152,31 +166,30 @@ export function AppointmentsCalendar({ appointments, onAppointmentClick }: Appoi
                 <div
                   key={day.toISOString()}
                   className={cn(
-                    "aspect-square border rounded-lg p-1 overflow-hidden",
-                    !isCurrentMonth && "opacity-40",
-                    isToday && "ring-2 ring-primary"
+                    'aspect-square border rounded-lg p-1 overflow-hidden',
+                    !isCurrentMonth && 'opacity-40',
+                    isToday && 'ring-2 ring-primary',
                   )}
                 >
                   <div className="flex flex-col h-full">
-                    <div className={cn(
-                      "text-sm font-medium mb-1",
-                      isToday && "text-primary"
-                    )}>
+                    <div className={cn('text-sm font-medium mb-1', isToday && 'text-primary')}>
                       {format(day, 'd')}
                     </div>
                     <div className="flex-1 overflow-y-auto space-y-0.5">
-                      {dayAppointments.slice(0, 3).map((appointment) => (
+                      {dayAppointments.slice(0, 3).map(appointment => (
                         <div
                           key={appointment.id}
                           onClick={() => onAppointmentClick(appointment)}
                           className={cn(
-                            "text-xs p-1 rounded cursor-pointer hover:opacity-80 truncate border",
-                            statusColors[appointment.status] || 'bg-gray-100 text-gray-800 border-gray-300'
+                            'text-xs p-1 rounded cursor-pointer hover:opacity-80 truncate border',
+                            statusColors[appointment.status] ||
+                              'bg-gray-100 text-gray-800 border-gray-300',
                           )}
                           title={`${appointment.clientName || 'Клиент'}: ${format(new Date(appointment.appointmentDate), 'HH:mm')}`}
                         >
                           <div className="truncate">
-                            {format(new Date(appointment.appointmentDate), 'HH:mm')} - {appointment.clientName || 'Клиент'}
+                            {format(new Date(appointment.appointmentDate), 'HH:mm')} -{' '}
+                            {appointment.clientName || 'Клиент'}
                           </div>
                         </div>
                       ))}
@@ -197,7 +210,7 @@ export function AppointmentsCalendar({ appointments, onAppointmentClick }: Appoi
             <div className="text-sm font-medium">Легенда:</div>
             {Object.entries(statusColors).map(([status, colorClass]) => (
               <div key={status} className="flex items-center gap-2">
-                <div className={cn("w-4 h-4 rounded border", colorClass)} />
+                <div className={cn('w-4 h-4 rounded border', colorClass)} />
                 <span className="text-sm text-muted-foreground">
                   {status === 'PENDING' && 'Ожидают'}
                   {status === 'CONFIRMED' && 'Подтверждены'}
@@ -213,4 +226,3 @@ export function AppointmentsCalendar({ appointments, onAppointmentClick }: Appoi
     </Card>
   );
 }
-

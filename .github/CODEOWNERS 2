@@ -1,0 +1,24 @@
+# Default owners
+* @SturmUlrich
+
+# Backend
+/apps/server/ @SturmUlrich
+
+# Frontend
+/apps/client/ @SturmUlrich
+/apps/vendor-portal/ @SturmUlrich
+/apps/admin-portal/ @SturmUlrich
+
+# Shared packages
+/packages/ @SturmUlrich
+
+# Documentation
+/docs/ @SturmUlrich
+
+# CI/CD
+/.github/ @SturmUlrich
+
+# Docker
+docker-compose*.yml @SturmUlrich
+/apps/*/Dockerfile* @SturmUlrich
+

@@ -1,25 +1,26 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { lawyerNotaryApi, LawyerNotaryProfile, LawyerNotaryFilters, LawyerNotaryStatus, LicenseType } from '@/lib/api/lawyer-notary';
-import { Card, CardContent } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { StatusBadge } from '@/components/shared/StatusBadge';
-import { LicenseTypeBadge } from '@/components/shared/LicenseTypeBadge';
-import { useTranslations } from '@/lib/i18n';
-import Link from 'next/link';
-import { Search, Plus, Eye, Download } from 'lucide-react';
-import { exportLawyersToCSV } from '@/lib/utils/export';
 import { ExportButton } from '@/components/shared/ExportButton';
+import { LicenseTypeBadge } from '@/components/shared/LicenseTypeBadge';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay';
+import { Input } from '@/components/ui/Input';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
+import type { LawyerNotaryFilters, LawyerNotaryStatus, LicenseType } from '@/lib/api/lawyer-notary';
+import { lawyerNotaryApi } from '@/lib/api/lawyer-notary';
+import { useTranslations } from '@/lib/i18n';
+import { exportLawyersToCSV } from '@/lib/utils/export';
+import { Eye, Plus, Search } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
 
 export default function LawyerNotaryListPage() {
   const t = useTranslations('lawyers');
   const tCommon = useTranslations('common');
   const { error, handleError, clearError } = useErrorHandler();
-  const [lawyers, setLawyers] = useState<LawyerNotaryProfile[]>([]);
+  const [lawyers, setLawyers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<LawyerNotaryFilters>({});
   const [searchQuery, setSearchQuery] = useState('');
@@ -80,12 +81,7 @@ export default function LawyerNotaryListPage() {
       </div>
 
       {error && (
-        <ErrorDisplay
-          error={error}
-          onDismiss={clearError}
-          onRetry={loadLawyers}
-          showRetry={true}
-        />
+        <ErrorDisplay error={error} onDismiss={clearError} onRetry={loadLawyers} showRetry={true} />
       )}
 
       <Card>
@@ -98,8 +94,8 @@ export default function LawyerNotaryListPage() {
                   <Input
                     placeholder={t('search')}
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyPress={e => e.key === 'Enter' && handleSearch()}
                     className="pl-10"
                   />
                 </div>
@@ -109,28 +105,28 @@ export default function LawyerNotaryListPage() {
 
             <div className="flex gap-2 flex-wrap">
               <Button
-                variant={!filters.status ? "default" : "outline"}
+                variant={!filters.status ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleStatusFilter(undefined)}
               >
                 {t('allStatuses')}
               </Button>
               <Button
-                variant={filters.status === 'PENDING' ? "default" : "outline"}
+                variant={filters.status === 'PENDING' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleStatusFilter('PENDING')}
               >
                 {tCommon('pending')}
               </Button>
               <Button
-                variant={filters.status === 'APPROVED' ? "default" : "outline"}
+                variant={filters.status === 'APPROVED' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleStatusFilter('APPROVED')}
               >
                 {tCommon('approved')}
               </Button>
               <Button
-                variant={filters.status === 'REJECTED' ? "default" : "outline"}
+                variant={filters.status === 'REJECTED' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleStatusFilter('REJECTED')}
               >
@@ -140,28 +136,28 @@ export default function LawyerNotaryListPage() {
 
             <div className="flex gap-2 flex-wrap">
               <Button
-                variant={!filters.licenseType ? "default" : "outline"}
+                variant={!filters.licenseType ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleLicenseTypeFilter(undefined)}
               >
                 {t('allTypes')}
               </Button>
               <Button
-                variant={filters.licenseType === 'LAWYER' ? "default" : "outline"}
+                variant={filters.licenseType === 'LAWYER' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleLicenseTypeFilter('LAWYER')}
               >
                 Lawyer
               </Button>
               <Button
-                variant={filters.licenseType === 'NOTARY' ? "default" : "outline"}
+                variant={filters.licenseType === 'NOTARY' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleLicenseTypeFilter('NOTARY')}
               >
                 Notary
               </Button>
               <Button
-                variant={filters.licenseType === 'BOTH' ? "default" : "outline"}
+                variant={filters.licenseType === 'BOTH' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleLicenseTypeFilter('BOTH')}
               >
@@ -180,7 +176,7 @@ export default function LawyerNotaryListPage() {
             </CardContent>
           </Card>
         ) : (
-          lawyers.map((lawyer) => (
+          lawyers.map(lawyer => (
             <Card key={lawyer.id}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -194,14 +190,16 @@ export default function LawyerNotaryListPage() {
                     </div>
                     <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
                       <div>
-                        <span className="font-medium">{t('licenseNumber')}:</span> {lawyer.licenseNumber}
+                        <span className="font-medium">{t('licenseNumber')}:</span>{' '}
+                        {lawyer.licenseNumber}
                       </div>
                       <div>
                         <span className="font-medium">Postal Code:</span> {lawyer.officePostalCode}
                       </div>
                       {lawyer.organization && (
                         <div>
-                          <span className="font-medium">{t('businessName')}:</span> {lawyer.organization}
+                          <span className="font-medium">{t('businessName')}:</span>{' '}
+                          {lawyer.organization}
                         </div>
                       )}
                       <div>
@@ -227,4 +225,3 @@ export default function LawyerNotaryListPage() {
     </div>
   );
 }
-

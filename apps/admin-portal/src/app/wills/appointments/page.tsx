@@ -1,13 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { willsApi, WillAppointment, WillAppointmentFilters, AppointmentStatus } from '@/lib/api/wills';
+import {
+  willsApi,
+  WillAppointment,
+  WillAppointmentFilters,
+  AppointmentStatus,
+} from '@/lib/api/wills';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { StatusBadge } from '@/components/shared/StatusBadge';
 import Link from 'next/link';
-import { Search, Calendar, User, MapPin, Eye, Download } from 'lucide-react';
+import { Search, Calendar, User, MapPin, Eye } from 'lucide-react';
 import { exportAppointmentsToCSV } from '@/lib/utils/export';
 import { ExportButton } from '@/components/shared/ExportButton';
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay';
@@ -89,8 +93,8 @@ export default function AppointmentsPage() {
                   <Input
                     placeholder="Search by appointment number, client name, or lawyer name..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    onKeyPress={e => e.key === 'Enter' && handleSearch()}
                     className="pl-10"
                   />
                 </div>
@@ -100,35 +104,35 @@ export default function AppointmentsPage() {
 
             <div className="flex gap-2 flex-wrap">
               <Button
-                variant={!filters.status ? "default" : "outline"}
+                variant={!filters.status ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleStatusFilter(undefined)}
               >
                 Все статусы
               </Button>
               <Button
-                variant={filters.status === 'PENDING' ? "default" : "outline"}
+                variant={filters.status === 'PENDING' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleStatusFilter('PENDING')}
               >
                 Pending
               </Button>
               <Button
-                variant={filters.status === 'CONFIRMED' ? "default" : "outline"}
+                variant={filters.status === 'CONFIRMED' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleStatusFilter('CONFIRMED')}
               >
                 Confirmed
               </Button>
               <Button
-                variant={filters.status === 'COMPLETED' ? "default" : "outline"}
+                variant={filters.status === 'COMPLETED' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleStatusFilter('COMPLETED')}
               >
                 Completed
               </Button>
               <Button
-                variant={filters.status === 'CANCELLED' ? "default" : "outline"}
+                variant={filters.status === 'CANCELLED' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => handleStatusFilter('CANCELLED')}
               >
@@ -147,7 +151,7 @@ export default function AppointmentsPage() {
             </CardContent>
           </Card>
         ) : (
-          appointments.map((appointment) => (
+          appointments.map(appointment => (
             <Card key={appointment.id}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -212,4 +216,3 @@ export default function AppointmentsPage() {
     </div>
   );
 }
-

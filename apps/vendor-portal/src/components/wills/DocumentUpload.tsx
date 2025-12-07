@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { Upload, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 export function DocumentUpload() {
   const [willDocument, setWillDocument] = useState<File | null>(null);
@@ -52,12 +52,7 @@ export function DocumentUpload() {
             {willDocument && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground">{willDocument.name}</span>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={removeWillDocument}
-                >
+                <Button type="button" variant="ghost" size="icon" onClick={removeWillDocument}>
                   <X className="h-4 w-4" />
                 </Button>
               </div>
@@ -98,6 +93,3 @@ export function DocumentUpload() {
     </Card>
   );
 }
-
-
-

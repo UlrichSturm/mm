@@ -1,16 +1,16 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { lawyerNotaryApi, LawyerNotaryProfile } from '@/lib/api/lawyer-notary';
+import { ExportButton } from '@/components/shared/ExportButton';
+import { LicenseTypeBadge } from '@/components/shared/LicenseTypeBadge';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import { Card, CardContent } from '@/components/ui/Card';
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay';
-import { StatusBadge } from '@/components/shared/StatusBadge';
-import { LicenseTypeBadge } from '@/components/shared/LicenseTypeBadge';
-import { exportLawyersToCSV } from '@/lib/utils/export';
-import { ExportButton } from '@/components/shared/ExportButton';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
+import { LawyerNotaryProfile, lawyerNotaryApi } from '@/lib/api/lawyer-notary';
+import { exportLawyersToCSV } from '@/lib/utils/export';
+import { ArrowLeft, CheckCircle, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
-import { ArrowLeft, TrendingUp, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface LawyerStatistics {
   lawyer: LawyerNotaryProfile;
@@ -22,7 +22,7 @@ interface LawyerStatistics {
 
 export default function LawyerStatisticsPage() {
   const { error, handleError, clearError } = useErrorHandler();
-  const [lawyers, setLawyers] = useState<LawyerNotaryProfile[]>([]);
+  const [lawyers, setLawyers] = useState<any[]>([]);
   const [statistics, setStatistics] = useState<LawyerStatistics[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState<'appointments' | 'completed' | 'rating'>('appointments');
@@ -40,7 +40,7 @@ export default function LawyerStatisticsPage() {
 
       // Generate statistics (in a real application this would come from API)
       // TODO: Replace with actual API call to get statistics from database
-      const stats: LawyerStatistics[] = data.map(lawyer => ({
+      const stats: LawyerStatistics[] = data.map((lawyer: any) => ({
         lawyer,
         appointmentsCount: 0, // TODO: Get from database
         completedWillsCount: 0, // TODO: Get from database
@@ -89,12 +89,7 @@ export default function LawyerStatisticsPage() {
       </div>
 
       {error && (
-        <ErrorDisplay
-          error={error}
-          onDismiss={clearError}
-          onRetry={loadData}
-          showRetry={true}
-        />
+        <ErrorDisplay error={error} onDismiss={clearError} onRetry={loadData} showRetry={true} />
       )}
 
       <Card>
@@ -148,7 +143,7 @@ export default function LawyerStatisticsPage() {
             </CardContent>
           </Card>
         ) : (
-          sortedStatistics.map((stat) => (
+          sortedStatistics.map(stat => (
             <Card key={stat.lawyer.id}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -215,4 +210,3 @@ export default function LawyerStatisticsPage() {
     </div>
   );
 }
-

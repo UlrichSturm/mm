@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { vendorApi } from '@/lib/api';
 import { DeathNotificationForm } from '@/components/wills/DeathNotificationForm';
 import { ClientSearch } from '@/components/wills/ClientSearch';
@@ -49,7 +47,7 @@ export default function NotifyDeathPage() {
         </p>
       </div>
 
-      <ClientSearch 
+      <ClientSearch
         clients={clients}
         loading={loading}
         onSelectClient={setSelectedClient}
@@ -57,7 +55,7 @@ export default function NotifyDeathPage() {
       />
 
       {selectedClient && (
-        <DeathNotificationForm 
+        <DeathNotificationForm
           client={selectedClient}
           onNotify={handleNotify}
           onCancel={() => setSelectedClient(null)}
@@ -66,6 +64,3 @@ export default function NotifyDeathPage() {
     </div>
   );
 }
-
-
-

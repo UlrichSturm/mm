@@ -1,0 +1,113 @@
+import { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
+export declare class AuthService {
+    private readonly prisma;
+    private readonly configService;
+    private readonly logger;
+    private readonly keycloakUrl;
+    private readonly keycloakRealm;
+    private readonly keycloakAdminUser;
+    private readonly keycloakAdminPassword;
+    constructor(prisma: PrismaService, configService: ConfigService);
+    getProfile(userId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        firstName: string;
+        lastName: string;
+        phone: string;
+        avatar: string;
+        role: import(".prisma/client").$Enums.Role;
+    }>;
+    updateProfile(userId: string, data: {
+        firstName?: string;
+        lastName?: string;
+        phone?: string;
+        avatar?: string;
+    }): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        firstName: string;
+        lastName: string;
+        phone: string;
+        avatar: string;
+        role: import(".prisma/client").$Enums.Role;
+    }>;
+    syncUserFromKeycloak(keycloakUser: {
+        sub: string;
+        email: string;
+        given_name?: string;
+        family_name?: string;
+        roles?: string[];
+    }): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        password: string;
+        firstName: string | null;
+        lastName: string | null;
+        phone: string | null;
+        avatar: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        isBlocked: boolean;
+    }>;
+    findByEmail(email: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        password: string;
+        firstName: string | null;
+        lastName: string | null;
+        phone: string | null;
+        avatar: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        isBlocked: boolean;
+    }>;
+    findByKeycloakId(keycloakId: string): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        password: string;
+        firstName: string | null;
+        lastName: string | null;
+        phone: string | null;
+        avatar: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        isBlocked: boolean;
+    }>;
+    loginUser(username: string, password: string): Promise<{
+        access_token: any;
+        refresh_token: any;
+        expires_in: any;
+        token_type: any;
+    }>;
+    private parseJwt;
+    registerUser(data: {
+        email: string;
+        username?: string;
+        password: string;
+        firstName?: string;
+        lastName?: string;
+    }): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        email: string;
+        password: string;
+        firstName: string | null;
+        lastName: string | null;
+        phone: string | null;
+        avatar: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        isBlocked: boolean;
+    }>;
+    private getKeycloakAdminToken;
+    private createKeycloakUser;
+    private assignRoleToUser;
+}

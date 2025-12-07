@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vendor Account Approved</title>
+  <style>
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+    .header { background: linear-gradient(135deg, #065f46 0%, #047857 100%); color: #ffffff; padding: 40px 30px; text-align: center; }
+    .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+    .content { padding: 40px 30px; }
+    .content h2 { color: #065f46; margin: 0 0 20px; font-size: 24px; }
+    .content p { color: #4b5563; line-height: 1.6; margin: 0 0 16px; }
+    .highlight-box { background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 20px; margin: 24px 0; }
+    .highlight-box p { color: #065f46; margin: 0; }
+    .content ul { color: #4b5563; padding-left: 20px; margin: 0 0 24px; }
+    .content li { margin-bottom: 8px; line-height: 1.6; }
+    .button { display: inline-block; padding: 14px 28px; background: #059669; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600; }
+    .footer { background: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb; }
+    .footer p { color: #9ca3af; font-size: 12px; margin: 0 0 8px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎉 Congratulations!</h1>
+    </div>
+    <div class="content">
+      <h2>Your vendor account has been approved!</h2>
+
+      <div class="highlight-box">
+        <p><strong>{{businessName}}</strong> is now live on Memento Mori</p>
+      </div>
+
+      <p>Dear {{firstName}},</p>
+      <p>Great news! Your vendor application has been reviewed and approved. You can now start offering your services on our platform.</p>
+
+      <p>Next steps:</p>
+      <ul>
+        <li>Complete your business profile</li>
+        <li>Add your services and pricing</li>
+        <li>Set up your Stripe Connect account to receive payments</li>
+        <li>Configure your availability</li>
+      </ul>
+
+      <p>
+        <a href="{{dashboardUrl}}" class="button">Go to Vendor Dashboard</a>
+      </p>
+
+      <p style="margin-top: 24px;">If you need any assistance getting started, our vendor support team is here to help.</p>
+    </div>
+    <div class="footer">
+      <p>&copy; {{year}} Memento Mori. All rights reserved.</p>
+      <p>Welcome to our vendor community!</p>
+    </div>
+  </div>
+</body>
+</html>
+

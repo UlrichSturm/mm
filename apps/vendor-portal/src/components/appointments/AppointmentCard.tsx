@@ -13,8 +13,8 @@ interface AppointmentCardProps {
   onRefresh: () => void;
 }
 
-export function AppointmentCard({ appointment, onRefresh }: AppointmentCardProps) {
-  const appointmentDate = appointment.appointmentDate 
+export function AppointmentCard({ appointment, onRefresh: _onRefresh }: AppointmentCardProps) {
+  const appointmentDate = appointment.appointmentDate
     ? format(new Date(appointment.appointmentDate), 'dd MMMM yyyy, HH:mm', { locale: ru })
     : 'Не указана';
 
@@ -29,7 +29,7 @@ export function AppointmentCard({ appointment, onRefresh }: AppointmentCardProps
               </h3>
               <StatusBadge status={appointment.status} />
             </div>
-            
+
             <div className="space-y-1 text-sm text-muted-foreground">
               {appointment.clientName && (
                 <div className="flex items-center gap-2">
@@ -61,6 +61,3 @@ export function AppointmentCard({ appointment, onRefresh }: AppointmentCardProps
     </Card>
   );
 }
-
-
-

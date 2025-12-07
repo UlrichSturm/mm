@@ -1,14 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { Button } from '@/components/ui/Button';
 import { vendorApi } from '@/lib/api';
 import { AppointmentList } from '@/components/appointments/AppointmentList';
 import { AppointmentFilters } from '@/components/appointments/AppointmentFilters';
-import Link from 'next/link';
-import { Plus } from 'lucide-react';
 
 export default function AppointmentsPage() {
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -40,30 +35,19 @@ export default function AppointmentsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Заявки</h1>
-          <p className="text-muted-foreground">
-            Управление заявками от клиентов
-          </p>
+          <p className="text-muted-foreground">Управление заявками от клиентов</p>
         </div>
       </div>
 
-      <AppointmentFilters 
-        filters={filters}
-        onFiltersChange={setFilters}
-      />
+      <AppointmentFilters filters={filters} onFiltersChange={setFilters} />
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <p>Загрузка...</p>
         </div>
       ) : (
-        <AppointmentList 
-          appointments={appointments}
-          onRefresh={loadAppointments}
-        />
+        <AppointmentList appointments={appointments} onRefresh={loadAppointments} />
       )}
     </div>
   );
 }
-
-
-

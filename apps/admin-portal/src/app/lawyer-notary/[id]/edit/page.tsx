@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { lawyerNotaryApi, LawyerNotaryProfile, UpdateLawyerNotaryDto, LicenseType } from '@/lib/api/lawyer-notary';
+import { lawyerNotaryApi, UpdateLawyerNotaryDto, LicenseType } from '@/lib/api/lawyer-notary';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -82,12 +82,7 @@ export default function EditLawyerNotaryPage() {
       </div>
 
       {error && (
-        <ErrorDisplay
-          error={error}
-          onDismiss={clearError}
-          onRetry={loadLawyer}
-          showRetry={true}
-        />
+        <ErrorDisplay error={error} onDismiss={clearError} onRetry={loadLawyer} showRetry={true} />
       )}
 
       <Card>
@@ -101,7 +96,7 @@ export default function EditLawyerNotaryPage() {
                 <Input
                   required
                   value={formData.licenseNumber || ''}
-                  onChange={(e) => setFormData({ ...formData, licenseNumber: e.target.value })}
+                  onChange={e => setFormData({ ...formData, licenseNumber: e.target.value })}
                   placeholder="Номер лицензии"
                 />
               </div>
@@ -113,7 +108,9 @@ export default function EditLawyerNotaryPage() {
                 <select
                   required
                   value={formData.licenseType || 'LAWYER'}
-                  onChange={(e) => setFormData({ ...formData, licenseType: e.target.value as LicenseType })}
+                  onChange={e =>
+                    setFormData({ ...formData, licenseType: e.target.value as LicenseType })
+                  }
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 >
                   <option value="LAWYER">Адвокат</option>
@@ -125,12 +122,10 @@ export default function EditLawyerNotaryPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Организация
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Организация</label>
                 <Input
                   value={formData.organization || ''}
-                  onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                  onChange={e => setFormData({ ...formData, organization: e.target.value })}
                   placeholder="Название организации"
                 />
               </div>
@@ -141,20 +136,23 @@ export default function EditLawyerNotaryPage() {
                 </label>
                 <Input
                   value={formData.specialization || ''}
-                  onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+                  onChange={e => setFormData({ ...formData, specialization: e.target.value })}
                   placeholder="Специализация"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Годы опыта
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Годы опыта</label>
               <Input
                 type="number"
                 value={formData.yearsOfExperience || ''}
-                onChange={(e) => setFormData({ ...formData, yearsOfExperience: e.target.value ? parseInt(e.target.value) : undefined })}
+                onChange={e =>
+                  setFormData({
+                    ...formData,
+                    yearsOfExperience: e.target.value ? parseInt(e.target.value) : undefined,
+                  })
+                }
                 placeholder="Годы опыта"
               />
             </div>
@@ -166,7 +164,7 @@ export default function EditLawyerNotaryPage() {
               <Input
                 required
                 value={formData.officePostalCode || ''}
-                onChange={(e) => setFormData({ ...formData, officePostalCode: e.target.value })}
+                onChange={e => setFormData({ ...formData, officePostalCode: e.target.value })}
                 placeholder="Почтовый индекс"
               />
             </div>
@@ -178,18 +176,16 @@ export default function EditLawyerNotaryPage() {
               <Input
                 required
                 value={formData.officeAddress || ''}
-                onChange={(e) => setFormData({ ...formData, officeAddress: e.target.value })}
+                onChange={e => setFormData({ ...formData, officeAddress: e.target.value })}
                 placeholder="Полный адрес офиса"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Телефон
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Телефон</label>
               <Input
                 value={formData.phone || ''}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={e => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="Телефон"
               />
             </div>
@@ -210,4 +206,3 @@ export default function EditLawyerNotaryPage() {
     </div>
   );
 }
-

@@ -11,12 +11,6 @@ interface ClientCardProps {
   client: any;
 }
 
-const statusLabels: Record<string, string> = {
-  ACTIVE: 'Активное',
-  EXECUTING: 'В процессе исполнения',
-  EXECUTED: 'Исполнено',
-};
-
 export function ClientCard({ client }: ClientCardProps) {
   const lastContact = client.lastContact
     ? format(new Date(client.lastContact), 'dd MMMM yyyy', { locale: ru })
@@ -31,7 +25,7 @@ export function ClientCard({ client }: ClientCardProps) {
               <h3 className="text-lg font-semibold">{client.name}</h3>
               <StatusBadge status={client.status} />
             </div>
-            
+
             <div className="space-y-1 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
@@ -52,6 +46,3 @@ export function ClientCard({ client }: ClientCardProps) {
     </Card>
   );
 }
-
-
-

@@ -1,11 +1,11 @@
 # P0-004: ESLint & Prettier Configuration
 
-**Epic:** E-000 Phase 0 - Подготовка  
-**Приоритет:** 🟡 High  
-**Story Points:** 2  
-**Исполнитель:** Frontend Lead  
-**Срок:** Day 2  
-**Статус:** ⬜ Не начато
+**Epic:** E-000 Phase 0 - Подготовка
+**Приоритет:** 🟡 High
+**Story Points:** 2
+**Исполнитель:** Frontend Lead
+**Срок:** Day 2
+**Статус:** ✅ Выполнено
 
 ---
 
@@ -34,11 +34,7 @@ module.exports = {
     sourceType: 'module',
   },
   plugins: ['@typescript-eslint'],
-  extends: [
-    'eslint:recommended',
-    'plugin:@typescript-eslint/recommended',
-    'prettier',
-  ],
+  extends: ['eslint:recommended', 'plugin:@typescript-eslint/recommended', 'prettier'],
   rules: {
     // TypeScript
     '@typescript-eslint/no-explicit-any': 'warn',
@@ -46,12 +42,12 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
     '@typescript-eslint/no-empty-function': 'warn',
-    
+
     // General
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'prefer-const': 'error',
     'no-var': 'error',
-    'eqeqeq': ['error', 'always'],
+    eqeqeq: ['error', 'always'],
   },
   ignorePatterns: [
     'node_modules/',
@@ -110,10 +106,10 @@ module.exports = {
     'react/react-in-jsx-scope': 'off',
     'react/prop-types': 'off',
     'react/display-name': 'off',
-    
+
     // Next.js
     '@next/next/no-html-link-for-pages': 'off',
-    
+
     // React Hooks
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
@@ -326,4 +322,3 @@ indent_style = tab
 - [ ] Зависимости установлены
 - [ ] Команды работают
 - [ ] Документация обновлена
-

@@ -1,11 +1,11 @@
 # P0-001: GitHub Repository Setup
 
-**Epic:** E-000 Phase 0 - Подготовка  
-**Приоритет:** 🔴 Must Have  
-**Story Points:** 2  
-**Исполнитель:** Tech Lead  
-**Срок:** Day 1  
-**Статус:** ⬜ Не начато
+**Epic:** E-000 Phase 0 - Подготовка
+**Приоритет:** 🔴 Must Have
+**Story Points:** 2
+**Исполнитель:** Tech Lead
+**Срок:** Day 1
+**Статус:** ✅ Выполнено
 
 ---
 
@@ -91,25 +91,31 @@ assignees: ''
 ---
 
 ## Описание бага
+
 Краткое описание проблемы.
 
 ## Шаги воспроизведения
+
 1. Перейти на '...'
 2. Нажать на '...'
 3. Увидеть ошибку
 
 ## Ожидаемое поведение
+
 Что должно было произойти.
 
 ## Скриншоты
+
 Если применимо, добавьте скриншоты.
 
 ## Окружение
+
 - OS: [e.g. macOS 14.0]
 - Browser: [e.g. Chrome 120]
 - Version: [e.g. 1.0.0]
 
 ## Дополнительный контекст
+
 Любая другая информация о проблеме.
 ```
 
@@ -125,18 +131,23 @@ assignees: ''
 ---
 
 ## Описание функции
+
 Краткое описание предлагаемой функции.
 
 ## Проблема
+
 Какую проблему это решает?
 
 ## Предлагаемое решение
+
 Как вы видите реализацию?
 
 ## Альтернативы
+
 Рассматривали ли вы альтернативные решения?
 
 ## Дополнительный контекст
+
 Любая другая информация или скриншоты.
 ```
 
@@ -152,17 +163,21 @@ assignees: ''
 ---
 
 ## Описание
+
 Что нужно сделать.
 
 ## Acceptance Criteria
+
 - [ ] Критерий 1
 - [ ] Критерий 2
 - [ ] Критерий 3
 
 ## Связанные задачи
+
 - #123
 
 ## Story Points
+
 Оценка: X SP
 ```
 
@@ -172,9 +187,11 @@ assignees: ''
 
 ```markdown
 ## Описание
+
 <!-- Краткое описание изменений -->
 
 ## Тип изменений
+
 - [ ] 🐛 Bug fix
 - [ ] ✨ New feature
 - [ ] 📝 Documentation
@@ -184,9 +201,11 @@ assignees: ''
 - [ ] ✅ Tests
 
 ## Связанные issues
+
 Closes #
 
 ## Checklist
+
 - [ ] Код следует стилю проекта
 - [ ] Self-review выполнен
 - [ ] Комментарии добавлены где необходимо
@@ -212,6 +231,7 @@ Closes #
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 20+
 - Docker & Docker Compose
 - npm 10+
@@ -219,26 +239,34 @@ Closes #
 ### Installation
 
 \`\`\`bash
+
 # Clone repository
+
 git clone https://github.com/SturmUlrich/MM.git
 cd MM
 
 # Install dependencies
+
 npm install
 
 # Copy environment variables
+
 cp .env.example .env
 
 # Start services
+
 docker-compose -f docker-compose.dev.yml up -d
 
 # Run migrations
+
 npm run db:migrate
 
 # Seed database
+
 npm run db:seed
 
 # Start development servers
+
 npm run dev
 \`\`\`
 
@@ -246,15 +274,16 @@ npm run dev
 
 \`\`\`
 apps/
-├── server/          # NestJS Backend (port 3001)
-├── client/          # Next.js Client App (port 3000)
-├── vendor-portal/   # Next.js Vendor Portal (port 3002)
-└── admin-portal/    # Next.js Admin Portal (port 3003)
+├── server/ # NestJS Backend (port 3001)
+├── client/ # Next.js Client App (port 3000)
+├── vendor-portal/ # Next.js Vendor Portal (port 3002)
+└── admin-portal/ # Next.js Admin Portal (port 3003)
 \`\`\`
 
 ## 🛠 Development
 
 ### Commands
+
 - \`npm run dev\` - Start all services in development mode
 - \`npm run build\` - Build all services
 - \`npm run test\` - Run tests
@@ -263,14 +292,15 @@ apps/
 - \`npm run db:seed\` - Seed database
 
 ### API Documentation
+
 Swagger UI available at: http://localhost:3001/api/docs
 
 ## 🧪 Testing
 
 \`\`\`bash
-npm run test        # Unit tests
-npm run test:e2e    # E2E tests
-npm run test:cov    # Coverage report
+npm run test # Unit tests
+npm run test:e2e # E2E tests
+npm run test:cov # Coverage report
 \`\`\`
 
 ## 📝 Contributing
@@ -290,21 +320,21 @@ Private - All rights reserved
 
 - [ ] Создать labels в GitHub:
 
-| Label | Color | Description |
-|-------|-------|-------------|
-| `bug` | #d73a4a | Something isn't working |
-| `enhancement` | #a2eeef | New feature or request |
-| `documentation` | #0075ca | Documentation improvements |
-| `good first issue` | #7057ff | Good for newcomers |
-| `help wanted` | #008672 | Extra attention is needed |
-| `priority: critical` | #b60205 | Critical priority |
-| `priority: high` | #d93f0b | High priority |
-| `priority: medium` | #fbca04 | Medium priority |
-| `priority: low` | #0e8a16 | Low priority |
-| `backend` | #5319e7 | Backend related |
-| `frontend` | #1d76db | Frontend related |
-| `devops` | #006b75 | DevOps related |
-| `wontfix` | #ffffff | This will not be worked on |
+| Label                | Color   | Description                |
+| -------------------- | ------- | -------------------------- |
+| `bug`                | #d73a4a | Something isn't working    |
+| `enhancement`        | #a2eeef | New feature or request     |
+| `documentation`      | #0075ca | Documentation improvements |
+| `good first issue`   | #7057ff | Good for newcomers         |
+| `help wanted`        | #008672 | Extra attention is needed  |
+| `priority: critical` | #b60205 | Critical priority          |
+| `priority: high`     | #d93f0b | High priority              |
+| `priority: medium`   | #fbca04 | Medium priority            |
+| `priority: low`      | #0e8a16 | Low priority               |
+| `backend`            | #5319e7 | Backend related            |
+| `frontend`           | #1d76db | Frontend related           |
+| `devops`             | #006b75 | DevOps related             |
+| `wontfix`            | #ffffff | This will not be worked on |
 
 ---
 
@@ -327,4 +357,4 @@ Private - All rights reserved
 - [ ] Команда может создавать issues и PR
 - [ ] Branch protection работает
 - [ ] Документация актуальна
-
+```

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Memento Mori</title>
+  <style>
+    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+    .header { background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%); color: #ffffff; padding: 40px 30px; text-align: center; }
+    .header h1 { margin: 0; font-size: 28px; font-weight: 600; }
+    .header p { margin: 10px 0 0; opacity: 0.9; font-size: 14px; }
+    .content { padding: 40px 30px; }
+    .content h2 { color: #1e1b4b; margin: 0 0 20px; font-size: 24px; }
+    .content p { color: #4b5563; line-height: 1.6; margin: 0 0 16px; }
+    .content ul { color: #4b5563; padding-left: 20px; margin: 0 0 24px; }
+    .content li { margin-bottom: 8px; line-height: 1.6; }
+    .button { display: inline-block; padding: 14px 28px; background: #4f46e5; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 8px; }
+    .button:hover { background: #4338ca; }
+    .footer { background: #f9fafb; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb; }
+    .footer p { color: #9ca3af; font-size: 12px; margin: 0 0 8px; }
+    .footer a { color: #6b7280; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Memento Mori</h1>
+      <p>Compassionate Services When You Need Them Most</p>
+    </div>
+    <div class="content">
+      <h2>Welcome, {{firstName}}!</h2>
+      <p>Thank you for joining Memento Mori. We're here to help you during difficult times with dignity and care.</p>
+      <p>With your account, you can now:</p>
+      <ul>
+        <li>Browse our catalog of verified service providers</li>
+        <li>Book appointments with lawyers and notaries</li>
+        <li>Place orders for funeral services</li>
+        <li>Track your orders and appointments</li>
+      </ul>
+      <p>
+        <a href="{{appUrl}}/services" class="button">Browse Services</a>
+      </p>
+      <p style="margin-top: 24px;">If you have any questions, our support team is here to help.</p>
+    </div>
+    <div class="footer">
+      <p>&copy; {{year}} Memento Mori. All rights reserved.</p>
+      <p>This is an automated message. Please do not reply to this email.</p>
+    </div>
+  </div>
+</body>
+</html>
+

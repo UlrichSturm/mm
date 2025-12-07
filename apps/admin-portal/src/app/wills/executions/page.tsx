@@ -1,12 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { willsApi, WillExecution, WillExecutionFilters, WillExecutionStatus } from '@/lib/api/wills';
+import {
+  willsApi,
+  WillExecution,
+  WillExecutionFilters,
+  WillExecutionStatus,
+} from '@/lib/api/wills';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
-import { Calendar, User, CreditCard, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Calendar, User, CreditCard } from 'lucide-react';
 
 const statusLabels: Record<WillExecutionStatus, string> = {
   PENDING: 'Pending',
@@ -69,35 +74,35 @@ export default function ExecutionsPage() {
         <CardContent className="p-6">
           <div className="flex gap-2 flex-wrap">
             <Button
-              variant={!filters.status ? "default" : "outline"}
+              variant={!filters.status ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleStatusFilter(undefined)}
             >
               Все статусы
             </Button>
             <Button
-              variant={filters.status === 'PENDING' ? "default" : "outline"}
+              variant={filters.status === 'PENDING' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleStatusFilter('PENDING')}
             >
               Pending
             </Button>
             <Button
-              variant={filters.status === 'EXECUTING' ? "default" : "outline"}
+              variant={filters.status === 'EXECUTING' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleStatusFilter('EXECUTING')}
             >
               Executing
             </Button>
             <Button
-              variant={filters.status === 'EXECUTED' ? "default" : "outline"}
+              variant={filters.status === 'EXECUTED' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleStatusFilter('EXECUTED')}
             >
               Executed
             </Button>
             <Button
-              variant={filters.status === 'CANCELLED' ? "default" : "outline"}
+              variant={filters.status === 'CANCELLED' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleStatusFilter('CANCELLED')}
             >
@@ -115,7 +120,7 @@ export default function ExecutionsPage() {
             </CardContent>
           </Card>
         ) : (
-          executions.map((execution) => (
+          executions.map(execution => (
             <Card key={execution.id}>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
@@ -132,7 +137,8 @@ export default function ExecutionsPage() {
                       <div className="flex items-center gap-2">
                         <User className="w-4 h-4" />
                         <span>
-                          <span className="font-medium">Клиент ID:</span> {execution.clientId.slice(0, 8)}
+                          <span className="font-medium">Клиент ID:</span>{' '}
+                          {execution.clientId.slice(0, 8)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -147,19 +153,22 @@ export default function ExecutionsPage() {
                         {execution.notifiedBy === 'LAWYER' ? 'Lawyer' : 'Relatives'}
                       </div>
                       <div>
-                        <span className="font-medium">Статус похорон:</span> {execution.funeralStatus}
+                        <span className="font-medium">Статус похорон:</span>{' '}
+                        {execution.funeralStatus}
                       </div>
                       {execution.paymentMethod && (
                         <div className="flex items-center gap-2">
                           <CreditCard className="w-4 h-4" />
                           <span>
-                            <span className="font-medium">Способ оплаты:</span> {execution.paymentMethod}
+                            <span className="font-medium">Способ оплаты:</span>{' '}
+                            {execution.paymentMethod}
                           </span>
                         </div>
                       )}
                       {execution.paymentStatus && (
                         <div>
-                          <span className="font-medium">Статус оплаты:</span> {execution.paymentStatus}
+                          <span className="font-medium">Статус оплаты:</span>{' '}
+                          {execution.paymentStatus}
                         </div>
                       )}
                       <div>
@@ -177,4 +186,3 @@ export default function ExecutionsPage() {
     </div>
   );
 }
-

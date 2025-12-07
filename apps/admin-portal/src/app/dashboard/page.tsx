@@ -1,22 +1,21 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { lawyerNotaryApi, LawyerNotaryProfile } from '@/lib/api/lawyer-notary';
-import { willsApi } from '@/lib/api/wills';
-import { isAuthenticated } from '@/lib/auth';
-import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Card, CardContent } from '@/components/ui/Card';
 import { ErrorDisplay } from '@/components/ui/ErrorDisplay';
+import { lawyerNotaryApi } from '@/lib/api/lawyer-notary';
+import { willsApi } from '@/lib/api/wills';
 import { useTranslations } from '@/lib/i18n';
+import { Calendar, CheckCircle, Clock, FileText, Users, XCircle } from 'lucide-react';
 import Link from 'next/link';
-import { Users, CheckCircle, XCircle, Clock, Calendar, FileText } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function DashboardPage() {
   const router = useRouter();
   const t = useTranslations('dashboard');
   const tCommon = useTranslations('common');
-  const [lawyers, setLawyers] = useState<LawyerNotaryProfile[]>([]);
+  const [lawyers, setLawyers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState({
@@ -32,13 +31,13 @@ export default function DashboardPage() {
     // Проверяем авторизацию
     const token = localStorage.getItem('auth_token');
     console.log('[Dashboard] Checking auth, token exists:', !!token, 'Length:', token?.length);
-    
+
     if (!token) {
       console.log('[Dashboard] No token, redirecting to login');
       router.replace('/auth/login');
       return;
     }
-    
+
     console.log('[Dashboard] Token found, loading data...');
     // Загружаем данные только если авторизованы
     loadData();
@@ -48,33 +47,33 @@ export default function DashboardPage() {
   const loadData = async () => {
     // Check token before making requests
     const token = localStorage.getItem('auth_token');
-    
+
     if (!token) {
       router.replace('/auth/login');
       return;
     }
-    
+
     try {
       setLoading(true);
       setError(null);
-      
+
       const [lawyersData, appointmentsData, executionsData] = await Promise.all([
-        lawyerNotaryApi.getAll().catch((err) => {
+        lawyerNotaryApi.getAll().catch(err => {
           console.error('[Dashboard] Error loading lawyers:', err);
           return [];
         }),
-        willsApi.getAllAppointments().catch((err) => {
+        willsApi.getAllAppointments().catch(err => {
           console.error('[Dashboard] Error loading appointments:', err);
           return [];
         }),
-        willsApi.getAllExecutions().catch((err) => {
+        willsApi.getAllExecutions().catch(err => {
           console.error('[Dashboard] Error loading executions:', err);
           return [];
         }),
       ]);
 
       setLawyers(lawyersData);
-      
+
       setStats({
         total: lawyersData.length,
         approved: lawyersData.filter(l => l.status === 'APPROVED').length,
@@ -129,9 +128,7 @@ export default function DashboardPage() {
                   <dt className="text-sm font-medium text-gray-500 truncate">
                     {t('totalLawyers')}
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {stats.total}
-                  </dd>
+                  <dd className="text-lg font-medium text-gray-900">{stats.total}</dd>
                 </dl>
               </div>
             </div>
@@ -146,12 +143,8 @@ export default function DashboardPage() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    {t('approved')}
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {stats.approved}
-                  </dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">{t('approved')}</dt>
+                  <dd className="text-lg font-medium text-gray-900">{stats.approved}</dd>
                 </dl>
               </div>
             </div>
@@ -166,12 +159,8 @@ export default function DashboardPage() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    {t('pending')}
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {stats.pending}
-                  </dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">{t('pending')}</dt>
+                  <dd className="text-lg font-medium text-gray-900">{stats.pending}</dd>
                 </dl>
               </div>
             </div>
@@ -186,12 +175,8 @@ export default function DashboardPage() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">
-                    {t('rejected')}
-                  </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {stats.rejected}
-                  </dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">{t('rejected')}</dt>
+                  <dd className="text-lg font-medium text-gray-900">{stats.rejected}</dd>
                 </dl>
               </div>
             </div>
@@ -209,9 +194,7 @@ export default function DashboardPage() {
                   <dt className="text-sm font-medium text-gray-500 truncate">
                     {t('willAppointments')}
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {stats.appointments}
-                  </dd>
+                  <dd className="text-lg font-medium text-gray-900">{stats.appointments}</dd>
                 </dl>
               </div>
             </div>
@@ -229,9 +212,7 @@ export default function DashboardPage() {
                   <dt className="text-sm font-medium text-gray-500 truncate">
                     {t('willExecutions')}
                   </dt>
-                  <dd className="text-lg font-medium text-gray-900">
-                    {stats.executions}
-                  </dd>
+                  <dd className="text-lg font-medium text-gray-900">{stats.executions}</dd>
                 </dl>
               </div>
             </div>
@@ -241,19 +222,15 @@ export default function DashboardPage() {
 
       <Card>
         <CardContent className="p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            {t('latestProfiles')}
-          </h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">{t('latestProfiles')}</h2>
           <div className="space-y-4">
-            {lawyers.slice(0, 5).map((lawyer) => (
+            {lawyers.slice(0, 5).map(lawyer => (
               <div
                 key={lawyer.id}
                 className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
               >
                 <div>
-                  <p className="text-sm font-medium text-gray-900">
-                    {lawyer.user?.email || 'N/A'}
-                  </p>
+                  <p className="text-sm font-medium text-gray-900">{lawyer.user?.email || 'N/A'}</p>
                   <p className="text-sm text-gray-500">
                     {lawyer.licenseNumber} • {lawyer.officePostalCode}
                   </p>
@@ -266,9 +243,7 @@ export default function DashboardPage() {
               </div>
             ))}
             {lawyers.length === 0 && (
-              <p className="text-center text-gray-500 py-8">
-                {t('noProfiles')}
-              </p>
+              <p className="text-center text-gray-500 py-8">{t('noProfiles')}</p>
             )}
           </div>
         </CardContent>
@@ -276,4 +251,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

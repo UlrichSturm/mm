@@ -1,13 +1,10 @@
 'use client';
 
-import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { AppointmentCard } from '@/components/appointments/AppointmentCard';
-import { format } from 'date-fns';
-import { ru } from 'date-fns/locale';
+import { Card, CardContent } from '@/components/ui/Card';
 
 interface AppointmentListProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   appointments: any[];
   onRefresh: () => void;
 }
@@ -27,16 +24,9 @@ export function AppointmentList({ appointments, onRefresh }: AppointmentListProp
 
   return (
     <div className="space-y-4">
-      {appointments.map((appointment) => (
-        <AppointmentCard
-          key={appointment.id}
-          appointment={appointment}
-          onRefresh={onRefresh}
-        />
+      {appointments.map(appointment => (
+        <AppointmentCard key={appointment.id} appointment={appointment} onRefresh={onRefresh} />
       ))}
     </div>
   );
 }
-
-
-

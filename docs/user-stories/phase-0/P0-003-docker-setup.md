@@ -1,11 +1,11 @@
 # P0-003: Docker Setup
 
-**Epic:** E-000 Phase 0 - Подготовка  
-**Приоритет:** 🔴 Must Have  
-**Story Points:** 3  
-**Исполнитель:** DevOps / Backend  
-**Срок:** Day 2  
-**Статус:** ⬜ Не начато
+**Epic:** E-000 Phase 0 - Подготовка
+**Приоритет:** 🔴 Must Have
+**Story Points:** 3
+**Исполнитель:** DevOps / Backend
+**Срок:** Day 2
+**Статус:** ✅ Выполнено
 
 ---
 
@@ -30,7 +30,7 @@ services:
     image: postgres:15-alpine
     container_name: mm-postgres-dev
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -39,7 +39,7 @@ services:
       - postgres_dev_data:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -50,12 +50,12 @@ services:
     image: redis:7-alpine
     container_name: mm-redis-dev
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_dev_data:/data
     command: redis-server --appendonly yes
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -66,8 +66,8 @@ services:
     image: mailhog/mailhog
     container_name: mm-mailhog-dev
     ports:
-      - "1025:1025"  # SMTP
-      - "8025:8025"  # Web UI
+      - '1025:1025' # SMTP
+      - '8025:8025' # Web UI
     restart: unless-stopped
 
   # ===== MinIO (S3 Compatible Storage) =====
@@ -75,8 +75,8 @@ services:
     image: minio/minio
     container_name: mm-minio-dev
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - '9000:9000'
+      - '9001:9001'
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
@@ -84,7 +84,7 @@ services:
       - minio_dev_data:/data
     command: server /data --console-address ":9001"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
       interval: 30s
       timeout: 20s
       retries: 3
@@ -113,7 +113,7 @@ services:
     image: postgres:15-alpine
     container_name: mm-postgres
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       - POSTGRES_USER=${POSTGRES_USER:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
@@ -121,7 +121,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -134,12 +134,12 @@ services:
     image: redis:7-alpine
     container_name: mm-redis
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -154,7 +154,7 @@ services:
       dockerfile: Dockerfile
     container_name: mm-server
     ports:
-      - "3001:3001"
+      - '3001:3001'
     environment:
       - NODE_ENV=production
       - PORT=3001
@@ -178,7 +178,7 @@ services:
       dockerfile: Dockerfile
     container_name: mm-client
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=http://localhost:3001
@@ -195,7 +195,7 @@ services:
       dockerfile: Dockerfile
     container_name: mm-vendor-portal
     ports:
-      - "3002:3002"
+      - '3002:3002'
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=http://localhost:3001
@@ -212,7 +212,7 @@ services:
       dockerfile: Dockerfile
     container_name: mm-admin-portal
     ports:
-      - "3003:3003"
+      - '3003:3003'
     environment:
       - NODE_ENV=production
       - NEXT_PUBLIC_API_URL=http://localhost:3001
@@ -453,4 +453,3 @@ db-reset: ## Reset database
 - [ ] Health checks настроены
 - [ ] Makefile создан
 - [ ] Документация обновлена
-

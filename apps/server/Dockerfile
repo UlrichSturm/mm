@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+RUN npm install
 
 # Stage 2: Builder
 FROM node:20-alpine AS builder
@@ -50,5 +50,5 @@ ENV PORT 3001
 
 # Generate Prisma Client and start the server
 # Regenerate Prisma Client with correct DATABASE_URL from environment
-CMD npx prisma generate --schema=./prisma/schema.prisma && node dist/src/main.js
+CMD npx prisma generate --schema=./prisma/schema.prisma && node dist/main.js
 

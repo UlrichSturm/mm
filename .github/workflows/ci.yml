@@ -1,0 +1,171 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_call:
+    secrets:
+      CODECOV_TOKEN:
+        required: false
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  # ===== LINT =====
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install all dependencies (workspaces)
+        run: npm ci
+
+      - name: Run ESLint (server)
+        run: npm run lint:server
+
+      - name: Run ESLint (client)
+        run: npm run lint:client
+
+      - name: Run ESLint (vendor-portal)
+        run: npm run lint:vendor
+
+      - name: Run ESLint (admin-portal)
+        run: npm run lint:admin
+
+  # ===== TYPE CHECK =====
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install all dependencies (workspaces)
+        run: npm ci
+
+      - name: Type check (shared)
+        run: npm run build:shared
+
+      - name: Generate Prisma Client
+        run: npm run db:generate
+
+      - name: Type check (server)
+        run: cd apps/server && npx tsc --noEmit
+
+      - name: Type check (client)
+        run: cd apps/client && npx tsc --noEmit
+
+      - name: Type check (vendor-portal)
+        run: cd apps/vendor-portal && npx tsc --noEmit
+
+      - name: Type check (admin-portal)
+        run: cd apps/admin-portal && npx tsc --noEmit
+
+  # ===== UNIT TESTS =====
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install all dependencies (workspaces)
+        run: npm ci
+
+      - name: Run tests
+        run: npm run -w apps/server test -- --coverage --passWithNoTests
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+          directory: apps/server/coverage
+
+  # ===== BUILD =====
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, test]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install all dependencies (workspaces)
+        run: npm ci
+
+      - name: Generate Prisma Client
+        run: npm run db:generate
+
+      - name: Build shared package
+        run: npm run build:shared
+
+      - name: Build server
+        run: npm run build:server
+
+      - name: Build client
+        run: npm run build:client
+
+      - name: Build vendor-portal
+        run: npm run build:vendor
+
+      - name: Build admin-portal
+        run: npm run build:admin
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: |
+            apps/server/dist
+            apps/client/.next
+            apps/vendor-portal/.next
+            apps/admin-portal/.next
+          retention-days: 7
+
+  # ===== SECURITY SCAN =====
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high || true
+        continue-on-error: true

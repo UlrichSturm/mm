@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { vendorApi } from '@/lib/api';
 import { ClientList } from '@/components/clients/ClientList';
-import { format } from 'date-fns';
-import { ru } from 'date-fns/locale';
 
 export default function ClientsPage() {
   const [clients, setClients] = useState<any[]>([]);
@@ -27,7 +25,7 @@ export default function ClientsPage() {
       // Transform appointments to clients
       const appointments = Array.isArray(data) ? data : data.appointments || [];
       const clientsMap = new Map();
-      
+
       appointments.forEach((appointment: any) => {
         if (appointment.clientName || appointment.clientId) {
           const clientId = appointment.clientId || appointment.clientName;
@@ -43,7 +41,7 @@ export default function ClientsPage() {
           clientsMap.get(clientId).appointments.push(appointment);
         }
       });
-      
+
       setClients(Array.from(clientsMap.values()));
     } catch (error) {
       console.error('Failed to load clients:', error);
@@ -57,9 +55,7 @@ export default function ClientsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Клиенты</h1>
-        <p className="text-muted-foreground">
-          Список всех ваших клиентов
-        </p>
+        <p className="text-muted-foreground">Список всех ваших клиентов</p>
       </div>
 
       <Card>
@@ -69,14 +65,16 @@ export default function ClientsPage() {
               <Input
                 placeholder="Поиск по ФИО..."
                 value={filters.search || ''}
-                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                onChange={e => setFilters({ ...filters, search: e.target.value })}
               />
             </div>
             <div className="w-[200px]">
               <select
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 value={filters.status || ''}
-                onChange={(e) => setFilters({ ...filters, status: e.target.value as any || undefined })}
+                onChange={e =>
+                  setFilters({ ...filters, status: (e.target.value as any) || undefined })
+                }
               >
                 <option value="">Все статусы</option>
                 <option value="ACTIVE">Активные</option>
@@ -98,6 +96,3 @@ export default function ClientsPage() {
     </div>
   );
 }
-
-
-

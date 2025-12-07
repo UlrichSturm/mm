@@ -4,26 +4,26 @@
 
 Phase 0 включает все подготовительные задачи, которые необходимо завершить до начала разработки MVP.
 
-**Продолжительность:** 5 дней  
-**Story Points:** 21  
+**Продолжительность:** 5 дней
+**Story Points:** 21
 **Приоритет:** 🔴 Критический
 
 ---
 
 ## 📋 Задачи
 
-| ID | Название | SP | Приоритет | День | Статус |
-|----|----------|:--:|:---------:|:----:|:------:|
-| [P0-001](P0-001-github-setup.md) | GitHub Repository Setup | 2 | 🔴 Must | 1 | ⬜ |
-| [P0-002](P0-002-cicd-pipeline.md) | CI/CD Pipeline | 3 | 🔴 Must | 1-2 | ⬜ |
-| [P0-003](P0-003-docker-setup.md) | Docker Setup | 3 | 🔴 Must | 2 | ⬜ |
-| [P0-004](P0-004-linting-config.md) | ESLint & Prettier | 2 | 🟡 High | 2 | ⬜ |
-| [P0-005](P0-005-git-hooks.md) | Husky & Commitlint | 2 | 🟡 High | 2 | ⬜ |
-| [P0-006](P0-006-env-variables.md) | Environment Variables | 1 | 🔴 Must | 1 | ⬜ |
-| [P0-007](P0-007-database-schema.md) | Database Schema | 3 | 🔴 Must | 3 | ⬜ |
-| [P0-008](P0-008-swagger-setup.md) | Swagger Setup | 2 | 🟡 High | 3 | ⬜ |
-| [P0-009](P0-009-seed-data.md) | Seed Data | 2 | 🟡 High | 4 | ⬜ |
-| [P0-010](P0-010-external-services.md) | External Services | 3 | 🟡 High | 4-5 | ⬜ |
+| ID                                    | Название                | SP  | Приоритет | День | Статус |
+| ------------------------------------- | ----------------------- | :-: | :-------: | :--: | :----: |
+| [P0-001](P0-001-github-setup.md)      | GitHub Repository Setup |  2  |  🔴 Must  |  1   |   ✅   |
+| [P0-002](P0-002-cicd-pipeline.md)     | CI/CD Pipeline          |  3  |  🔴 Must  | 1-2  |   ✅   |
+| [P0-003](P0-003-docker-setup.md)      | Docker Setup            |  3  |  🔴 Must  |  2   |   ✅   |
+| [P0-004](P0-004-linting-config.md)    | ESLint & Prettier       |  2  |  🟡 High  |  2   |   ✅   |
+| [P0-005](P0-005-git-hooks.md)         | Husky & Commitlint      |  2  |  🟡 High  |  2   |   ✅   |
+| [P0-006](P0-006-env-variables.md)     | Environment Variables   |  1  |  🔴 Must  |  1   |   ✅   |
+| [P0-007](P0-007-database-schema.md)   | Database Schema         |  3  |  🔴 Must  |  3   |   ✅   |
+| [P0-008](P0-008-swagger-setup.md)     | Swagger Setup           |  2  |  🟡 High  |  3   |   ✅   |
+| [P0-009](P0-009-seed-data.md)         | Seed Data               |  2  |  🟡 High  |  4   |   ✅   |
+| [P0-010](P0-010-external-services.md) | External Services       |  3  |  🟡 High  | 4-5  |   ✅   |
 
 ---
 
@@ -122,6 +122,7 @@ npm run dev
 ```
 
 **Доступные сервисы:**
+
 - Client: http://localhost:3000
 - Server API: http://localhost:3001
 - Swagger: http://localhost:3001/api/docs
@@ -185,14 +186,13 @@ MM/
 
 ## 👥 Рекомендуемое распределение
 
-| Роль | Задачи |
-|------|--------|
-| **Tech Lead** | P0-001, P0-002, P0-005, P0-006 |
-| **Backend Lead** | P0-007, P0-008, P0-009 |
-| **DevOps** | P0-002, P0-003, P0-010 |
-| **Frontend Lead** | P0-004 |
+| Роль              | Задачи                         |
+| ----------------- | ------------------------------ |
+| **Tech Lead**     | P0-001, P0-002, P0-005, P0-006 |
+| **Backend Lead**  | P0-007, P0-008, P0-009         |
+| **DevOps**        | P0-002, P0-003, P0-010         |
+| **Frontend Lead** | P0-004                         |
 
 ---
 
 **Epic файл:** [Epic_00_Phase0_Preparation.md](../../../epics/MVP/Epic_00_Phase0_Preparation.md)
-
