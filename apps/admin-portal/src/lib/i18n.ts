@@ -33,12 +33,14 @@ import { useMemo, useState, useEffect } from 'react';
 export function useTranslations(namespace?: string) {
   // Use state to track locale changes
   const [locale, setLocaleState] = useState(() =>
-    typeof window !== 'undefined' ? getLocale() : 'en'
+    typeof window !== 'undefined' ? getLocale() : 'en',
   );
 
   // Update locale when it changes
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {
+      return;
+    }
 
     const updateLocale = () => {
       const currentLocale = getLocale();
@@ -68,7 +70,7 @@ export function useTranslations(namespace?: string) {
       const keysArray = fullKey.split('.');
 
       // Start from the root messages object
-      let value: NestedValue = localeMessages;
+      let value: NestedValue = localeMessages as NestedValue;
 
       // Navigate through the nested object
       for (const k of keysArray) {
@@ -82,7 +84,7 @@ export function useTranslations(namespace?: string) {
 
       // If not found, try fallback to English
       if (value === undefined || typeof value !== 'string') {
-        let fallback: NestedValue = messages.en;
+        let fallback: NestedValue = messages.en as NestedValue;
         for (const k of keysArray) {
           if (fallback && typeof fallback === 'object' && k in fallback) {
             fallback = (fallback as any)[k];
