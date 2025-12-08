@@ -69,7 +69,7 @@
     "eslint-plugin-react-hooks": "^7.0.1",
     "husky": "^9.0.11",
     "lint-staged": "^16.2.7",
-    "prettier": "^3.2.4"
+    "prettier": "^3.7.4"
   },
   "engines": {
     "node": ">=20.0.0",
